@@ -36,8 +36,9 @@ var handle = {}
 handle["/"] = requestHandlers.none;
 
 handle["/other"] = requestHandlers.other;
-//handle["/start"] = requestHandlers.connect;
-handle["/login"] = requestHandlers.login;
+handle["/upload"] = requestHandlers.upload;
+handle["/download"] = requestHandlers.download;
+//handle["/login"] = requestHandlers.login;
 //handle["/connect"] = requestHandlers.connect;
 //handle["/update"] = requestHandlers.update;
 //handle["/select"] = requestHandlers.select;
@@ -45,6 +46,7 @@ handle["/login"] = requestHandlers.login;
 
 console.log("httpd start port:8000 ");
 console.log('I am worker #'+ cluster.worker.id + "@" + cluster.worker.process.pid);
-server.start(router.route, handle);
+
+server.dohandle(router.route, handle);
 
 }

@@ -1,6 +1,6 @@
 var mysql = require('mysql');
 var sys = require('sys');
-var util = require('./util/util.js');
+var util = require('../util/util.js');
 var async = require('async');
 var Wind = require('wind')
 

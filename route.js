@@ -14,9 +14,13 @@ function route(handle, pathname, response, request) {
 
     );
   } else {
+
+    err = {
+    'err': '404 not found'
+    };
     console.log("No request handler found for " + pathname);
     response.writeHead(404, {"Content-Type": "text/html"});
-    response.write("404 Not found");
+    response.write(JSON.stringify(err));
     response.end();
   }
 }

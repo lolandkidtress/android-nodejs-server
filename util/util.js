@@ -49,3 +49,19 @@ exports.AESdecrypt = function(key, String) {
         console.log(msg);
     }
 };
+
+exports.wait = function(mils) {
+  //刻意等待mils的时间，mils的单位是毫秒。
+    var now = new Date;
+    while(new Date - now <= mils);
+}
+
+exports.fire = function(obj, callback, timeout) {
+  //直接将obj的内容返回给async
+    timeout = timeout || 200;
+    setTimeout(
+        function() {
+        callback(null, obj);
+    }
+    , timeout);
+};
