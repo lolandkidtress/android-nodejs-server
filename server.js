@@ -1,27 +1,38 @@
 var http = require('http'); 
 var url = require("url");
 var cluster = require('cluster');
-
-
-global.request = "";  //业务员数据 json对象
+var util = require("./util/util.js");
+var config = require("./config/config.js");
 
 var action="";   //action数据
+
+//global.tracelevel = config.getTraceLevel();
+//global.db_config = config.getDBConfig();
 
 function dohandle(route, handle){ 
     server = http.createServer(function (request, response) {   
         if(request.url != '/favicon.ico'){
 
-         console.log('Worker #'+ cluster.worker.id + "@" + cluster.worker.process.pid + " Serverd for U ");
+        util.log('debug','全局TraceLevel: ' + config.getTraceLevel());
+        util.log('debug','数据库连接信息: ' + JSON.stringify(config.getDBConfig()));
+
+        util.log('debug', 'Worker #'+ cluster.worker.id + "@" + cluster.worker.process.pid + " Serverd for U ");
+        util.log('debug', "Request.url: " + JSON.stringify(url.parse(request.url)) + " received.");
 
          //需要多一步加密的动作
          //var decryptourl = decrypto(request.url); 解密request
         
         //传过来的解密后的全部request  空格替换
-        var pathname = url.parse(request.url).pathname.replace(/%20/g,' ');  
+        var pathname = url.parse(request.url).pathname.replace(/%20/g,' '); 
+        
+            var questquery =url.parse(request.url).query;
+
+        if(questquery){
+            var questquery = JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));   // 替换双引号,转换成json对象
+        }
         
 
-        
-        //能够正确显示中文，将三字节的字符转换为utf-8编码
+        //正确显示中文，将三字节的字符转换为utf-8编码
         re=/(%[0-9A-Fa-f]{2}){3}/g;
         pathname=pathname.replace(re,function(word){
         var buffer=new Buffer(3),
@@ -34,19 +45,16 @@ function dohandle(route, handle){
         });
 
         //将action和业务数据分开
-         global.request = pathname;   
-         action = pathname ;
-
-         console.log("Request for pathname: " + pathname + " received.");
-         console.log("Request for global.requestURL: " + global.request + " received.");
-         console.log("action " + action + " called " );
+            action = pathname ; 
+            util.log('debug', "action " + action + " received " );
+            util.log('debug',questquery );
 
          /*根据"/"拆分url和参数
          *  第一个/后的是功能 比如 select/insert/update/login
          *  之后将业务数据重组成jason格式
          */
 
-         //var QueryString = url.parse(request.url).
+         //var QueryString = url.parse(request.url).h
     	 
     	 //route(handle, pathname, response, request);
          route(handle, action, response, request); //根据action的值去调用不同的业务
@@ -57,9 +65,5 @@ function dohandle(route, handle){
     server.listen(8000);   
        
 } 
-
-
-
-
 
 exports.dohandle = dohandle;;

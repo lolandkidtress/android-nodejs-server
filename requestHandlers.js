@@ -4,6 +4,7 @@ var querystring = require("querystring"),
     mysql = require('./dbutil/mysqlconn.js');
     fshandle = require('./filesystem/fshandle.js');
 
+var url = require("url");
 var async = require('async');
 var util = require('./util/util.js');
 var Wind =require('wind');
@@ -26,57 +27,28 @@ function none(response, request){
 //返回DB服务器是否正常
 function other(response, request){
   
-  global.queryDBStatus = '';
-
   mysql.AsyncCheckDBstatus(response,callback);
 
 }
 
 
-function connect(response, request ){
+function connect(response, request,callback){
         
-    console.log("Request handler 'db connect' was called.");
-      
-    if(!mysql.dbconnect(function(err) {
-                            if (err) {
-                              console.log('error happen');
-                              console.log(err);
-                              }
-                              else{
-                              console.log('no error');
-                              }
-                            }
-
-                     )
-      )
-
-    {
-      console.log('db error');
-      response.writeHead(200, {"Content-Type": "text/html"});
-      response.write("dbconnect error");  
-     /*
-      mysql.EndDbConnect(function(err) {
-                            if (err) {
-                              console.log('error happen');
-                              console.log(err);
-                              }
-                              else{
-                              console.log('no error');
-                              }
-                            }
-
-                     );   
-      */
-    }
-    else {
-      console.log('db ok');
-      response.writeHead(200, {"Content-Type": "text/html"});
-      response.write("dbconnect ok");
-      mysql.EndDbConnect();
-    }
-
-    response.end();
+     console.log(JSON.stringify(url.parse(request.url)));
  
+}
+
+function selectsql(response, request,callback){
+    console.log('1');
+}
+function insertsql(response, request,callback){
+    console.log('1');
+}
+function updatesql(response, request,callback){
+    console.log('1');
+}
+function deletesql(response, request,callback){
+    console.log('1');
 }
 
 function upload(response, callback){
@@ -86,7 +58,8 @@ function upload(response, callback){
 
 function download(response, callback){
     var realpath = "./assets/1.txt";
-    fshandle.downloadfile(response,realpath,callback);
+    //fshandle.downloadfile(response,realpath,callback);
+    fshandle.downloadStream(response,realpath,callback);
   
 }
 
@@ -96,5 +69,9 @@ exports.other = other;
 exports.none = none;
 exports.upload = upload;
 exports.download = download;
-
+exports.connect = connect;
+exports.selectsql = selectsql;
+exports.insertsql = insertsql;
+exports.updatesql = updatesql;
+exports.deletesql = deletesql;
 
