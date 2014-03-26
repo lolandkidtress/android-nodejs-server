@@ -9,6 +9,12 @@ var db_config = {
   database: 'jira'
 };
 
+var ASECrypt = {
+	SecretPassphrase:'password',
+	Salt:'salt',
+	iv:'vector'
+}
+
 function getTraceLevel(){
 	return tracelever;
 }
@@ -16,6 +22,11 @@ function getTraceLevel(){
 function getDBConfig(){
 	return db_config;
 }
+function getASECrypt(){
+	return ASECrypt;
+}
+
 
 exports.getTraceLevel = getTraceLevel;
 exports.getDBConfig = getDBConfig;
+exports.getASECrypt = getASECrypt;

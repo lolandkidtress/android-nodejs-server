@@ -1,16 +1,39 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <head>
 	<title></title>
 </head>
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/aes.js"></script>
+<script type="text/javascript">
+ 
+function encrypted(formObj){
+	var StringS = '{"err": "404 not found设定"}';
+
+	//alert('encrypted');
+    var encrypted = CryptoJS.AES.encrypt(StringS, 'password','salt','vector');
+    alert(encrypted.toString());
+    //document.formName.action = 'http://127.0.0.1:8000/select?{"err":"404%20not%20found"}';
+
+
+  
+    var formObj = document.getElementById("form");
+  	formObj.action =  'http://127.0.0.1:8000/select?'+ encrypted;
+    formObj.submit();
+    //document.getElementById("form").action = 'http://127.0.0.1:8000/select?{"err":"404%20not%20found"}';
+    //document.getElementById("form").submit();
+
+    //var decrypted = CryptoJS.AES.decrypt(encrypted, "Secret Passphrase", { format: JsonFormatter });
+
+    //alert(decrypted.toString(CryptoJS.enc.Utf8)); // Message
+}
+</script>
 <body>
-<FORM action="http://127.0.0.1:8000/"
+<FORM name= 'form' id='form' action='http://127.0.0.1:8000/'
        enctype="multipart/form-data"
-       method="post">
-   <P>
-   What is your name? <INPUT type="text" name="submit-name"><BR>
-   What files are you sending? <INPUT type="file" name="files"><BR>
-   <INPUT type="submit" value="Send"> <INPUT type="reset">
+       method="post" >
+
+   <INPUT type="button" value="Send" onclick="encrypted();"> 
  </FORM>
 </body>
-</html>>
+</html>
