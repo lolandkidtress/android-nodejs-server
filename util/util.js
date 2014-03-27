@@ -2,6 +2,7 @@ var moment = require('moment');
 var config = require('../config/config.js');
 var timeout = 200;
 var cluster = require('cluster');
+var log4js = require('log4js');
 
 exports.err = function(errMsg, callback) {
   //模拟一个错误的产生，让async各个函数末尾的callback接收到。
@@ -12,12 +13,31 @@ exports.err = function(errMsg, callback) {
 };
 
 exports.log = function(ilevel,msg, obj) {
+
+log4js.configure({
+  "appenders": [
+      {
+          "type": "file",
+          "filename": "server.log",
+          "maxLogSize": 4096,
+          "backups": 5,
+          "category": "console",
+          "mode": "worker"
+      }
+  ]
+});
+
+logger = log4js.getLogger("console");
+
     //对console.log进行了封装。添加时间的输出和日志级别的判断
     var level = {
         info:'info',  //最小
         debug:'debug', //较大
         Err:'error'
     };
+
+    var workerinfo  = 'worker ' + process.pid +'> ';
+
     var infolevel;
     var tracelever = config.getTraceLevel();
 
@@ -48,36 +68,28 @@ exports.log = function(ilevel,msg, obj) {
     
     //infolevel = ilevel;
     if(infolevel == level['info']){
-            if(obj!==undefined) {
-            process.stdout.write(msg);
-            console.log(obj);
-            } else {
+
             console.log(msg);
-            }
+            logger.info(msg);
+            
     }
     else if(infolevel == level['debug']){
             process.stdout.write(moment().format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');
-            process.stdout.write('worker ' + cluster.worker.id + "@" + cluster.worker.process.pid +'> ');
+            process.stdout.write(workerinfo);
 	       //process.stdout.write(moment().tz("asia/Shanghai").format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');  //需要timezone包
-
-            if(obj!==undefined) {
-            process.stdout.write(msg);
-            console.log(obj);
-            } else {
             console.log(msg);
-            }
+
+            logger.debug(workerinfo + msg);
+
     }
     else if(infolevel == level['Err'] ){
           process.stdout.write(moment().format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');
-          process.stdout.write('worker ' + cluster.worker.id + "@" + cluster.worker.process.pid +'> ');
+          process.stdout.write(workerinfo);
            //process.stdout.write(moment().tz("asia/Shanghai").format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');  //需要timezone包
 
-            if(obj!==undefined) {
-            process.stdout.write(msg);
-            console.log('error！' + obj);
-            } else {
             console.log('error! ' + msg);
-            }  
+            logger.error(workerinfo + msg);
+            
     } 
 
 

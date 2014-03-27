@@ -3,12 +3,26 @@ var server = require("./server");
 //var router = require("./route");
 var requestHandlers = require("./requestHandlers");
 var util = require('./util/util.js');
+var log4js = require('log4js');
 
 var numCPUs = require('os').cpus().length;
 
 var result = null;
 
 if (cluster.isMaster) {
+/*
+	log4js.configure({
+        appenders: [
+            {
+                type: "multiprocess",
+                mode: "master",
+                appender: {
+                    type: "console"
+                }
+            }
+        ]
+    });
+*/
 　　// Fork workers.
 　　for (var i = 0; i < numCPUs; i++) {
 		cluster.fork();
@@ -21,22 +35,33 @@ if (cluster.isMaster) {
 	  } else if( code !== 0 ) {
 	    util.log('info', "worker exited with error code: "+code);
 	  } else {
-	    util.log('info', "worker success!");
+	    util.log('info', "worker exit success!");
 	  }
 
 	  cluster.fork();
 
 	});
 	cluster.on('fork', function(worker) {
-	  	//util.log('info', worker.id + "@" + worker.process.pid);
+	  	util.log('info', 'New Worker forked ' + worker.id + '@' + worker.process.pid);
 	  });
+	cluster.on('err',function(worker) {
+		util.log('info', 'Worker err ' + worker.id + '@' + worker.process.pid);
+	});
 
-}else if(cluster.isWorker){
+}
+else if(cluster.isWorker){
+/*
+ log4js.configure({
+        appenders: [
+            {
+                type: "multiprocess",
+                mode: "worker"
+            }
+        ]
+    });
+*/
+//util.log('info', 'I am worker #'+ cluster.worker.id + "@" + cluster.worker.process.pid);
 
-
-util.log('info', 'I am worker #'+ cluster.worker.id + "@" + cluster.worker.process.pid);
-
-//server.dohandle(router.route);
 server.dohandle();
 
 
