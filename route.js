@@ -37,6 +37,7 @@ function route(pathname,questquery,response, request) {
     response.writeHead(404, {"Content-Type": "text/html"});
     response.write(JSON.stringify(err));
     response.end();
+    util.log('info','end of response');
   }
 }
 

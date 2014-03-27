@@ -1,6 +1,7 @@
 var moment = require('moment');
 var config = require('../config/config.js');
 var timeout = 200;
+var cluster = require('cluster');
 
 exports.err = function(errMsg, callback) {
   //模拟一个错误的产生，让async各个函数末尾的callback接收到。
@@ -20,21 +21,30 @@ exports.log = function(ilevel,msg, obj) {
     var infolevel;
     var tracelever = config.getTraceLevel();
 
-    if(tracelever==''||tracelever){   //设置过全局变量则根据全局变量
+    if(tracelever==''||tracelever==null){   //设置过全局变量则根据全局变量
         infolevel = ilevel;
     }
-     
+    if(tracelever=='error'){
+        infolevel = ilevel; 
+    }
+
     if(tracelever=='debug'){
         infolevel = 'debug'; 
     }
 
-    if(tracelever=='info'){
+    if(tracelever=='info' && ilevel=='info'){
         infolevel = 'info';
+    }
+
+    if(tracelever=='info' && ilevel=='debug'){
+        infolevel = '';
     }
 
     if(ilevel=='error'){
         infolevel = 'error';
     }
+
+
     
     //infolevel = ilevel;
     if(infolevel == level['info']){
@@ -47,6 +57,7 @@ exports.log = function(ilevel,msg, obj) {
     }
     else if(infolevel == level['debug']){
             process.stdout.write(moment().format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');
+            process.stdout.write('worker ' + cluster.worker.id + "@" + cluster.worker.process.pid +'> ');
 	       //process.stdout.write(moment().tz("asia/Shanghai").format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');  //需要timezone包
 
             if(obj!==undefined) {
@@ -58,6 +69,7 @@ exports.log = function(ilevel,msg, obj) {
     }
     else if(infolevel == level['Err'] ){
           process.stdout.write(moment().format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');
+          process.stdout.write('worker ' + cluster.worker.id + "@" + cluster.worker.process.pid +'> ');
            //process.stdout.write(moment().tz("asia/Shanghai").format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');  //需要timezone包
 
             if(obj!==undefined) {

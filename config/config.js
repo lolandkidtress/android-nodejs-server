@@ -15,6 +15,8 @@ var ASECrypt = {
 	iv:'vector'
 }
 
+var ServerPort = '8000';
+
 function getTraceLevel(){
 	return tracelever;
 }
@@ -25,8 +27,12 @@ function getDBConfig(){
 function getASECrypt(){
 	return ASECrypt;
 }
+function getServerPort(){
+	return ServerPort;
+}
 
 
 exports.getTraceLevel = getTraceLevel;
 exports.getDBConfig = getDBConfig;
 exports.getASECrypt = getASECrypt;
+exports.getServerPort  = getServerPort;

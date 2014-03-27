@@ -28,14 +28,12 @@ if (cluster.isMaster) {
 
 	});
 	cluster.on('fork', function(worker) {
-	  	util.log('info', worker.id + "@" + worker.process.pid);
+	  	//util.log('info', worker.id + "@" + worker.process.pid);
 	  });
 
 }else if(cluster.isWorker){
 
 
-
-util.log('info', "httpd start port:8000 ");
 util.log('info', 'I am worker #'+ cluster.worker.id + "@" + cluster.worker.process.pid);
 
 //server.dohandle(router.route);
