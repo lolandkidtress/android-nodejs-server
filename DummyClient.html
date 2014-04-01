@@ -12,13 +12,13 @@ function encrypted(formObj){
 
 	//alert('encrypted');
     var encrypted = CryptoJS.AES.encrypt(StringS, 'password','salt','vector');
-    alert(encrypted.toString());
+    //alert(encrypted.toString());
     //document.formName.action = 'http://127.0.0.1:8000/select?{"err":"404%20not%20found"}';
 
 
   
     var formObj = document.getElementById("form");
-  	formObj.action =  'http://127.0.0.1:8000/select?'+ encrypted;
+  	formObj.action =  'http://127.0.0.1:8000/other?'+ encrypted;
     formObj.submit();
     //document.getElementById("form").action = 'http://127.0.0.1:8000/select?{"err":"404%20not%20found"}';
     //document.getElementById("form").submit();

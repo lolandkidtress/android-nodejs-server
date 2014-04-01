@@ -9,6 +9,7 @@ var async = require('async');
 var util = require('./util/util.js');
 var Wind =require('wind');
 var events = require('events');
+var async = require('async');
 
 var callback = function(){};
 /*
@@ -25,10 +26,36 @@ function none(response, request){
 
 
 //返回DB服务器是否正常
-function other(response, request){
+function other(response, request,flg){
   
-  mysql.AsyncCheckDBstatus(response,callback);
 
+
+async.waterfall([
+    function(cb) {
+      mysql.AsyncCheckDBstatus(response,cb); 
+      //mysql.AsyncCheckDBstatus(response,callback); 
+    },
+    
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+      //mysql.AsyncCheckDBstatus(response,callback); 
+    },
+    /*
+    function(n,cb) {
+      //mysql.CallProcedure(3,cb); 
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+
+], function(err, results) {
+    console.log('1.1 err: ', err); // -> undefined
+    console.log('1.1 results: ', results); 
+    //console.log('1.1 results: ', results); 
+    response.writeHead(500, {"Content-Type": "text/plain"});
+    response.write(JSON.stringify(results));   //JSON.parse(str)  反向 JSON.stringify(err) 
+    response.end();
+
+});
 }
 
 

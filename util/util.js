@@ -3,6 +3,7 @@ var config = require('../config/config.js');
 var timeout = 200;
 var cluster = require('cluster');
 var log4js = require('log4js');
+var pointer = require('json-pointer'); 
 
 exports.err = function(errMsg, callback) {
   //模拟一个错误的产生，让async各个函数末尾的callback接收到。
@@ -13,7 +14,7 @@ exports.err = function(errMsg, callback) {
 };
 
 exports.log = function(ilevel,msg, obj) {
-
+/*
 log4js.configure({
   "appenders": [
       {
@@ -26,13 +27,29 @@ log4js.configure({
       }
   ]
 });
+*/
+
+
+log4js.configure({
+  "appenders": [
+      {
+          "type": "file",
+          "filename": "server.log",
+          //"maxLogSize": 4096,
+          //"backups": 5,
+          "category": "console",
+          "mode": "worker"
+      }
+  ]
+});
+
 
 logger = log4js.getLogger("console");
 
     //对console.log进行了封装。添加时间的输出和日志级别的判断
     var level = {
-        info:'info',  //最小
-        debug:'debug', //较大
+        info:'info',  //
+        debug:'debug', //
         Err:'error'
     };
 
@@ -80,6 +97,8 @@ logger = log4js.getLogger("console");
             console.log(msg);
 
             logger.debug(workerinfo + msg);
+
+            
 
     }
     else if(infolevel == level['Err'] ){
@@ -137,3 +156,36 @@ exports.fire = function(obj, callback, timeout) {
     }
     , timeout);
 };
+
+exports.inc = function(n, callback, timeout) {
+  //将参数n自增1之后的结果返回给async
+    timeout = timeout || 200;
+    setTimeout(function() {
+        callback(null, n+1);
+    }, timeout);
+};
+
+
+exports.jsonget = function(obj, objPointer) {
+    return pointer.get(obj, objPointer);
+}
+
+exports.jsonset = function(obj, objPointer, value) {
+    return pointer.set(obj, objPointer, value);
+}
+
+exports.jsonexist = function(obj, objPointer) {
+    return pointer.has(obj, objPointer);
+}
+
+exports.jsonremove = function(obj, objPointer) {
+    return pointer.remove(obj, objPointer);
+}
+
+
+exports.jsonadd = function(obj, objPointer, value) {
+        return pointer.set(obj, objPointer, value);
+}
+
+
+

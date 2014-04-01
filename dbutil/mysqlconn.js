@@ -3,13 +3,8 @@ var sys = require('sys');
 var util = require('../util/util.js');
 var async = require('async');
 var Wind = require('wind')
+var config = require('../config/config.js')
 
-var db_config = {
-  host: '192.168.20.83',
-  user: 'root',
-  password: 'root',
-  database: 'jira'
-};
 
 var connection = null;
 var query = null;
@@ -21,74 +16,76 @@ function AsyncCheckDBstatus(response,callback){  // 顺序执行select
 //function AsyncCheckDBstatus(){  
 
 //var AsyncCheckDBstatus = function (queryDBStatus,callback){  // 顺序执行select
+  var results;
+  connection = mysql.createConnection(config.getDBConfig());
 
-  console.log('1-1 async.series start');
 
-  connection = mysql.createConnection(db_config);
+var selectSQL1 = 'select database() as dbname union all select database() as dbname';
+var selectSQL2 = 'select version()  as version';
 
-var sqls = {
-    'insertSQL': 'select 2',
-    'selectSQL': 'select 1 ',
-    'deleteSQL': 'select 3',
-    'updateSQL': 'select 3 '
-};
-
-var insertSQL = 'select 1 ';
-var selectSQL = 'select 2 ';
 
 var tasks = ['deleteSQL', 'insertSQL', 'selectSQL', 'updateSQL', 'selectSQL'];
 
-/*
-
-
-async.eachSeries(tasks, function (item, callback) {
-    console.log(item + " ==> " + sqls[item]);
-    connection.query(sqls[item], function (err, res) {
-    	if(!err){
-    		console.log(res);
-    	}
-        callback(err, res);
-    });
-}, function (err,res) {
-
-    if(err == null){
-      global.queryDBStatus = 'ok';
-      
-    }
-    else
-    {
-      global.queryDBStatus = 'err';
-      console.log("async.eachSeries err  = "+ err);
-      
-    }
-
-    console.log('async.eachSeries end');
-    return callback(err, res);
-
-});
-*/
-
-
 async.series([
     function(callback){
-      console.log('2-1' + insertSQL);
 
-      connection.query(insertSQL, function(err,res){
+var sqlerr;
+var row;
+var err;
+var res;
+
+
+var query = connection.query(selectSQL1);
+query
+  .on('error', function(sqlerr) {
+    // Handle error, an 'end' event will be emitted after this as well
+    console.log('on err');
+    console.log(sqlerr);
+
+  })
+  /*
+  .on('fields', function(fields) {
+    // the field packets for the rows to follow
+    console.log('fields');
+    console.log(fields);
+  })
+*/
+  .on('rows', function(rows) {
+    // the field packets for the rows to follow
+    console.log('rows');
+    console.log(rows);
+  })
+  .on('result', function(row) {
+    // Pausing the connnection is useful if your processing involves I/O
+    connection.pause();
+    console.log(row);
+    connection.resume();
+  
+    
+
+  })
+  .on('end', function() {
+    var err = sqlerr;
+    var res = row;
+    // all rows have been received
+  });
+   callback(sqlerr, res);
+/*
+      connection.query(selectSQL1, function(err,res){
                 if(!err){
-                          console.log(res);
+                          util.log('error',res);
+                          console.log('error',res);
                         }
                         callback(err, res);
                   }
         );
-
+*/
     },
     function (callback){
-      console.log('2-3' + selectSQL);
-
       //connection.query(selectSQL, callback);  //没有正确callback，返回的是object对象
-      connection.query(selectSQL, function(err,res){
+      connection.query(selectSQL2, function(err,res){
                 if(!err){
-                          console.log(res);
+                          util.log('debug',res);
                         }
                         callback(err, res);
                   }
@@ -98,50 +95,50 @@ async.series([
 
   ],function(err,res){
 
-    if(err == null){
-      global.queryDBStatus = 'ok';
-      console.log('async.eachSeries end;');
+    if(err == null||err == '' ){
+      //global.queryDBStatus = 'ok';
+      util.log('debug','async.eachSeries end;');
+      results = res;
 
-      response.writeHead(200, {"Content-Type": "text/html"});
-      response.write(JSON.stringify(res));      
-      response.end();
     }
     else
     {
 
-      global.queryDBStatus = 'err';
-      console.log("async.eachSeries err  = "+ err);
-      console.log('async.eachSeries end');
+      //global.queryDBStatus = 'err';
+      util.log('error',"AsyncCheckDBstatus err  = "+ err);
+      util.log('debug','async.eachSeries end');
+      results = err;
 
-      response.writeHead(500, {"Content-Type": "text/plain"});
-      response.write(JSON.stringify(err));   //JSON.parse(str)  反向 JSON.stringify(err) 
-      response.end();
-
-      
-      
+     
     }
-    console.log('response complete;');
+    util.log('info','response complete;');
 
+    if(util.jsonexist(results,'/errno') != true){
+        util.jsonadd(results,'/errno','200');
+    }
+    callback(null,results);
 
-    
-  }
+  });
 
   
 
 
-  );
-  console.log('global.queryDBStatus = ' + global.queryDBStatus);
-  //return global.queryDBStatus;
-  //emitter.emit('dbstatusdone');
-
-
 }
 
-function ReturnResult(){  
+
+function CallProcedure(n,callback){  
+
+callback(null,n);
+}
+
+function CallFunction(){  
 
 return res="resr";
 }
 
 
+
+
 exports.AsyncCheckDBstatus = AsyncCheckDBstatus;
-exports.ReturnResult = ReturnResult;
+exports.CallProcedure = CallProcedure;
+exports.CallFunction = CallFunction;

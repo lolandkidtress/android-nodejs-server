@@ -3,7 +3,6 @@ var server = require("./server");
 //var router = require("./route");
 var requestHandlers = require("./requestHandlers");
 var util = require('./util/util.js');
-var log4js = require('log4js');
 
 var numCPUs = require('os').cpus().length;
 
@@ -25,7 +24,8 @@ if (cluster.isMaster) {
 */
 　　// Fork workers.
 　　for (var i = 0; i < numCPUs; i++) {
-		cluster.fork();
+		
+			cluster.fork();
 		//console.log(cluster.workers.length);
 　　}
 
@@ -42,6 +42,7 @@ if (cluster.isMaster) {
 
 	});
 	cluster.on('fork', function(worker) {
+		
 	  	util.log('info', 'New Worker forked ' + worker.id + '@' + worker.process.pid);
 	  });
 	cluster.on('err',function(worker) {
@@ -61,7 +62,7 @@ else if(cluster.isWorker){
     });
 */
 //util.log('info', 'I am worker #'+ cluster.worker.id + "@" + cluster.worker.process.pid);
-
+util.wait(1000);
 server.dohandle();
 
 
