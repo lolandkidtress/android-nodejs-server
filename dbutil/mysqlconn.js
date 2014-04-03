@@ -137,8 +137,26 @@ return res="resr";
 }
 
 
+function poolConnection(callback){
+   var pool  = mysql.createPool(config.getDBConfig());
 
+   callback(pool);
+}
+
+function getConnection(pool,callback){
+  
+    var conn ;
+
+   pool.getConnection(function(err, connection) {
+        console.log('sdsf');
+        console.log(connection);
+    });
+
+   callback(connection);
+}
 
 exports.AsyncCheckDBstatus = AsyncCheckDBstatus;
 exports.CallProcedure = CallProcedure;
 exports.CallFunction = CallFunction;
+exports.poolConnection = poolConnection;
+exports.getConnection = getConnection;

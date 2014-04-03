@@ -10,50 +10,40 @@ var util = require('./util/util.js');
 var Wind =require('wind');
 var events = require('events');
 var async = require('async');
+var login = require('./bussi/login.js');
 
-var callback = function(){};
-/*
-var taskQueryDBStatus = eval(Wind.compile("async", function (text) {
-     $await(mysql.AsyncCheckDBstatus());
-}));
-*/
+function feedback(questquery,response, request){
+          response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
+          response.write(JSON.stringify(questquery));
+          response.end();
+          util.log('info','end of response');
+}
 
 
 function none(response, request){
   other(response,request);
 }
 
-
+function errhandle(questquery,response, request){
+  feedback(questquery,response,request);
+}
 
 //返回DB服务器是否正常
-function other(response, request,flg){
+function other(questquery,response, request){
   
-
-
 async.waterfall([
     function(cb) {
       mysql.AsyncCheckDBstatus(response,cb); 
-      //mysql.AsyncCheckDBstatus(response,callback); 
     },
     
-    function(n,cb) {
-      mysql.CallProcedure(n,cb); 
-      //mysql.AsyncCheckDBstatus(response,callback); 
-    },
     /*
     function(n,cb) {
-      //mysql.CallProcedure(3,cb); 
       mysql.CallProcedure(n,cb); 
     },
     */
-
 ], function(err, results) {
-    console.log('1.1 err: ', err); // -> undefined
-    console.log('1.1 results: ', results); 
-    //console.log('1.1 results: ', results); 
-    response.writeHead(500, {"Content-Type": "text/plain"});
-    response.write(JSON.stringify(results));   //JSON.parse(str)  反向 JSON.stringify(err) 
-    response.end();
+  
+    feedback(results,response,request);
 
 });
 }
@@ -90,6 +80,30 @@ function download(response, callback){
   
 }
 
+function dologin(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      login.login(questquery,response,cb); 
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(err, results) {
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(err,response,request);
+    }
+    
+
+});
+}
+
 
 
 exports.other = other;
@@ -101,4 +115,6 @@ exports.selectsql = selectsql;
 exports.insertsql = insertsql;
 exports.updatesql = updatesql;
 exports.deletesql = deletesql;
+exports.dologin = dologin;
+exports.errhandle = errhandle;
 

@@ -65,7 +65,7 @@ function dohandle(){
             return buffer.toString('utf8');
             });
 
-            util.log('info','bussiness query is ' );
+            util.log('info','buss query is ' );
             questquery = JSON.parse(questquery);
             util.log('info',questquery);
             
@@ -75,22 +75,32 @@ function dohandle(){
          {
           util.log('info','decrypt error'); 
           err = {
-            'err': '404 not found'
+            'errno': '401.4',
+            'errmsg': 'decrypt error'
             };
-        response.writeHead(404, {"Content-Type": "text/html"});
-        response.write(JSON.stringify(err));
-        response.end();
-        util.log('info','end of response');
+         /*
+          response.writeHead(401.4, {"Content-Type": "text/html"});
+          response.write(JSON.stringify(err));
+          response.end();
+          util.log('info','end of response');
+          */
+         router.route('/errhandle',err, response, request);
+         
          }
         }else {  //业务数据是空
           util.log('info','query is null'); 
           err = {
-            'err': '404 not found'
+            'errno': '404',
+            'errmsg': 'Page not found'
             };
-            response.writeHead(404, {"Content-Type": "text/html"});
-            response.write(JSON.stringify(err));
-            response.end();
+         /*
+          response.writeHead(401.4, {"Content-Type": "text/html"});
+          response.write(JSON.stringify(err));
+          response.end();
           util.log('info','end of response');
+          */
+         router.route('errhandle',err, response, request);
+         
         }
        
          

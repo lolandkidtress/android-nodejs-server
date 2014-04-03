@@ -8,7 +8,7 @@
 <script type="text/javascript">
  
 function encrypted(formObj){
-	var StringS = '{"err": "404 not found设定"}';
+	var StringS = '{"credential": "{PKCS5S2}a/xgw+i0XsVcPOUdygS+ooZdCDjGiji7PBKzb6mUd2sfVQG0Kq0uJ+i430Fn1kkJ","user_name":"hht_usr"}';
 
 	//alert('encrypted');
     var encrypted = CryptoJS.AES.encrypt(StringS, 'password','salt','vector');
@@ -18,14 +18,9 @@ function encrypted(formObj){
 
   
     var formObj = document.getElementById("form");
-  	formObj.action =  'http://127.0.0.1:8000/other?'+ encrypted;
+  	formObj.action =  'http://127.0.0.1:8000/login?'+ encrypted;
     formObj.submit();
-    //document.getElementById("form").action = 'http://127.0.0.1:8000/select?{"err":"404%20not%20found"}';
-    //document.getElementById("form").submit();
 
-    //var decrypted = CryptoJS.AES.decrypt(encrypted, "Secret Passphrase", { format: JsonFormatter });
-
-    //alert(decrypted.toString(CryptoJS.enc.Utf8)); // Message
 }
 </script>
 <body>
