@@ -13,6 +13,9 @@ var async = require('async');
 var login = require('./bussi/login.js');
 
 function feedback(questquery,response, request){
+          util.log('error','feedback get');
+          util.log('error',questquery);
+
           response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
           response.write(JSON.stringify(questquery));
           response.end();
@@ -92,12 +95,13 @@ async.waterfall([
       mysql.CallProcedure(n,cb); 
     },
     */
-], function(err, results) {
+], function(results) {
+
     if(!results){
       feedback(results,response,request);
     }else
     {
-      feedback(err,response,request);
+      feedback(results,response,request);
     }
     
 

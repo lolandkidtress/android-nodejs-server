@@ -10,7 +10,7 @@ var connection = null;
 var query = null;
 
 var status="";
-
+var _pool;
 
 function AsyncCheckDBstatus(response,callback){  // 顺序执行select
 //function AsyncCheckDBstatus(){  
@@ -138,9 +138,16 @@ return res="resr";
 
 
 function poolConnection(callback){
-   var pool  = mysql.createPool(config.getDBConfig());
 
-   callback(pool);
+   if(_pool==''||_pool == null){
+      util.log('error','create ConnectionPool');
+      _pool = mysql.createPool(config.getDBConfig());
+           //return callback(pool);
+      return _pool;
+   }else{
+      util.log('error','reuse ConnectionPool');
+      return _pool;
+   }
 }
 
 function getConnection(pool,callback){
