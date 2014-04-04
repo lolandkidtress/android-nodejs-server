@@ -5,6 +5,7 @@
 	<title></title>
 </head>
 <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/aes.js"></script>
+<script src="D:/项目/github/android-nodejs-server/socket.io/socket.io.js"></script>
 <script type="text/javascript">
  
 function encrypted(formObj){
@@ -14,8 +15,6 @@ function encrypted(formObj){
     var encrypted = CryptoJS.AES.encrypt(StringS, 'password','salt','vector');
     //alert(encrypted.toString());
     //document.formName.action = 'http://127.0.0.1:8000/select?{"err":"404%20not%20found"}';
-
-
   
     var formObj = document.getElementById("form");
   	formObj.action =  'http://127.0.0.1:8000/login?'+ encrypted;

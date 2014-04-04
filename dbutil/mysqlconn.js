@@ -140,12 +140,12 @@ return res="resr";
 function poolConnection(callback){
 
    if(_pool==''||_pool == null){
-      util.log('error','create ConnectionPool');
+      util.log('debug','create ConnectionPool');
       _pool = mysql.createPool(config.getDBConfig());
            //return callback(pool);
       return _pool;
    }else{
-      util.log('error','reuse ConnectionPool');
+      util.log('debug','reuse ConnectionPool');
       return _pool;
    }
 }
