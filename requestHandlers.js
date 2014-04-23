@@ -16,7 +16,8 @@ function feedback(questquery,response, request){
           util.log('debug','feedback get');
           util.log('debug',questquery);
 
-          response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
+          //response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
+          response.writeHead(200, {"Content-Type": "text/html"});
           response.write(JSON.stringify(questquery));
           response.end();
           util.log('info','end of response');
