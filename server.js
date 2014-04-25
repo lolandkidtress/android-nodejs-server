@@ -47,6 +47,7 @@ function dohandle(){
 
 
         if(questquery!=null){
+            
             questquery = crypt.decrypt(questquery).toString(); //解密,失败返回''
             //var questquery = JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));   // 替换双引号,转换成json对象
         

@@ -40,11 +40,25 @@ function desdecrypt(encryptedString){
 
 }
 
+function decrypt(encryptedString){
+
+	var decrypted = desdecrypt(encryptedString, "password");
+
+	return decrypted.toString(encutf8);
+
+}
+function encrypt(encryptedString){
+
+	var encrypted = desencrypt(encryptedString, "password");
+	return encrypted.toString();
+
+}
+
 /*
 var ASECrypt = config.getASECrypt();
 var encrypted = AES.encrypt("Message", ASECrypt['SecretPassphrase'],ASECrypt['Salt'],ASECrypt['iv']);
 var decrypted = AES.decrypt(encrypted, ASECrypt['SecretPassphrase'],ASECrypt['Salt'],ASECrypt['iv']);
 */
 
-exports.desencrypt = desencrypt;
-exports.desdecrypt = desdecrypt;
+exports.encrypt = encrypt;
+exports.decrypt = decrypt;
