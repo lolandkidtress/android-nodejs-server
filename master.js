@@ -3,6 +3,7 @@ var server = require("./server");
 //var router = require("./route");
 var requestHandlers = require("./requestHandlers");
 var util = require('./util/util.js');
+var config = require("./config/config.js");
 
 var numCPUs = require('os').cpus().length;
 
@@ -22,6 +23,8 @@ if (cluster.isMaster) {
         ]
     });
 */
+	 util.log('debug','全局TraceLevel: ' + config.getTraceLevel());
+     util.log('debug','数据库连接信息: ' + JSON.stringify(config.getDBConfig()));
 　　// Fork workers.
 　　for (var i = 0; i < numCPUs; i++) {
 		
