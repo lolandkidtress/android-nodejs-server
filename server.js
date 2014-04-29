@@ -16,10 +16,7 @@ var questquery=""; //业务数据，需解密
 
 //function dohandle(route, handle){ 
 function dohandle(){ 
-    server = http.createServer(function (request, response) { 
-
-        util.log('debug','全局TraceLevel: ' + config.getTraceLevel());
-        util.log('debug','数据库连接信息: ' + JSON.stringify(config.getDBConfig()));
+    server = http.createServer(function (request, response) {
 
         if(request.url != '/favicon.ico'){
 
@@ -42,34 +39,26 @@ function dohandle(){
         return buffer.toString('utf8');
         });
 
-        questquery =url.parse(request.url).query; //业务数据，需解密
-        
+        action = pathname ; 
+        util.log('debug', "action " + action + " received " );
+
+        var query =url.parse(request.url).query; //业务数据，需解密
+        util.log('debug', "query " + query + " received " );
 
 
-        if(questquery!=null){
+        if(query!=null){
             
-            questquery = crypt.decrypt(questquery).toString(); //解密,失败返回''
-            //var questquery = JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));   // 替换双引号,转换成json对象
-        
-            action = pathname ; 
-            util.log('debug', "action " + action + " received " );
-            util.log('debug',"decrypt result is " + questquery);
-        //action和业务数据分开 
+            //questquery = crypt.decrypt(query); //解密,失败返回'' 
+
+            //var questquery = JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));   // 替换双引号和空格,转换成json对象
+            util.log('debug',"decrypt result is " + query.replace(/%20/g,' ').replace(/%22/g,'"'));
+            var questquery = JSON.parse(query.replace(/%20/g,' ').replace(/%22/g,'"'));
+          
+            
          if(questquery!=''&& questquery!=null){
-
-            questquery=questquery.replace(re,function(word){
-            var buffer=new Buffer(3),
-            array=word.split('%');
-            array.splice(0,1);
-            array.forEach(function(val,index){
-            buffer[index]=parseInt('0x'+val,16);
-            });
-            return buffer.toString('utf8');
-            });
-
+            
             util.log('info','buss query is ' );
-            questquery = JSON.parse(questquery);
-            util.log('info',questquery);
+            util.log('info',JSON.stringify(questquery));
             
             router.route(pathname,questquery, response, request);//根据action的值去调用不同的业务
          }
