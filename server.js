@@ -8,8 +8,8 @@ var router = require("./route");
 var crypt = require("./crypto/crypto.js")
 
 var action="";   //action数据
-var questquery=""; //业务数据，需解密
-
+var questquery=""; //业务数据，解密后
+var bussiquery="";
 
 //global.tracelevel = config.getTraceLevel();
 //global.db_config = config.getDBConfig();
@@ -48,19 +48,20 @@ function dohandle(){
 
         if(query!=null){
             
-            //questquery = crypt.decrypt(query); //解密,失败返回'' 
+            questquery = crypt.decrypt(query); //解密,失败返回'' 
 
             //var questquery = JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));   // 替换双引号和空格,转换成json对象
-            util.log('debug',"decrypt result is " + query.replace(/%20/g,' ').replace(/%22/g,'"'));
-            var questquery = JSON.parse(query.replace(/%20/g,' ').replace(/%22/g,'"'));
-          
+            //util.log('debug',"decrypt result is " + query.replace(/%20/g,' ').replace(/%22/g,'"'));
+            util.log('debug',"decrypt result is " + questquery.replace(/%20/g,' ').replace(/%22/g,'"'));
+            //var questquery = JSON.parse(query.replace(/%20/g,' ').replace(/%22/g,'"'));
+            bussiquery=JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));
             
-         if(questquery!=''&& questquery!=null){
+         if(bussiquery!=''&& bussiquery!=null){
             
             util.log('info','buss query is ' );
-            util.log('info',JSON.stringify(questquery));
+            util.log('info',JSON.stringify(bussiquery));
             
-            router.route(pathname,questquery, response, request);//根据action的值去调用不同的业务
+            router.route(pathname,bussiquery, response, request);//根据action的值去调用不同的业务
          }
          else
          {
