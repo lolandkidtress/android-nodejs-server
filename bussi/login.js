@@ -21,6 +21,7 @@ var Wind = require('wind')
 var config = require('../config/config.js')
 
 
+//使用直接连接方法 不使用
 function login2(questquery,response,callback){ 
   var i = 0;
   var results ={
@@ -33,9 +34,9 @@ function login2(questquery,response,callback){
   connection = mysql.createConnection(config.getDBConfig());
 
 
-var selectSQL1 = 'select user_name,credential from cwd_user where user_name = ';
+var selectSQL1 = 'select uuid_,password_,emailAddress from lportal.user_ where emailAddress = ';
 selectSQL1 = selectSQL1 + connection.escape(util.jsonget(questquery,'/user_name'));
-selectSQL1 = selectSQL1 + ' and credential = ' + connection.escape(util.jsonget(questquery,'/credential'));
+selectSQL1 = selectSQL1 + ' and password_ = ' + connection.escape(util.jsonget(questquery,'/credential'));
 
 //util.jsonadd(parameter,'/user_name',util.jsonget(questquery,'/user_name'));
 //util.jsonadd(parameter,'/credential',util.jsonget(questquery,'/credential'));
@@ -81,21 +82,7 @@ query
       callback(sqlerr, results);
  });
     }
-    //,
-    /*
-    function (callback){
-      connection.query(selectSQL2, function(sqlerr,results2){
-                if(!sqlerr){
-                          util.log('debug',results2);
-                        }
-                        results = sqlerr;
-                        util.jsonadd(results,'/sqlstmt',selectSQL2);
-                        callback(sqlerr, results2);
-                  }
-        );
 
-    }
-  */
   ],function(sqlerr,results){
 
     if(sqlerr == null||sqlerr == '' ){
@@ -115,7 +102,7 @@ query
   });
 }
 
-
+//使用连接池方式
 
 function login(questquery,response,callback){ 
   var i = 0;
@@ -150,9 +137,10 @@ function login(questquery,response,callback){
 
         }else
         {
-            selectSQL1 = 'select user_name,credential from cwd_user where user_name = ';
-              selectSQL1 = selectSQL1 + Connection.escape(util.jsonget(questquery,'/user_name'));
-              selectSQL1 = selectSQL1 + ' and credential = ' + Connection.escape(util.jsonget(questquery,'/credential'));
+        selectSQL1 = 'select userID,uuid_,password_,emailAddress from lportal.user_ where emailAddress = ';
+        selectSQL1 = selectSQL1 + Connection.escape(util.jsonget(questquery,'/user_name'));
+        selectSQL1 = selectSQL1 + ' and password_ = ' + Connection.escape(util.jsonget(questquery,'/credential'));
+
               util.log('debug',selectSQL1);
 
 
@@ -167,8 +155,8 @@ function login(questquery,response,callback){
               .on('result', function(rows) {
                 // Pausing the connnection is useful if your processing involves I/O
                 //connection.pause();
-                util.jsonadd(results,'/queryresult'+i+'/username',rows.user_name);
-                util.jsonadd(results,'/queryresult'+i+'/credential',rows.credential);
+                util.jsonadd(results,'/queryresult'+i+'/username',rows.userID);
+                util.jsonadd(results,'/queryresult'+i+'/uuid',rows.uuid_);
                 i=i+1;
               })
               .on('end', function(rows) {
