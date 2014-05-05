@@ -16,10 +16,11 @@ function aesencrypt(encryptedString){
 function aesdecrypt(encryptedString){
 
 	var ASECrypt = config.getASECrypt();
+
 	var decrypted = AES.decrypt(encryptedString, ASECrypt['SecretPassphrase'],ASECrypt['Salt'],ASECrypt['iv']);
-
-	return decrypted.toString(encutf8);
-
+     
+	//return decrypted.toString(encutf8);
+	return decrypted;
 }
 //tripledes 加密
 function desencrypt(encryptedString){
@@ -33,7 +34,7 @@ function desencrypt(encryptedString){
 function desdecrypt(encryptedString){
 
 	var ASECrypt = config.getASECrypt();
-	console.log(encryptedString);
+	
 	var decrypted = des.decrypt(encryptedString, "password");
 
 	return decrypted.toString(encutf8);
@@ -42,14 +43,15 @@ function desdecrypt(encryptedString){
 
 function decrypt(encryptedString){
 
-	var decrypted = desdecrypt(encryptedString, "password");
+	console.log("before is "+encryptedString)
+	var decrypted = aesdecrypt(encryptedString);
 
 	return decrypted.toString(encutf8);
 
 }
 function encrypt(encryptedString){
 
-	var encrypted = desencrypt(encryptedString, "password");
+	var encrypted = aesencrypt(encryptedString);
 	return encrypted.toString();
 
 }
