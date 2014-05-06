@@ -48,13 +48,13 @@ function dohandle(){
 
         if(query!=null){
             
-            questquery = crypt.decrypt(query); //解密,失败返回'' 
-
+            //questquery = crypt.decrypt(query); //解密,失败返回'' 
+            questquery = query; 
             //var questquery = JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));   // 替换双引号和空格,转换成json对象
             //util.log('debug',"decrypt result is " + query.replace(/%20/g,' ').replace(/%22/g,'"'));
-            util.log('debug',"decrypt result is " + questquery.replace(/%20/g,' ').replace(/%22/g,'"'));
+            util.log('debug',"decrypt result is " + questquery.replace(/%20/g,' ').replace(/%22/g,'"').replace(/%2f/g,'\\'));
             //var questquery = JSON.parse(query.replace(/%20/g,' ').replace(/%22/g,'"'));
-            bussiquery=JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));
+            bussiquery=JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"').replace(/%2f/g,'\\'));
             
          if(bussiquery!=''&& bussiquery!=null){
             
