@@ -11,6 +11,7 @@ var Wind =require('wind');
 var events = require('events');
 var async = require('async');
 var login = require('./bussi/login.js');
+var notice = require('./bussi/notice.js');
 
 function feedback(questquery,response, request){
           util.log('debug','feedback get');
@@ -96,6 +97,82 @@ async.waterfall([
       mysql.CallProcedure(n,cb); 
     },
     */
+	], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+	});
+}
+
+
+function getWHSetting(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      login.getWHSetting(questquery,response,cb); 
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
+function getWHEmptyDate(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      notice.getWHEmptyDate(questquery,response,cb); 
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
+function getCalendar(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      login.getCalendar(questquery,response,cb); 
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
 ], function(results) {
 
     if(!results){
@@ -122,4 +199,6 @@ exports.updatesql = updatesql;
 exports.deletesql = deletesql;
 exports.dologin = dologin;
 exports.errhandle = errhandle;
-
+exports.getWHSetting = getWHSetting;
+exports.getWHEmptyDate = getWHEmptyDate;
+exports.getCalendar = getCalendar;

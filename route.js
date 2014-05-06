@@ -13,6 +13,9 @@ function route(pathname,questquery,response, request) {
   handle["/login"] = requestHandlers.dologin;
   handle["/connect"] = requestHandlers.connect;
   handle["/errhandle"] = requestHandlers.errhandle;
+  handle["/getWHSetting"] = requestHandlers.getWHSetting
+  handle["/getWHEmptyDate"] = requestHandlers.getWHEmptyDate
+  handle["/getCalendar"] = requestHandlers.getCalendar
   //handle["/update"] = requestHandlers.update;
   //handle["/select"] = requestHandlers.select;
   //handle["/asyncselect"] = requestHandlers.asyncselect;
