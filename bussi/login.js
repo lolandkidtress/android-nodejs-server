@@ -218,6 +218,7 @@ function login(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
+                util.log('log','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
               })
               .on('result', function(rows) {
@@ -312,15 +313,12 @@ function getWHSetting(questquery,response,callback){
         selectSQL1 += ' a.AMFrom,a.AMTo,a.MiddleFrom,a.MiddleTo,a.PMFrom,a.PMTo, a.AlarmWH,';
         selectSQL1 += ' a.FromDt,a.ToDt,a.OvertimeDuration,a.OvertimeStartTime,a.OvertimeWHUnit,a.OvertimeStartWH, ';
         selectSQL1 += ' b.EmployeeID,b.DtFrom,b.DtTo FROM mstwhsetting a,rtnemwh b ';
-        selectSQL1 += ' WHERE a.WHSettingID = b.WHSettingID AND a.FlgEnable = 1 and a.DelFlg != 0 ';
-        selectSQL1 += ' and a.FromDt between b.DtFrom and b.DtTo ';
-        selectSQL1 += ' and a.ToDt between b.DtFrom and b.DtTo ';
+        selectSQL1 += ' WHERE a.WHSettingID = b.WHSettingID AND a.FlgEnable = 1 and a.DelFlg = 0 ';
+        //selectSQL1 += ' and a.FromDt between b.DtFrom and b.DtTo ';
+        //selectSQL1 += ' and a.ToDt between b.DtFrom and b.DtTo ';
         selectSQL1 += ' and b.EmployeeID = '+ Connection.escape(util.jsonget(questquery,'/userid')) + ' and '
-        selectSQL1 += ' ( ';
-        selectSQL1 += ' ('+Connection.escape(util.jsonget(questquery,'/startdt')) +' between a.FromDt and a.ToDt ';  
-        selectSQL1 += ' or ' + Connection.escape(util.jsonget(questquery,'/enddt')) + ' between a.FromDt and a.ToDt) ';
-        selectSQL1 += ' or (a.FromDt > ' + Connection.escape(util.jsonget(questquery,'/startdt')) ;
-        selectSQL1 += ' and a.ToDt < '+ Connection.escape(util.jsonget(questquery,'/enddt')) + ' ) ) ' ;
+        selectSQL1 += ' ('+Connection.escape(util.jsonget(questquery,'/startdt')) +' between b.DtFrom and b.DtTo ';  
+        selectSQL1 += ' and ' + Connection.escape(util.jsonget(questquery,'/enddt')) + ' between b.DtFrom and b.DtTo) ';
         selectSQL1 += ' order by a.FromDt,a.ToDt ';
 
         util.log('debug',selectSQL1);
@@ -329,7 +327,9 @@ function getWHSetting(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
+                util.log('log','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
+                
               })
               .on('result', function(rows) {
                 // Pausing the connnection is useful if your processing involves I/O
@@ -351,23 +351,26 @@ function getWHSetting(questquery,response,callback){
                 i=i+1;
               })
               .on('end', function(rows) {
+                
                   if(i>0){
 
-
-                      util.jsonadd(results,'/errno','200');
-                      util.jsonadd(results,'/errmsg','setting get Succ');
-                      util.jsonadd(results,'/module','getWHSetting');
                       util.jsonadd(results,'/rowcount',i);
+                      util.jsonadd(results,'/errmsg','setting get Succ');
+                      util.jsonadd(results,'/errno','200');
+                      util.jsonadd(results,'/module','getWHSetting');
                    }
                    else
                    {
-                      util.jsonadd(results,'/errno','400');
-                      util.jsonadd(results,'/errmsg','setting get Error');
+
+                      util.jsonadd(results,'/rowcount',0);
+                      util.jsonadd(results,'/errmsg','setting get Empty');
+                      util.jsonadd(results,'/errno','200');
                       util.jsonadd(results,'/module','getWHSetting');
-                      util.jsonadd(results,'/rowcount',i);
-                   }   
+
+                   }  
+                  
                   Connection.release();
-                  callback(null,results);  
+                  callback('',results);  
               });
         }
         
@@ -377,12 +380,9 @@ function getWHSetting(questquery,response,callback){
         ],function(sqlerr,results){
 
           if(sqlerr == null||sqlerr == '' ){
-
-           if(util.jsonexist(results,'/errno') != true){
-              util.jsonadd(results,'/errno','200');
-            }
+           
             util.log('log','getWHSetting returns');
-            util.log('log',results);
+            util.log('log',JSON.stringify(results));
             callback(results);
           }
           else
@@ -391,9 +391,20 @@ function getWHSetting(questquery,response,callback){
             util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
             util.log('log','getWHSetting returns');
-            util.log('log',results);
+            util.jsonadd(results,'/errno','400');
+            util.jsonadd(results,'/errmsg','setting get Error');
+            util.jsonadd(results,'/module','getWHSetting');
+
+
+            util.log('log','getWHSetting returns');
+            util.log('log',JSON.stringify(results));
             callback(results);
           }
+
+
+            
+
+            
       }); //async.series end
 
 }
@@ -447,6 +458,7 @@ function getCalendar(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
+                util.log('log','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
               })
               .on('result', function(rows) {
