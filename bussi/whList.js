@@ -249,7 +249,7 @@ function getTotalOVTime(questquery,response,callback){
         {
           //出勤申请 行列转换 方便后续计算是否满出勤
         selectSQL1 = ' select EmployeeID, ';
-        selectSQL1 += ' count(wh) TotalOVTime ';
+        selectSQL1 += ' sum(wh) TotalOVTime ';
         selectSQL1 += ' from ';
         selectSQL1 += ' ( ';
         selectSQL1 += ' select ov.EmployeeID,ov.ObjYMD,ov.OVWH as WH, ov.DtAppStatus,ov.FlgHR, ';
@@ -282,7 +282,25 @@ function getTotalOVTime(questquery,response,callback){
                 i=i+1;
               })
               .on('end', function(rows) {
-                
+                  if(i>0){
+
+                       
+                           util.jsonadd(results,'/errno','200');
+                           util.jsonadd(results,'/errmsg','getTotalOVTime complete');
+                           util.jsonadd(results,'/rowcount',i);
+                           util.jsonadd(results,'/module','getTotalOVTime');
+
+                      
+                        
+                      }
+                      else
+                      {
+                        util.jsonadd(results,'/errno','200');
+                           util.jsonadd(results,'/errmsg','getTotalOVTime Empty');
+                           util.jsonadd(results,'/rowcount',0);
+                           util.jsonadd(results,'/module','getTotalOVTime');
+                       
+                      }
                   Connection.release();
                   callback(null,results);  
               });
@@ -293,31 +311,25 @@ function getTotalOVTime(questquery,response,callback){
 
 
         ],function(sqlerr,results){
+           if(sqlerr == null||sqlerr == '' ){
+                util.log('log','getTotalOVTime returns');
+                        util.log('log',JSON.stringify(results));
+                        callback(results);   
+           }
+           else
+           {
 
-          if(i>0){
-
-           if(util.jsonexist(results,'/errno') != true){
-               util.jsonadd(results,'/errno','200');
-               util.jsonadd(results,'/errmsg','getTotalOVTime complete');
-               util.jsonadd(results,'/rowcount',i);
-               util.jsonadd(results,'/module','getTotalOVTime');
+           
+          util.jsonadd(results,'/errno','400');
+                        util.jsonadd(results,'/errmsg','getTotalOVTime error');
+                          // util.jsonadd(results,'/rowcount',i);
+                        util.jsonadd(results,'/module','getTotalOVTime');
+                        util.log('log','getTotalOVTime returns');
+                        util.log('log',JSON.stringify(results));
+                        callback(results);
 
             }
-            util.log('log','getTotalOVTime returns');
-            util.log('log',JSON.stringify(results));
-            callback(results);
-          }
-          else
-          {
-            //global.queryDBStatus = 'err';
-            util.jsonadd(results,'/errno','400');
-            util.jsonadd(results,'/errmsg','getTotalOVTime error');
-              // util.jsonadd(results,'/rowcount',i);
-            util.jsonadd(results,'/module','getTotalOVTime');
-            util.log('log','getTotalOVTime returns');
-            util.log('log',JSON.stringify(results));
-            callback(results);
-          }
+          
       }); //async.series end
 
 }
@@ -356,7 +368,7 @@ function getTotalVCTime(questquery,response,callback){
         {
           //出勤申请 行列转换 方便后续计算是否满出勤
         selectSQL1 = ' select EmployeeID, ';
-        selectSQL1 += ' count(wh) TotalVCTime ';
+        selectSQL1 += ' sum(WH) as TotalVCTime ';
         selectSQL1 += ' from   ';
         selectSQL1 += ' ( ';
         selectSQL1 += ' select vc.EmployeeID,vcd.ObjYMD,vcd.VCTime as WH, vc.DtAppStatus,vcd.FlgHR, ';
@@ -381,16 +393,39 @@ function getTotalVCTime(questquery,response,callback){
                 
               })
               .on('result', function(rows) {
+
+                if(rows != null||rows != '' ){
                 // Pausing the connnection is useful if your processing involves I/O
                 //connection.pause();
                 util.jsonadd(results,'/queryresult'+i+'/EmployeeID',rows.EmployeeID);
                 util.jsonadd(results,'/queryresult'+i+'/TotalVCTime',rows.TotalVCTime);
-                TotalVCTime+=TotalVCTime;
+
                 //util.jsonadd(results,'/queryresult'+i+'/uuid',rows.uuid_);
                 i=i+1;
+               }
               })
               .on('end', function(rows) {
-                
+                  
+                  if(i>0){
+
+                       
+                           util.jsonadd(results,'/errno','200');
+                           util.jsonadd(results,'/errmsg','getTotalVCTime complete');
+                           util.jsonadd(results,'/rowcount',i);
+                           util.jsonadd(results,'/module','getTotalVCTime');
+
+                      
+                        
+                      }
+                      else
+                      {
+                        util.jsonadd(results,'/errno','200');
+                           util.jsonadd(results,'/errmsg','getTotalVCTime Empty');
+                           util.jsonadd(results,'/rowcount',0);
+                           util.jsonadd(results,'/module','getTotalVCTime');
+                       
+                      }
+
                   Connection.release();
                   callback(null,results);  
               });
@@ -404,14 +439,6 @@ function getTotalVCTime(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-           if(util.jsonexist(results,'/errno') != true){
-               util.jsonadd(results,'/errno','200');
-               util.jsonadd(results,'/errmsg','getTotalVCTime complete');
-               util.jsonadd(results,'/TotalVCTime',TotalVCTime);
-               util.jsonadd(results,'/rowcount',i);
-               util.jsonadd(results,'/module','getTotalVCTime');
-
-            }
             util.log('log','getTotalVCTime returns');
             util.log('log',JSON.stringify(results));
             callback(results);
