@@ -100,18 +100,19 @@ function dohandle(){
 
     })   
     //server.listen(8000);
-      socketio = require('socket.io').listen(server);
+      //socketio = require('socket.io').listen(server);
 
       server.listen(config.getServerPort()); 
 
-      socketio.enable('browser client minification');  // send minified client
-      socketio.enable('browser client etag');          // apply etag caching logic based on version number
-      socketio.enable('browser client gzip');          // gzip the file
-      socketio.set('log level', 1);                    // reduce logging
+      //socketio.enable('browser client minification');  // send minified client
+      //socketio.enable('browser client etag');          // apply etag caching logic based on version number
+      //socketio.enable('browser client gzip');          // gzip the file
+      //socketio.set('log level', 1);                    // reduce logging
 
       // enable all transports (optional if you want flashsocket support, please note that some hosting
       // providers do not allow you to create servers that listen on a port different than 80 or their
       // default port)
+      /*
       socketio.set('transports', [
           'websocket'
         , 'flashsocket'
@@ -119,7 +120,7 @@ function dohandle(){
         , 'xhr-polling'
         , 'jsonp-polling'
       ]);
-
+    */
       util.log('info','Server start on ' + config.getServerPort());
 } 
 

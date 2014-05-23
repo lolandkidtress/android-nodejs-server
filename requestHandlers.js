@@ -12,10 +12,12 @@ var events = require('events');
 var async = require('async');
 var login = require('./bussi/login.js');
 var notice = require('./bussi/notice.js');
+var whList = require('./bussi/whList.js');
+var pj = require('./bussi/PJInfo.js');
 
 function feedback(questquery,response, request){
           util.log('debug','feedback get');
-          util.log('debug',questquery);
+          util.log('debug',JSON.stringify(questquery));
 
           //response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
           response.writeHead(200, {"Content-Type": "text/html"});
@@ -51,26 +53,6 @@ async.waterfall([
     feedback(results,response,request);
 
 });
-}
-
-
-function connect(response, request,callback){
-        
-     console.log(JSON.stringify(url.parse(request.url)));
- 
-}
-
-function selectsql(response, request,callback){
-    console.log('1');
-}
-function insertsql(response, request,callback){
-    console.log('1');
-}
-function updatesql(response, request,callback){
-    console.log('1');
-}
-function deletesql(response, request,callback){
-    console.log('1');
 }
 
 function upload(response, callback){
@@ -111,9 +93,9 @@ async.waterfall([
 }
 
 
-function getWHSetting(questquery,response,request,callback){
+function getWHSettingHandle(questquery,response,request,callback){
 
-async.waterfall([
+async.series([
     function(cb) {
       login.getWHSetting(questquery,response,cb); 
     },
@@ -136,7 +118,7 @@ async.waterfall([
 });
 }
 
-function getWHEmptyDate(questquery,response,request,callback){
+function getWHEmptyDateHandle(questquery,response,request,callback){
 
 async.waterfall([
     function(cb) {
@@ -161,7 +143,7 @@ async.waterfall([
 });
 }
 
-function getCalendar(questquery,response,request,callback){
+function getCalendarHandle(questquery,response,request,callback){
 
 async.waterfall([
     function(cb) {
@@ -185,20 +167,188 @@ async.waterfall([
 
 });
 }
+//
+function getWHDetailListHandle(questquery,response,request,callback){
+
+//顺序取得考勤设定规则和每天的工时明细
+
+async.auto({
+    WHSetting: function (callback) {
+            login.getWHSetting(questquery,response,
+            	function(cb){
+            		callback(null,cb);
+            	});
+            
+    },
+    WHDetailList: function (callback) {
+            whList.getWHDetailList(questquery,response,
+            	function(cb){
+            		
+            		callback(null,cb);
+            	});
+    },
+
+    reultsDetailList: ['WHSetting', 'WHDetailList', function(callback) {
+
+            callback();
+    }]
+
+}, function(err, results) {
+	if(err == null||err == '' ){
+		util.log('log','getWHDetailListHandle returns is ' +JSON.stringify(results) );
+
+    console.log(results.WHSetting[0].errno);
+    console.log(results.WHDetailList[0].errno);
+
+					  if(results.WHSetting[0].errno=='200' 
+					  	&& results.WHDetailList[0].errno,"/errno"=='200')
+					  {
+					  		util.jsonadd(results,'/errno','200');
+
+                      		util.jsonadd(results,'/errmsg','getWHDetailListHandle complete');
+                      //util.jsonadd(results,'/rowcount',i);
+                      		util.jsonadd(results,'/module','getWHDetailListHandle');
+					  }
+					  else
+					  	{
+					  		util.jsonadd(results,'/errno','400');
+                      		util.jsonadd(results,'/errmsg','getWHDetailListHandle Data error');
+                      		//util.jsonadd(results,'/rowcount',i);
+                      		util.jsonadd(results,'/module','getWHDetailListHandle');
+					  	}
+
+	}
+	else
+	{
+				      util.jsonadd(results,'/errno','400');
+                      util.jsonadd(results,'/errmsg','getWHDetailListHandle Exception error');
+                      //util.jsonadd(results,'/rowcount',i);
+                      util.jsonadd(results,'/module','getWHDetailListHandle');
+	}
+
+    feedback(results,response,request);
+});
+
+}
 
 
 
-exports.other = other;
-exports.none = none;
-exports.upload = upload;
-exports.download = download;
-exports.connect = connect;
-exports.selectsql = selectsql;
-exports.insertsql = insertsql;
-exports.updatesql = updatesql;
-exports.deletesql = deletesql;
+function getTotalPJTimeHandle(questquery,response,request,callback){
+
+//取得项目时间实绩合计，项目时间预计合计
+
+async.auto({
+	 TotalFctPJTime: function (callback) {
+            pj.getTotalFctPJTime(questquery,response,
+            	function(cb){
+            		callback(null,cb);
+            	});
+            
+    },
+    TotalEstPJTime: function (callback) {
+            pj.getTotalEstPJTime(questquery,response,
+            	function(cb){
+            		callback(null,cb);
+            	});
+            
+    },
+
+    reultsDetailList: ['EstTotalPJTime', 'TotalEstPJTime',  function(callback) {
+
+            callback();
+
+    }]
+
+
+}, function(err, results) {
+	util.log('log','getTotalPJTimeHandle returns is ' +json.stringify(results) );
+	if(err == null||err == '' ){
+					  if(util.jsonget(results,'/EstTotalPJTime/errno')=='400' 
+					  	&& util.jsonget(results,'/TotalPJTime/errno')=='400'
+					  	&& util.jsonget(results,'/EstPJTimeDetail/errno')=='400'
+					  	){
+					  		util.jsonadd(results,'/errno','200');
+                      		util.jsonadd(results,'/errmsg','getTotalPJTimeHandle complete');
+                      //util.jsonadd(results,'/rowcount',i);
+                      		util.jsonadd(results,'/module','getTotalPJTimeHandle');
+					  }
+					  else
+					  	{
+					  		util.jsonadd(results,'/errno','400');
+                      		util.jsonadd(results,'/errmsg','getTotalPJTimeHandle error');
+                      		//util.jsonadd(results,'/rowcount',i);
+                      		util.jsonadd(results,'/module','getTotalPJTimeHandle');
+					  	}
+
+	}
+	else
+	{
+				      util.jsonadd(results,'/errno','400');
+                      util.jsonadd(results,'/errmsg','getTotalPJTime error');
+                      //util.jsonadd(results,'/rowcount',i);
+                      util.jsonadd(results,'/module','getTotalPJTime');
+	}
+
+    feedback(results,response,request);
+});
+}
+
+function getTotalOVTimeHandle(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      whList.getTotalOVTime(questquery,response,cb); 
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
+function getTotalVCTimeHandle(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      whList.getTotalVCTime(questquery,response,cb); 
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
 exports.dologin = dologin;
 exports.errhandle = errhandle;
-exports.getWHSetting = getWHSetting;
-exports.getWHEmptyDate = getWHEmptyDate;
-exports.getCalendar = getCalendar;
+exports.getWHSettingHandle = getWHSettingHandle;
+exports.getWHEmptyDateHandle = getWHEmptyDateHandle;
+exports.getCalendarHandle = getCalendarHandle;
+exports.getWHDetailListHandle = getWHDetailListHandle;
+exports.getTotalOVTimeHandle = getTotalOVTimeHandle;
+exports.getTotalVCTimeHandle = getTotalVCTimeHandle;
+exports.getTotalPJTimeHandle = getTotalPJTimeHandle;
