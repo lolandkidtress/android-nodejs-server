@@ -17,7 +17,7 @@ json 格式为：
   module: 'login',
   queryresult{
   userid:'',
-  user_name:'',
+  username:'',
   credential:''
   }
 }
@@ -26,7 +26,7 @@ json 格式为：
 2.用户校验成功后，取得该用户当月使用的考勤规则
 
 传入参数：
-userid
+employeeID
 startdt
 enddt
 
@@ -208,9 +208,12 @@ function login(questquery,response,callback){
 
         }else
         {
-        selectSQL1 = 'select userID,uuid_,password_,emailAddress from lportal.user_ where emailAddress = ';
-        selectSQL1 = selectSQL1 + Connection.escape(util.jsonget(questquery,'/user_name'));
-        selectSQL1 = selectSQL1 + ' and password_ = ' + Connection.escape(util.jsonget(questquery,'/credential'));
+        selectSQL1 = 'select lp.uuid_,lp.emailAddress,em.LoginName,em.EmployeeID ' ;
+        selectSQL1 = selectSQL1 +' from lportal.user_ lp,ivggs_whs.trnemployee em '
+        selectSQL1 = selectSQL1 + ' where emailAddress = ';
+        selectSQL1 = selectSQL1 + Connection.escape(util.jsonget(questquery,'/username'));
+        selectSQL1 = selectSQL1 + ' and password_ = ' + Connection.escape(util.jsonget(questquery,'/credential')) ;
+        selectSQL1 = selectSQL1 + 'and emailAddress = LoginName';
 
         util.log('debug',selectSQL1);
             var query = Connection.query(selectSQL1);
@@ -224,7 +227,8 @@ function login(questquery,response,callback){
               .on('result', function(rows) {
                 // Pausing the connnection is useful if your processing involves I/O
                 //connection.pause();
-                util.jsonadd(results,'/queryresult/username',rows.userID);
+                util.jsonadd(results,'/queryresult/username',rows.LoginName);
+                util.jsonadd(results,'/queryresult/userid',rows.EmployeeID);
                 util.jsonadd(results,'/queryresult/uuid',rows.uuid_);
                 i=i+1;
               })
