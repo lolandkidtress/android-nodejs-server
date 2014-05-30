@@ -20,7 +20,7 @@ function feedback(questquery,response, request){
           util.log('debug',JSON.stringify(questquery));
 
           //response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
-          response.writeHead(200, {"Content-Type": "text/html"});
+          response.writeHead(200, {"Content-Type": "text/html; charset=utf-8"});
           response.write(JSON.stringify(questquery));
           response.end();
           util.log('info','end of response');
@@ -178,12 +178,10 @@ async.auto({
             	function(cb){
             		callback(null,cb);
             	});
-            
     },
     WHDetailList: function (callback) {
             whList.getWHDetailList(questquery,response,
             	function(cb){
-            		
             		callback(null,cb);
             	});
     },
@@ -243,17 +241,15 @@ async.auto({
             	function(cb){
             		callback(null,cb);
             	});
-            
     },
     TotalEstPJTime: function (callback) {
             pj.getTotalEstPJTime(questquery,response,
             	function(cb){
             		callback(null,cb);
             	});
-            
     },
 
-    reultsDetailList: ['EstTotalPJTime', 'TotalEstPJTime',  function(callback) {
+    reultsDetailList: ['TotalFctPJTime', 'TotalEstPJTime',  function(callback) {
 
             callback();
 
@@ -261,33 +257,37 @@ async.auto({
 
 
 }, function(err, results) {
-	util.log('log','getTotalPJTimeHandle returns is ' +json.stringify(results) );
 	if(err == null||err == '' ){
-					  if(util.jsonget(results,'/EstTotalPJTime/errno')=='400' 
-					  	&& util.jsonget(results,'/TotalPJTime/errno')=='400'
-					  	&& util.jsonget(results,'/EstPJTimeDetail/errno')=='400'
-					  	){
-					  		util.jsonadd(results,'/errno','200');
-                      		util.jsonadd(results,'/errmsg','getTotalPJTimeHandle complete');
-                      //util.jsonadd(results,'/rowcount',i);
-                      		util.jsonadd(results,'/module','getTotalPJTimeHandle');
-					  }
-					  else
-					  	{
-					  		util.jsonadd(results,'/errno','400');
-                      		util.jsonadd(results,'/errmsg','getTotalPJTimeHandle error');
-                      		//util.jsonadd(results,'/rowcount',i);
-                      		util.jsonadd(results,'/module','getTotalPJTimeHandle');
-					  	}
+    util.log('log','getTotalPJTimeHandle returns is ' +JSON.stringify(results) );
 
-	}
-	else
-	{
-				      util.jsonadd(results,'/errno','400');
-                      util.jsonadd(results,'/errmsg','getTotalPJTime error');
+    console.log(results.TotalFctPJTime[0].errno);
+    console.log(results.TotalEstPJTime[0].errno);
+
+            if(results.TotalFctPJTime[0].errno=='200' 
+              && results.TotalEstPJTime[0].errno,"/errno"=='200')
+            {
+                util.jsonadd(results,'/errno','200');
+
+                          util.jsonadd(results,'/errmsg','getTotalPJTimeHandle complete');
                       //util.jsonadd(results,'/rowcount',i);
-                      util.jsonadd(results,'/module','getTotalPJTime');
-	}
+                          util.jsonadd(results,'/module','getTotalPJTimeHandle');
+            }
+            else
+              {
+                util.jsonadd(results,'/errno','400');
+                          util.jsonadd(results,'/errmsg','getTotalPJTimeHandle Data error');
+                          //util.jsonadd(results,'/rowcount',i);
+                          util.jsonadd(results,'/module','getTotalPJTimeHandle');
+              }
+
+  }
+  else
+  {
+              util.jsonadd(results,'/errno','400');
+                      util.jsonadd(results,'/errmsg','getTotalPJTimeHandle Exception error');
+                      //util.jsonadd(results,'/rowcount',i);
+                      util.jsonadd(results,'/module','getTotalPJTimeHandle');
+  }
 
     feedback(results,response,request);
 });
@@ -297,12 +297,11 @@ function getTotalOVTimeHandle(questquery,response,request,callback){
 
 async.waterfall([
     function(cb) {
-      whList.getTotalOVTime(questquery,response,cb); 
+      whList.getTotalOVTime(questquery,response,cb);
     },
-    
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {

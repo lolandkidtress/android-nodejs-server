@@ -4,10 +4,10 @@ var request = "";  //业务数据 json对象
 var tracelever ="debug"; //全局的日志级别
 
 var db_config = {
-  host: '192.168.20.83',
-  user: 'root',
-  password: 'root',
-  database: 'jira'
+  host: '192.168.175.129',
+  user: 'whs',
+  password: 'whs',
+  database: 'ivggs_whs'
 };
 
 var ASECrypt = {

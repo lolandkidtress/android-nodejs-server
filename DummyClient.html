@@ -1,22 +1,70 @@
 <!DOCTYPE html>
 <html>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <head>
 	<title></title>
 </head>
+
 <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/tripledes.js"></script>
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/aes.js"></script>
 <script src="D:/项目/github/android-nodejs-server/socket.io/socket.io.js"></script>
 <script type="text/javascript">
- 
-function encrypted(formObj){
-	var StringS = '{"credential": "{PKCS5S2}a/xgw+i0XsVcPOUdygS+ooZdCDjGiji7PBKzb6mUd2sfVQG0Kq0uJ+i430Fn1kkJ","user_name":"hht_usr"}';
 
+var JsonFormatter = {
+        stringify: function (cipherParams) {
+            // create json object with ciphertext
+            var jsonObj = {
+                ct: cipherParams.ciphertext.toString(CryptoJS.enc.Base64)
+            };
+
+            // optionally add iv and salt
+            if (cipherParams.iv) {
+                jsonObj.iv = cipherParams.iv.toString();
+            }
+            if (cipherParams.salt) {
+                jsonObj.s = cipherParams.salt.toString();
+            }
+
+            // stringify json object
+            return JSON.stringify(jsonObj);
+        },
+
+        parse: function (jsonStr) {
+            // parse json string
+            var jsonObj = JSON.parse(jsonStr);
+
+            // extract ciphertext from json object, and create cipher params object
+            var cipherParams = CryptoJS.lib.CipherParams.create({
+                ciphertext: CryptoJS.enc.Base64.parse(jsonObj.ct)
+            });
+
+            // optionally extract iv and salt
+            if (jsonObj.iv) {
+                cipherParams.iv = CryptoJS.enc.Hex.parse(jsonObj.iv)
+            }
+            if (jsonObj.s) {
+                cipherParams.salt = CryptoJS.enc.Hex.parse(jsonObj.s)
+            }
+
+            return cipherParams;
+        }
+    };
+
+
+function encrypted(formObj){
+	var StringS = '{"userid":"20110401","startdt":"20140501","enddt":"20140531"}';
+  var key = CryptoJS.enc.Hex.parse('password');
+    var iv  = CryptoJS.enc.Hex.parse('vector');
+    var salt  = CryptoJS.enc.Hex.parse('salt');
 	//alert('encrypted');
-    //var encrypted = CryptoJS.AES.encrypt(StringS, 'password','salt','vector');
-   var encrypted = CryptoJS.TripleDES.encrypt(StringS, "password");
+  var encrypted = CryptoJS.AES.encrypt(StringS, 'password','salt','vector');
+  //var encrypted = CryptoJS.TripleDES.encrypt(StringS, key,{ iv: iv });
+   //alert(encrypted.key);        // 74eb593087a982e2a6f5dded54ecd96d1fd0f3d44a58728cdcd40c55227522223
+   //alert(encrypted.iv);         // 7781157e2629b094f0e3dd48c4d786115
+   //alert(encrypted.salt);       // 7a25f9132ec6a8b34
 
     var formObj = document.getElementById("form");
-  	formObj.action =  'http://127.0.0.1:8000/login?'+ encrypted;
+  	formObj.action =  'http://127.0.0.1:8000/getWHDetailList?'+ StringS;
     formObj.submit();
 
 }

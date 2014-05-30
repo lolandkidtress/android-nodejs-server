@@ -95,7 +95,7 @@ function getWHDetailList(questquery,response,callback){
 
         selectSQL1 += ' from   ';
         selectSQL1 += ' ( ';
-        selectSQL1 += ' select wh.EmployeeID,wh.ObjYMD,wh.AbsWH as WH,wh.DtAppStatus,wh.FlgHR, '; 
+        selectSQL1 += ' select wh.EmployeeID,wh.ObjYMD,whd.WH as WH,wh.DtAppStatus,wh.FlgHR, '; 
         selectSQL1 += ' whd.FromDt,whd.ToDt,whd.PJInfoID,whd.FlgOut,whd.FlgPJG,"1" as whtype ';
         selectSQL1 += ' from trnwhform wh,trnwhformdetail whd ';
         selectSQL1 += ' where wh.WHFormID = whd.WHFormID ';
@@ -366,7 +366,7 @@ function getTotalVCTime(questquery,response,callback){
 
         }else
         {
-          //出勤申请 行列转换 方便后续计算是否满出勤
+        
         selectSQL1 = ' select EmployeeID, ';
         selectSQL1 += ' sum(WH) as TotalVCTime ';
         selectSQL1 += ' from   ';
@@ -390,7 +390,6 @@ function getTotalVCTime(questquery,response,callback){
                 results = sqlerr;
                 util.log('log','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
-                
               })
               .on('result', function(rows) {
 
