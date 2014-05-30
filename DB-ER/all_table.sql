@@ -1160,7 +1160,9 @@ COLLATE utf8_general_ci;CREATE TABLE TrnVCFormDetail (
 ENGINE = INNODB
 AUTO_INCREMENT = 1
 CHARACTER SET utf8
-COLLATE utf8_general_ci;CREATE TABLE TrnVCOpt (
+COLLATE utf8_general_ci;
+
+CREATE TABLE TrnVCOpt (
   VCOptID int(11) NOT NULL AUTO_INCREMENT,
   VCFormDetailID int(11) NOT NULL,
   VCFormID int(11) NOT NULL,
@@ -1178,7 +1180,9 @@ COLLATE utf8_general_ci;CREATE TABLE TrnVCOpt (
 ENGINE = INNODB
 AUTO_INCREMENT = 1
 CHARACTER SET utf8
-COLLATE utf8_general_ci;CREATE TABLE TrnWFDetail (
+COLLATE utf8_general_ci;
+
+CREATE TABLE TrnWFDetail (
   WFDetailID int(11) NOT NULL AUTO_INCREMENT,
   WFStepBasicID int(11) NOT NULL,
   WFCD varchar(32) DEFAULT NULL,
@@ -1203,7 +1207,9 @@ ENGINE = INNODB
 AUTO_INCREMENT = 4
 AVG_ROW_LENGTH = 5461
 CHARACTER SET utf8
-COLLATE utf8_general_ci;CREATE TABLE TrnWFProxy (
+COLLATE utf8_general_ci;
+
+CREATE TABLE TrnWFProxy (
   WFProxyID int(11) NOT NULL AUTO_INCREMENT,
   WFDetailID int(11) NOT NULL,
   AgentID int(11) NOT NULL,
@@ -1213,7 +1219,9 @@ COLLATE utf8_general_ci;CREATE TABLE TrnWFProxy (
 ENGINE = INNODB
 AUTO_INCREMENT = 1
 CHARACTER SET utf8
-COLLATE utf8_general_ci;CREATE TABLE TrnWFStepBasic (
+COLLATE utf8_general_ci;
+
+CREATE TABLE TrnWFStepBasic (
   WFStepBasicID int(11) NOT NULL AUTO_INCREMENT,
   WFName varchar(64) DEFAULT NULL,
   WFCD varchar(32) DEFAULT NULL,
@@ -1238,7 +1246,9 @@ ENGINE = INNODB
 AUTO_INCREMENT = 2
 AVG_ROW_LENGTH = 16384
 CHARACTER SET utf8
-COLLATE utf8_general_ci;CREATE TABLE TrnWHForm (
+COLLATE utf8_general_ci;
+
+CREATE TABLE TrnWHForm (
   WHFormID int(11) NOT NULL AUTO_INCREMENT,
   EmployeeID int(11) NOT NULL,
   ObjYMD char(8) DEFAULT NULL,
@@ -1285,3 +1295,33 @@ AUTO_INCREMENT = 2
 AVG_ROW_LENGTH = 16384
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
+
+
+
+CREATE TABLE tmp_emsub (
+  EmployeeID int(11) DEFAULT NULL,
+  EmployeeCode varchar(64) DEFAULT NULL,
+  EmployeeNo varchar(64) DEFAULT NULL,
+  PositionID int(11) DEFAULT NULL,
+  PosLevel int(11) DEFAULT NULL,
+  FlgPart smallint(6) DEFAULT NULL,
+  PosUsefulFromDt char(8) DEFAULT NULL,
+  PosUsefulToDt char(8) DEFAULT NULL,
+  OrgID int(11) DEFAULT NULL,
+  OrgCD varchar(64) DEFAULT NULL,
+  OrgLevel int(11) DEFAULT NULL,
+  SEmployeeID int(11) DEFAULT NULL,
+  SEmployeeCode varchar(64) DEFAULT NULL,
+  SEmployeeNo varchar(64) DEFAULT NULL,
+  SNameCN varchar(256) DEFAULT NULL,
+  SNameEN varchar(256) DEFAULT NULL,
+  SNameJP varchar(256) DEFAULT NULL,
+  SOrgID int(11) DEFAULT NULL,
+  SOrgCD varchar(64) DEFAULT NULL,
+  SOrgLevel int(11) DEFAULT NULL,
+  SOrgNameCN varchar(256) DEFAULT NULL,
+  SOrgNameEN varchar(256) DEFAULT NULL,
+  SOrgNameJP varchar(256) DEFAULT NULL,
+  SPositionID int(11) DEFAULT NULL,
+  SPosLevel int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
