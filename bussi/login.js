@@ -244,10 +244,10 @@ function login(questquery,response,callback){
                       util.jsonadd(results,'/module','login');
                     }
                   Connection.release();
-                  callback(null,results);  
+                  callback(null,results);
               });
         }
-        
+
       });
 
 		}

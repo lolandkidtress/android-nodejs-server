@@ -319,7 +319,6 @@ function getTotalOVTime(questquery,response,callback){
            else
            {
 
-           
           util.jsonadd(results,'/errno','400');
                         util.jsonadd(results,'/errmsg','getTotalOVTime error');
                           // util.jsonadd(results,'/rowcount',i);
@@ -329,7 +328,124 @@ function getTotalOVTime(questquery,response,callback){
                         callback(results);
 
             }
-          
+      }); //async.series end
+
+}
+
+// 取得有薪假明细
+function getPaidVCTime(questquery,response,callback){
+  var i = 0;
+  var results ={
+    errno:'',
+    errmsg:''
+  };
+  var pool;
+  var Connection;
+  var selectSQL1;
+
+  async.series([
+
+      function(callback){
+      var sqlerr;
+      var row;
+      var err;
+      var res;
+
+      var pool = mysqlconn.poolConnection();
+
+      pool.getConnection(function(sqlerr, Connection) {
+        // connected! (unless `err` is set)
+        if(sqlerr!=null){
+          util.log('log','get ConnectPool error');
+          util.log('log',sqlerr);
+          err = sqlerr;
+          //util.jsonadd(err);
+          callback(sqlerr, null);
+
+        }else
+        {
+        selectSQL1 = ' select dtAppStatus,GetDt,DtPaidVCType,UsefulWH,usefulFromDt, ',
+        selectSQL1 += ' UsefulEndDt,RestUsedWH,FlgCarry from TrnPaidVC '
+        selectSQL1 += ' where EmployeeID ='  + Connection.escape(util.jsonget(questquery,'/userid'));
+        selectSQL1 += ' and DelFlg = 0 ';
+        selectSQL1 += ' and UsefulWH > 0 ';
+        selectSQL1 += ' and GetDt >'+ Connection.escape(util.jsonget(questquery,'/currentYYYY'));
+
+        util.log('debug',selectSQL1);
+
+            var query = Connection.query(selectSQL1);
+            query
+              .on('error', function(sqlerr) {
+                // Handle error, an 'end' event will be emitted after this as well
+                results = sqlerr;
+                util.log('log','Connect error '+ sqlerr);
+                util.jsonadd(results,'/sqlstmt',selectSQL1);
+              })
+              .on('result', function(rows) {
+
+                if(rows != null||rows != '' ){
+                // Pausing the connnection is useful if your processing involves I/O
+                //connection.pause();
+                util.jsonadd(results,'/queryresult'+i+'/EmployeeID',util.jsonget(questquery,'/userid'));
+                util.jsonadd(results,'/queryresult'+i+'/dtAppStatus',rows.dtAppStatus);
+                util.jsonadd(results,'/queryresult'+i+'/GetDt',rows.GetDt);
+                util.jsonadd(results,'/queryresult'+i+'/DtPaidVCType',rows.DtPaidVCType);
+                util.jsonadd(results,'/queryresult'+i+'/UsefulWH',rows.UsefulWH);
+                util.jsonadd(results,'/queryresult'+i+'/usefulFromDt',rows.usefulFromDt);
+                util.jsonadd(results,'/queryresult'+i+'/UsefulEndDt',rows.UsefulEndDt);
+                util.jsonadd(results,'/queryresult'+i+'/RestUsedWH',rows.RestUsedWH);
+                util.jsonadd(results,'/queryresult'+i+'/FlgCarry',rows.FlgCarry);
+
+                i=i+1;
+               }
+              })
+              .on('end', function(rows) {
+                  if(i>0){
+
+                           util.jsonadd(results,'/errno','200');
+                           util.jsonadd(results,'/errmsg','getPaidVCTime complete');
+                           util.jsonadd(results,'/rowcount',i);
+                           util.jsonadd(results,'/module','getPaidVCTime');
+
+                      }
+                      else
+                      {
+                        util.jsonadd(results,'/errno','200');
+                           util.jsonadd(results,'/errmsg','getPaidVCTime Empty');
+                           util.jsonadd(results,'/rowcount',0);
+                           util.jsonadd(results,'/module','getPaidVCTime');
+
+                      }
+
+                  Connection.release();
+                  callback(null,results);
+              });
+        }
+      });
+  }
+
+
+        ],function(sqlerr,results){
+
+          if(sqlerr == null||sqlerr == '' ){
+
+            util.log('log','getPaidVCTime returns');
+            util.log('log',JSON.stringify(results));
+            callback(results);
+          }
+          else
+          {
+            //global.queryDBStatus = 'err';
+            util.log('error',"err  = "+ sqlerr);
+            results = sqlerr;
+            util.jsonadd(results,'/errno','400');
+            util.jsonadd(results,'/errmsg','getPaidVCTime error');
+              // util.jsonadd(results,'/rowcount',i);
+            util.jsonadd(results,'/module','getPaidVCTime');
+            util.log('log','getPaidVCTime returns');
+            util.log('log',JSON.stringify(results));
+            callback(results);
+          }
       }); //async.series end
 
 }
@@ -347,7 +463,7 @@ function getTotalVCTime(questquery,response,callback){
 
   async.series([
 
-      function(callback){  
+      function(callback){
       var sqlerr;
       var row;
       var err;
@@ -360,23 +476,18 @@ function getTotalVCTime(questquery,response,callback){
         if(sqlerr!=null){
           util.log('log','get ConnectPool error');
           util.log('log',sqlerr);
-          err = sqlerr;  
+          err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
 
         }else
         {
-        
-        selectSQL1 = ' select EmployeeID, ';
-        selectSQL1 += ' sum(WH) as TotalVCTime ';
-        selectSQL1 += ' from   ';
-        selectSQL1 += ' ( ';
-        selectSQL1 += ' select vc.EmployeeID,vcd.ObjYMD,vcd.VCTime as WH, vc.DtAppStatus,vcd.FlgHR, ';
-        selectSQL1 += ' vcd.VCFromDt,vcd.VCToDt,"" as PJInfoID,"" as FlgOut,"" as FlgPJG,"3" as whtype ';
+
+        selectSQL1 = ' select vc.EmployeeID,vcd.ObjYMD,vcd.VCTime as WH, vc.DtAppStatus,vcd.FlgHR, ';
+        selectSQL1 += ' vcd.VCFromDt,vcd.VCToDt ';
         selectSQL1 += ' from trnvcform vc,trnvcformdetail vcd ';
         selectSQL1 += ' where vc.VCFormID = vcd.VCFormID ';
         selectSQL1 += ' and vc.DelFlg !=1 and vcd.DelFlg!=1 ';
-        selectSQL1 += ' ) detail ';
         selectSQL1 += ' where EmployeeID ='  + Connection.escape(util.jsonget(questquery,'/userid'))
         selectSQL1 += ' and ObjYMD between ' + Connection.escape(util.jsonget(questquery,'/startdt')) + ' and ' + Connection.escape(util.jsonget(questquery,'/enddt'))
         selectSQL1 += ' group by detail.EmployeeID ';
@@ -398,23 +509,19 @@ function getTotalVCTime(questquery,response,callback){
                 //connection.pause();
                 util.jsonadd(results,'/queryresult'+i+'/EmployeeID',rows.EmployeeID);
                 util.jsonadd(results,'/queryresult'+i+'/TotalVCTime',rows.TotalVCTime);
-
+                util.jsonadd(results,'/queryresult'+i+'/TotalVCTime',rows.TotalVCTime);
+                util.jsonadd(results,'/queryresult'+i+'/TotalVCTime',rows.TotalVCTime);
                 //util.jsonadd(results,'/queryresult'+i+'/uuid',rows.uuid_);
                 i=i+1;
                }
               })
               .on('end', function(rows) {
-                  
-                  if(i>0){
 
-                       
+                  if(i>0){
                            util.jsonadd(results,'/errno','200');
                            util.jsonadd(results,'/errmsg','getTotalVCTime complete');
                            util.jsonadd(results,'/rowcount',i);
                            util.jsonadd(results,'/module','getTotalVCTime');
-
-                      
-                        
                       }
                       else
                       {
@@ -422,14 +529,11 @@ function getTotalVCTime(questquery,response,callback){
                            util.jsonadd(results,'/errmsg','getTotalVCTime Empty');
                            util.jsonadd(results,'/rowcount',0);
                            util.jsonadd(results,'/module','getTotalVCTime');
-                       
                       }
-
                   Connection.release();
-                  callback(null,results);  
+                  callback(null,results);
               });
         }
-        
       });
   }
 
@@ -466,6 +570,7 @@ function getTotalVCTime(questquery,response,callback){
 exports.getWHDetailList=getWHDetailList;
 exports.getTotalVCTime =getTotalVCTime;
 exports.getTotalOVTime =getTotalOVTime;
+exports.getPaidVCTime =getPaidVCTime;
 
 
 

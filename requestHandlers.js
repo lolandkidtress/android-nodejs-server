@@ -97,14 +97,8 @@ function getWHSettingHandle(questquery,response,request,callback){
 
 async.series([
     function(cb) {
-      login.getWHSetting(questquery,response,cb); 
+      login.getWHSetting(questquery,response,cb);
     },
-    
-    /*
-    function(n,cb) {
-      mysql.CallProcedure(n,cb); 
-    },
-    */
 ], function(results) {
 
     if(!results){
@@ -260,9 +254,6 @@ async.auto({
 	if(err == null||err == '' ){
     util.log('log','getTotalPJTimeHandle returns is ' +JSON.stringify(results) );
 
-    console.log(results.TotalFctPJTime[0].errno);
-    console.log(results.TotalEstPJTime[0].errno);
-
             if(results.TotalFctPJTime[0].errno=='200' 
               && results.TotalEstPJTime[0].errno,"/errno"=='200')
             {
@@ -318,27 +309,61 @@ async.waterfall([
 }
 
 function getTotalVCTimeHandle(questquery,response,request,callback){
-
-async.waterfall([
-    function(cb) {
-      whList.getTotalVCTime(questquery,response,cb); 
+//取得休假合计，休假明细和有薪假明细
+//
+async.auto({
+   TotalVCTime: function (callback) {
+            whList.getTotalVCTime(questquery,response,
+              function(cb){
+                callback(null,cb);
+              });
     },
-    
-    /*
-    function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+    PaidVCTime: function (callback) {
+            whList.getPaidVCTime(questquery,response,
+              function(cb){
+                callback(null,cb);
+              });
     },
-    */
-], function(results) {
+    VCTimeDtail: function (callback) {
+            whList.getVCTimeDtail(questquery,response,
+              function(cb){
+                callback(null,cb);
+              });
+    },
+    reultsDetailList: ['TotalVCTime', 'PaidVCTime','VCTimeDtail',  function(callback) {
+            callback();
+    }]
+}, function(err, results) {
+  if(err == null||err == '' ){
+    util.log('log','getTotalVCTimeHandle returns is ' +JSON.stringify(results) );
 
-    if(!results){
-      feedback(results,response,request);
-    }else
-    {
-      feedback(results,response,request);
-    }
-    
+            if(results.TotalVCTime[0].errno=='200' 
+              && results.PaidVCTime[0].errno,"/errno"=='200'
+              && results.VCTimeDtail[0].errno,"/errno"=='200')
+            {
+                util.jsonadd(results,'/errno','200');
 
+                          util.jsonadd(results,'/errmsg','getTotalVCTimeHandle complete');
+                      //util.jsonadd(results,'/rowcount',i);
+                          util.jsonadd(results,'/module','getTotalVCTimeHandle');
+            }
+            else
+              {
+                util.jsonadd(results,'/errno','400');
+                          util.jsonadd(results,'/errmsg','getTotalVCTimeHandle Data error');
+                          //util.jsonadd(results,'/rowcount',i);
+                          util.jsonadd(results,'/module','getTotalVCTimeHandle');
+              }
+  }
+  else
+  {
+              util.jsonadd(results,'/errno','400');
+                      util.jsonadd(results,'/errmsg','getTotalVCTimeHandle Exception error');
+                      //util.jsonadd(results,'/rowcount',i);
+                      util.jsonadd(results,'/module','getTotalVCTimeHandle');
+  }
+
+    feedback(results,response,request);
 });
 }
 
