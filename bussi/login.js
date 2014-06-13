@@ -223,6 +223,7 @@ function login(questquery,response,callback){
                 results = sqlerr;
                 util.log('log','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
+                callback(sqlerr,null);
               })
               .on('result', function(rows) {
                 // Pausing the connnection is useful if your processing involves I/O
@@ -239,7 +240,7 @@ function login(questquery,response,callback){
                       util.jsonadd(results,'/module','login');
                     }else
                     {
-                      util.jsonadd(results,'/errno','400');
+                      util.jsonadd(results,'/errno','300');
                       util.jsonadd(results,'/errmsg','User InValid');
                       util.jsonadd(results,'/module','login');
                     }
@@ -268,6 +269,7 @@ function login(questquery,response,callback){
 			      util.log('error',"err  = "+ sqlerr);
 			      results = sqlerr;
             util.log('log','login returns');
+            util.jsonadd(results,'/errno','400');
             util.log('log',results);
             callback(results);
 			    }
@@ -333,7 +335,7 @@ function getWHSetting(questquery,response,callback){
                 results = sqlerr;
                 util.log('log','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
-                
+                callback(sqlerr,null);
               })
               .on('result', function(rows) {
                 // Pausing the connnection is useful if your processing involves I/O
@@ -368,7 +370,7 @@ function getWHSetting(questquery,response,callback){
 
                       util.jsonadd(results,'/rowcount',0);
                       util.jsonadd(results,'/errmsg','setting get Empty');
-                      util.jsonadd(results,'/errno','200');
+                      util.jsonadd(results,'/errno','300');
                       util.jsonadd(results,'/module','getWHSetting');
 
                    }  
@@ -464,6 +466,7 @@ function getCalendar(questquery,response,callback){
                 results = sqlerr;
                 util.log('log','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
+                callback(sqlerr,null);
               })
               .on('result', function(rows) {
                 // Pausing the connnection is useful if your processing involves I/O
@@ -485,7 +488,7 @@ function getCalendar(questquery,response,callback){
                    }
                    else
                    {
-                      util.jsonadd(results,'/errno','400');
+                      util.jsonadd(results,'/errno','300');
                       util.jsonadd(results,'/errmsg','Calendar get Error');
                       util.jsonadd(results,'/module','getCalendar');
                       util.jsonadd(results,'/rowcount',i);
@@ -515,6 +518,9 @@ function getCalendar(questquery,response,callback){
             util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
             util.log('log','getCalendar returns');
+            util.jsonadd(results,'/errno','400');
+            util.jsonadd(results,'/errmsg','Calendar get Error');
+            util.jsonadd(results,'/module','getCalendar');
             util.log('log',results);
             callback(results);
           }

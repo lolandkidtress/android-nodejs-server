@@ -15,12 +15,15 @@ function route(pathname,questquery,response, request) {
   handle["/errhandle"] = requestHandlers.errhandle;
   handle["/getWHSetting"] = requestHandlers.getWHSettingHandle
   handle["/getWHEmptyDate"] = requestHandlers.getWHEmptyDate
-  handle["/getCalendar"] = requestHandlers.getCalendar
+  handle["/getCalendar"] = requestHandlers.getCalendarHandle
   handle["/getWHDetailList"] = requestHandlers.getWHDetailListHandle
+  handle["/getAccessRecord"] = requestHandlers.getAccessRecordHandle
   handle["/getTotalPJTime"] = requestHandlers.getTotalPJTimeHandle
   handle["/getTotalOVTime"] = requestHandlers.getTotalOVTimeHandle
   handle["/getTotalVCTime"] = requestHandlers.getTotalVCTimeHandle
   handle["/getTotalPJTime"] = requestHandlers.getTotalPJTimeHandle
+
+
 
   //handle["/update"] = requestHandlers.update;
   //handle["/select"] = requestHandlers.select;

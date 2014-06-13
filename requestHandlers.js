@@ -161,6 +161,35 @@ async.waterfall([
 
 });
 }
+
+function getAccessRecordHandle(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      whList.getAccessRecord(questquery,response,cb); 
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
+
+
+
 //
 function getWHDetailListHandle(questquery,response,request,callback){
 
@@ -189,11 +218,8 @@ async.auto({
 	if(err == null||err == '' ){
 		util.log('log','getWHDetailListHandle returns is ' +JSON.stringify(results) );
 
-    console.log(results.WHSetting[0].errno);
-    console.log(results.WHDetailList[0].errno);
-
 					  if(results.WHSetting[0].errno=='200' 
-					  	&& results.WHDetailList[0].errno,"/errno"=='200')
+					  	&& results.WHDetailList[0].errno=='200')
 					  {
 					  		util.jsonadd(results,'/errno','200');
 
@@ -203,8 +229,8 @@ async.auto({
 					  }
 					  else
 					  	{
-					  		util.jsonadd(results,'/errno','400');
-                      		util.jsonadd(results,'/errmsg','getWHDetailListHandle Data error');
+					  		util.jsonadd(results,'/errno','300');
+                      		util.jsonadd(results,'/errmsg','getWHDetailListHandle error');
                       		//util.jsonadd(results,'/rowcount',i);
                       		util.jsonadd(results,'/module','getWHDetailListHandle');
 					  	}
@@ -373,6 +399,7 @@ exports.getWHSettingHandle = getWHSettingHandle;
 exports.getWHEmptyDateHandle = getWHEmptyDateHandle;
 exports.getCalendarHandle = getCalendarHandle;
 exports.getWHDetailListHandle = getWHDetailListHandle;
+exports.getAccessRecordHandle = getAccessRecordHandle;
 exports.getTotalOVTimeHandle = getTotalOVTimeHandle;
 exports.getTotalVCTimeHandle = getTotalVCTimeHandle;
 exports.getTotalPJTimeHandle = getTotalPJTimeHandle;

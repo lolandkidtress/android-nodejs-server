@@ -4,9 +4,10 @@
 <head>
 	<title></title>
 </head>
-
+<!--
 <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/tripledes.js"></script>
 <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/aes.js"></script>
+-->
 <script src="D:/项目/github/android-nodejs-server/socket.io/socket.io.js"></script>
 <script type="text/javascript">
 
@@ -52,19 +53,35 @@ var JsonFormatter = {
 
 
 function encrypted(formObj){
-	var StringS = '{"userid":"20110401","startdt":"20140501","enddt":"20140531"}';
-  var key = CryptoJS.enc.Hex.parse('password');
-    var iv  = CryptoJS.enc.Hex.parse('vector');
-    var salt  = CryptoJS.enc.Hex.parse('salt');
+	
+  //var key = CryptoJS.enc.Hex.parse('password');
+   // var iv  = CryptoJS.enc.Hex.parse('vector');
+    //var salt  = CryptoJS.enc.Hex.parse('salt');
 	//alert('encrypted');
-  var encrypted = CryptoJS.AES.encrypt(StringS, 'password','salt','vector');
+  //var encrypted = CryptoJS.AES.encrypt(StringS, 'password','salt','vector');
   //var encrypted = CryptoJS.TripleDES.encrypt(StringS, key,{ iv: iv });
    //alert(encrypted.key);        // 74eb593087a982e2a6f5dded54ecd96d1fd0f3d44a58728cdcd40c55227522223
    //alert(encrypted.iv);         // 7781157e2629b094f0e3dd48c4d786115
    //alert(encrypted.salt);       // 7a25f9132ec6a8b34
 
     var formObj = document.getElementById("form");
+    //登录
+    //var StringS = '{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"feng-jin.deng@ivision-china.cn"}';
+  	//formObj.action =  'http://127.0.0.1:8000/login?'+ StringS;
+
+  	//考勤规则
+  	//var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531"}';
+  	//formObj.action =  'http://127.0.0.1:8000/getWHSetting?'+ StringS;
+
+  	 	//日历设定
+  	//var StringS = '{"startdt":"20140501","enddt":"20140531"}';
+  	//formObj.action =  'http://127.0.0.1:8000/getCalendar?'+ StringS;
+
+  	//申请记录
+  	var StringS = '{"userid":"24","startdt":"20140501","enddt":"20140531"}';
   	formObj.action =  'http://127.0.0.1:8000/getWHDetailList?'+ StringS;
+
+
     formObj.submit();
 
 }
