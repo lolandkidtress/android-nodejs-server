@@ -75,7 +75,7 @@ function SendAccessRecord(callback){
 
         Connection = mysql.createConnection(Access_db_config);
 
-
+        //只更新当天的数据
         selectSQL1 = " select max(em.eventtime) inTime,min(em.eventtime) OutTime,em.employeeno ,DATE_FORMAT(current_date(),'%Y%m%d') objdate"
         selectSQL1 += " from "
         selectSQL1 += " (select DATE_FORMAT(eventtime,'%Y%m%d'),DATE_FORMAT(eventtime,'%T'),eventtime,employeeno from event  "
@@ -83,7 +83,7 @@ function SendAccessRecord(callback){
         selectSQL1 += " and employeeno is not null  "
         selectSQL1 += " and employeeno!=''  "
         selectSQL1 += "   "
-        //selectSQL1 += " and DATE_FORMAT(eventtime,'%Y%m%d') = DATE_FORMAT(current_date(),'%Y%m%d')  "
+        selectSQL1 += " and DATE_FORMAT(eventtime,'%Y%m%d') = DATE_FORMAT(current_date(),'%Y%m%d')  "
         selectSQL1 += " ) em  "
         selectSQL1 += " group by em.employeeno,DATE_FORMAT(current_date(),'%Y%m%d'); ";
 
