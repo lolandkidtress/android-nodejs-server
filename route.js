@@ -18,6 +18,7 @@ function route(pathname,questquery,response, request) {
   handle["/getCalendar"] = requestHandlers.getCalendarHandle
   handle["/getWHDetailList"] = requestHandlers.getWHDetailListHandle
   handle["/getAccessRecord"] = requestHandlers.getAccessRecordHandle
+  handle["/insertAccessRecord"] = requestHandlers.insertAccessRecordHandle
   handle["/getTotalPJTime"] = requestHandlers.getTotalPJTimeHandle
   handle["/getTotalOVTime"] = requestHandlers.getTotalOVTimeHandle
   handle["/getTotalVCTime"] = requestHandlers.getTotalVCTimeHandle

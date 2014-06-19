@@ -10,6 +10,13 @@ var db_config = {
   database: 'ivggs_whs'
 };
 
+var Access_db_config = {
+  host: '192.168.175.129',
+  user: 'whs',
+  password: 'whs',
+  database: 'ivggs_whs'
+};
+
 var ASECrypt = {
 	SecretPassphrase:'password',
 	Salt:'salt',

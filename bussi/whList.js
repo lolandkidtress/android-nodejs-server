@@ -55,7 +55,7 @@ function getWHDetailList(questquery,response,callback){
         if(sqlerr!=null){
           util.log('log','get ConnectPool error');
           util.log('log',sqlerr);
-          err = sqlerr;  
+          err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
 
@@ -63,7 +63,7 @@ function getWHDetailList(questquery,response,callback){
         {
           //出勤申请 行列转换 方便后续计算是否满出勤
         selectSQL1 = ' select EmployeeID,ObjYMD, ';
-        selectSQL1 += ' max(case whtype when "1" then "1" else 0 end) whtype, '; 
+        selectSQL1 += ' max(case whtype when "1" then "1" else 0 end) whtype, ';
         selectSQL1 += ' max(case whtype when "1" then WH else 0 end) abswh, ';
         selectSQL1 += ' max(case whtype when "1" then DtAppStatus else 0 end) whStatus, ';
         selectSQL1 += ' max(case whtype when "1" then FlgHR else 0 end) whFlgHR, ';
@@ -817,6 +817,112 @@ function getAccessRecord(questquery,response,callback){
 
 }
 
+//取得门禁数据
+function insertAccessRecord(questquery,response,callback){ 
+  var i = 0;
+  var results ={
+    errno:'',
+    errmsg:''
+  };
+  var pool;
+  var Connection;
+  var selectSQL1;
+
+  async.series([
+
+      function(callback){
+
+        console.log(questquery);
+        callback(null,'sfd');
+      },
+
+      function(callback){
+      var sqlerr;
+      var row;
+      var err;
+      var res;
+
+      var pool = mysqlconn.poolConnection();
+
+      pool.getConnection(function(sqlerr, Connection) {
+        // connected! (unless `err` is set)
+        if(sqlerr!=null){
+          util.log('log','get ConnectPool error');
+          util.log('log',sqlerr);
+          err = sqlerr;
+          //util.jsonadd(err);
+          callback(sqlerr, null);
+
+        }else
+        {
+
+         insertSQL1 = ' replace into trnrecord ';
+         insertSQL1 += ' (employeeno,objdate,inTime,outtime,duration,dtrecordtype,dtoptstatus,inputtime,fileid) ';
+         insertSQL1 += ' values( ';
+         insertSQL1 += '  20120901,20140605,current_date(),current_date(),null,0,0,NOW(),null) ; ';
+
+        util.log('debug',insertSQL1);
+
+            Connection.beginTransaction(function(err) {
+              if (err) { throw err; }
+              var title ='test1';
+              Connection.query('replace INTO test SET id="222212",res="eeee"', function(err, result) {
+                if (err) { 
+                  Connection.rollback(function() {
+                    throw err;
+                  });
+                }
+
+                                Connection.commit(function(err) {
+                  if (err) { 
+                      Connection.rollback(function() {
+                        throw err;
+                      });
+                    }
+                  console.log('success!');
+                });
+
+              var log = 'Post ' + result.insertId + ' added';
+              callback(null, results);
+              });
+            });
+
+
+
+
+
+
+
+        }
+      });
+  }
+
+
+        ],function(sqlerr,results){
+
+          if(sqlerr == null||sqlerr == '' ){
+
+            util.log('log','getAccessRecord returns');
+            util.log('log',JSON.stringify(results));
+            callback(results);
+          }
+          else
+          {
+            //global.queryDBStatus = 'err';
+            util.log('error',"err  = "+ sqlerr);
+            results = sqlerr;
+            util.jsonadd(results,'/errno','400');
+            util.jsonadd(results,'/errmsg','insertAccessRecord error');
+              // util.jsonadd(results,'/rowcount',i);
+            util.jsonadd(results,'/module','insertAccessRecord');
+            util.log('log','insertAccessRecord returns');
+            util.log('log',JSON.stringify(results));
+            callback(results);
+          }
+      }); //async.series end
+
+}
+
 
 
 
@@ -826,6 +932,9 @@ exports.getTotalVCTime =getTotalVCTime;
 exports.getTotalOVTime =getTotalOVTime;
 exports.getPaidVCTime =getPaidVCTime;
 exports.getAccessRecord = getAccessRecord;
+exports.insertAccessRecord = insertAccessRecord;
+
+
 
 
 

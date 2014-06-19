@@ -187,6 +187,31 @@ async.waterfall([
 });
 }
 
+function insertAccessRecordHandle(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      whList.insertAccessRecord(questquery,response,cb); 
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
 
 
 
@@ -400,6 +425,7 @@ exports.getWHEmptyDateHandle = getWHEmptyDateHandle;
 exports.getCalendarHandle = getCalendarHandle;
 exports.getWHDetailListHandle = getWHDetailListHandle;
 exports.getAccessRecordHandle = getAccessRecordHandle;
+exports.insertAccessRecordHandle = insertAccessRecordHandle;
 exports.getTotalOVTimeHandle = getTotalOVTimeHandle;
 exports.getTotalVCTimeHandle = getTotalVCTimeHandle;
 exports.getTotalPJTimeHandle = getTotalPJTimeHandle;
