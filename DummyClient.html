@@ -78,8 +78,12 @@ function encrypted(formObj){
   	//formObj.action =  'http://127.0.0.1:8000/getCalendar?'+ StringS;
 
   	//申请记录
-  	var StringS = '{"userid":"24","startdt":"20140501","enddt":"20140531"}';
-  	formObj.action =  'http://127.0.0.1:8000/getWHDetailList?'+ StringS;
+  	//var StringS = '{"userid":"24","startdt":"20140501","enddt":"20140531"}';
+  	//formObj.action =  'http://127.0.0.1:8000/getWHDetailList?'+ StringS;
+
+    //门禁插入记录
+    var StringS = '{"errno":"","errmsg":"","queryresult0":{"EmployeeID":"10002","objdate":"20140623","OutTime":"2014-06-23T01:28:00.000Z","inTime":"2014-06-23T01:28:07.000Z"},"queryresult1":{"EmployeeID":"200900704","objdate":"20140623","OutTime":"2014-06-23T01:28:00.000Z","inTime":"2014-06-23T01:28:07.000Z"},"rowcount":"2"}';
+    formObj.action =  'http://127.0.0.1:8000/insertAccessRecord?'+ StringS;
 
 
     formObj.submit();
