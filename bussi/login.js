@@ -64,14 +64,11 @@ json 格式为：
 { errno : '200',
   errmsg: 'Calendar get',
   module: 'getCalendar',
-  rowcount :'', //该月有多少条规则
+  rowcount :'', //该月有多少条
   queryresult0{
   ymd:'',  日期
   weekdate:'',    周几
-  dtdaytype:'',  01： 出勤日；02：休日；03：国定假日；04：IV特别休日
-  AMTo:'',
-  MiddleFrom:'',
-  MiddleTo:''
+  dtdaytype:''  01： 出勤日；02：休日；03：国定假日；04：IV特别休日
   }
    queryresult1{
   .....
@@ -84,98 +81,31 @@ var mysqlconn = require('../dbutil/mysqlconn.js');
 var sys = require('sys');
 var util = require('../util/util.js');
 var async = require('async');
-var Wind = require('wind')
-var config = require('../config/config.js')
+var Wind = require('wind');
+var config = require('../config/config.js');
+var moment = require('moment');
 
-/*
-//使用直接连接方法 现在不使用
-function login2(questquery,response,callback){ 
-  var i = 0;
-  var results ={
-    errno:'',
-    errmsg:''
+var UserValidatedList={
+  };
+var userToken = {
+  userid:'',
+  uuid:'',
+  ExpireDate:''
   };
 
-//console.log(questquery);
 
-  connection = mysql.createConnection(config.getDBConfig());
-
-
-var selectSQL1 = 'select uuid_,password_,emailAddress from lportal.user_ where emailAddress = ';
-selectSQL1 = selectSQL1 + connection.escape(util.jsonget(questquery,'/user_name'));
-selectSQL1 = selectSQL1 + ' and password_ = ' + connection.escape(util.jsonget(questquery,'/credential'));
-
-//util.jsonadd(parameter,'/user_name',util.jsonget(questquery,'/user_name'));
-//util.jsonadd(parameter,'/credential',util.jsonget(questquery,'/credential'));
-
-util.log('debug',selectSQL1);
-
-async.series([
-    function(callback){
-var sqlerr;
-var row;
-var err;
-var res;
-
-var query = connection.query(selectSQL1);
-query
-  .on('error', function(sqlerr) {
-    // Handle error, an 'end' event will be emitted after this as well
-    util.log('DB connect error');
-    util.log(sqlerr);
-    results = sqlerr;
-    util.jsonadd(results,'/sqlstmt',selectSQL1);
-  })
-  .on('result', function(rows) {
-    // Pausing the connnection is useful if your processing involves I/O
-    //connection.pause();
-    util.jsonadd(results,'/queryresult'+i+'/username',rows.user_name);
-    util.jsonadd(results,'/queryresult'+i+'/credential',rows.credential);
-    i=i+1;
-
-    //console.log(results);
-  
-  })
-  .on('end', function(rows) {
-        if(i==1){
-        	util.jsonadd(results,'/errno','200');
-        	util.jsonadd(results,'/errmsg','User Valid');
-        }else
-        {
-        	util.jsonadd(results,'/errno','400');
-        	util.jsonadd(results,'/errmsg','User InValid');
-        }
-      connection.destroy();
-      callback(sqlerr, results);
- });
-    }
-
-  ],function(sqlerr,results){
-
-    if(sqlerr == null||sqlerr == '' ){
-
-   	 if(util.jsonexist(results,'/errno') != true){
-        util.jsonadd(results,'/errno','200');
-    	}
-      callback(sqlerr,results);
-    }
-    else
-    {
-      //global.queryDBStatus = 'err';
-      util.log('error',"err  = "+ sqlerr);
-      results = sqlerr;
-    }
-    //return callback(null,results);
-  });
+function userValidateCheck(query,callback){
+   console.log("11111");
+  console.log(query);
+  callback();
 }
 
-*/
 
 //使用连接池方式
 /*
 输入参数 员工的邮箱，密码
 */
-function login(questquery,response,callback){ 
+function login(questquery,response,callback){
   var i = 0;
   var results ={
     errno:'',
@@ -208,7 +138,7 @@ function login(questquery,response,callback){
 
         }else
         {
-        selectSQL1 = 'select lp.uuid_,lp.emailAddress,em.LoginName,em.EmployeeID ' ;
+        selectSQL1 = 'select uuid() as uuid,lp.emailAddress,em.LoginName,em.EmployeeID ' ;
         selectSQL1 = selectSQL1 +' from lportal.user_ lp,ivggs_whs.trnemployee em '
         selectSQL1 = selectSQL1 + ' where emailAddress = ';
         selectSQL1 = selectSQL1 + Connection.escape(util.jsonget(questquery,'/username'));
@@ -230,7 +160,7 @@ function login(questquery,response,callback){
                 //connection.pause();
                 util.jsonadd(results,'/queryresult/username',rows.LoginName);
                 util.jsonadd(results,'/queryresult/userid',rows.EmployeeID);
-                util.jsonadd(results,'/queryresult/uuid',rows.uuid_);
+                util.jsonadd(results,'/queryresult/uuid',rows.uuid);
                 i=i+1;
               })
               .on('end', function(rows) {
@@ -238,6 +168,14 @@ function login(questquery,response,callback){
                       util.jsonadd(results,'/errno','200');
                       util.jsonadd(results,'/errmsg','User Valid');
                       util.jsonadd(results,'/module','login');
+
+                      util.jsonadd(userToken,'/userid',util.jsonget(results,'/queryresult/userid'));
+                      util.jsonadd(userToken,'/uuid',util.jsonget(results,'/queryresult/uuid'));
+                      util.jsonadd(userToken,'/ExpireDate',moment().format('YYYY-MM-DD'));
+
+                      util.jsonadd(UserValidatedList,'/'+util.jsonget(results,'/queryresult/userid'),userToken);
+                      util.log('log','UserValidatedList is '+ JSON.stringify(UserValidatedList));
+
                     }else
                     {
                       util.jsonadd(results,'/errno','300');
@@ -251,14 +189,13 @@ function login(questquery,response,callback){
 
       });
 
-		}
+		},
+    
+
 			  ],function(sqlerr,results){
 
 			    if(sqlerr == null||sqlerr == '' ){
 
-			   	 if(util.jsonexist(results,'/errno') != true){
-			        util.jsonadd(results,'/errno','200');
-			    	}
             util.log('log','login returns');
             util.log('log',results);
 			      callback(results);
@@ -323,7 +260,7 @@ function getWHSetting(questquery,response,callback){
         //selectSQL1 += ' and a.FromDt between b.DtFrom and b.DtTo ';
         //selectSQL1 += ' and a.ToDt between b.DtFrom and b.DtTo ';
         selectSQL1 += ' and b.EmployeeID = '+ Connection.escape(util.jsonget(questquery,'/userid')) + ' and '
-        selectSQL1 += ' ('+Connection.escape(util.jsonget(questquery,'/startdt')) +' between b.DtFrom and b.DtTo ';  
+        selectSQL1 += ' ('+Connection.escape(util.jsonget(questquery,'/startdt')) +' between b.DtFrom and b.DtTo ';
         selectSQL1 += ' and ' + Connection.escape(util.jsonget(questquery,'/enddt')) + ' between b.DtFrom and b.DtTo) ';
         selectSQL1 += ' order by a.FromDt,a.ToDt ';
 
@@ -373,10 +310,10 @@ function getWHSetting(questquery,response,callback){
                       util.jsonadd(results,'/errno','300');
                       util.jsonadd(results,'/module','getWHSetting');
 
-                   }  
+                   }
                   
                   Connection.release();
-                  callback('',results);  
+                  callback('',results);
               });
         }
         
@@ -531,3 +468,4 @@ function getCalendar(questquery,response,callback){
 exports.login=login;
 exports.getWHSetting=getWHSetting;
 exports.getCalendar = getCalendar;
+exports.userValidateCheck=userValidateCheck

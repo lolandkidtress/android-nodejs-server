@@ -5,7 +5,8 @@ var cluster = require('cluster');
 var util = require("./util/util.js");
 var config = require("./config/config.js");
 var router = require("./route");
-var crypt = require("./crypto/crypto.js")
+var crypt = require("./crypto/crypto.js");
+var login = require('./bussi/login.js');
 
 var action="";   //action数据
 var questquery=""; //业务数据，解密后
@@ -61,7 +62,14 @@ function dohandle(){
             util.log('info','buss query is ' );
             util.log('info',JSON.stringify(bussiquery));
             
-            router.route(pathname,bussiquery, response, request);//根据action的值去调用不同的业务
+              login.userValidateCheck(bussiquery,function(cb){
+                console.log(cb);
+              }); 
+
+                  router.route(pathname,bussiquery, response, request);//根据action的值去调用不同的业务
+
+
+            //router.route(pathname,bussiquery, response, request);//根据action的值去调用不同的业务
          }
          else
          {
