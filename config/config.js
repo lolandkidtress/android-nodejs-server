@@ -24,6 +24,7 @@ var ASECrypt = {
 }
 
 var ServerPort = '8000';
+var ExpireTime = 3; //用户登录后的天数
 
 function getTraceLevel(){
 	return tracelever;
