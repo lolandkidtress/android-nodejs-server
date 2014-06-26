@@ -831,16 +831,26 @@ function insertAccessRecord(questquery,response,callback){
   async.series([
 
       function(callback){
-
-        console.log(questquery);
-        callback(null,'sfd');
-      },
-
-      function(callback){
       var sqlerr;
       var row;
       var err;
       var res;
+      var done=0;
+
+      var totalrow = util.jsonget(questquery,'/rowcount');
+
+      var insertArray = 
+      {
+        employeeno:'',
+        objdate:'',
+        inTime:'',
+        OutTime:'',
+        duration:'0',
+        dtrecordtype:'0',
+        dtoptstatus:'0',
+        inputtime:'NOW()',
+        fileid:''
+      }
 
       var pool = mysqlconn.poolConnection();
 
@@ -857,41 +867,51 @@ function insertAccessRecord(questquery,response,callback){
         {
 
          insertSQL1 = ' replace into trnrecord ';
-         insertSQL1 += ' (employeeno,objdate,inTime,outtime,duration,dtrecordtype,dtoptstatus,inputtime,fileid) ';
-         insertSQL1 += ' values( ';
-         insertSQL1 += '  20120901,20140605,current_date(),current_date(),null,0,0,NOW(),null) ; ';
+         //insertSQL1 += ' (employeeno,objdate,inTime,outtime,duration,dtrecordtype,dtoptstatus,inputtime,fileid) ';
+         //insertSQL1 += ' values( ';
+         //insertSQL1 += '  20120901,20140605,current_date(),current_date(),null,0,0,NOW(),null) ; ';
+         insertSQL1 += ' set ? '; 
 
         util.log('debug',insertSQL1);
 
             Connection.beginTransaction(function(err) {
-              if (err) { throw err; }
-              var title ='test1';
-              Connection.query('replace INTO test SET id="222212",res="eeee"', function(err, result) {
-                if (err) { 
-                  Connection.rollback(function() {
-                    throw err;
+
+              if (err) { callback('beginTransaction err:' + err, null); }
+
+            for (var i=0;i<totalrow;i++)
+              {
+                  util.jsonadd(insertArray,'/employeeno',util.jsonget(questquery,'/queryresult'+i+'/EmployeeID'));
+                  util.jsonadd(insertArray,'/objdate',util.jsonget(questquery,'/queryresult'+i+'/objdate'));
+                  util.jsonadd(insertArray,'/inTime',util.jsonget(questquery,'/queryresult'+i+'/inTime'));
+                  util.jsonadd(insertArray,'/OutTime',util.jsonget(questquery,'/queryresult'+i+'/OutTime'));
+    
+                  var sqlquery = Connection.query(insertSQL1, insertArray, function(err, result) {
+                  //Connection.query('replace INTO test SET id="222212",res="eeee"', function(err, result) {
+                    if (err) { 
+                       callback('query err:'+err, null);
+
+                    }
                   });
+
+                  console.log('run :' + sqlquery.sql);
+                  done=i;
                 }
 
-                                Connection.commit(function(err) {
-                  if (err) { 
-                      Connection.rollback(function() {
-                        throw err;
-                      });
-                    }
-                  console.log('success!');
-                });
+               if(done==totalrow){
+                   Connection.commit(function(err) {
+                      if (err) { 
+                          Connection.rollback(function() {
+                            callback('commit err' + err, null);
+                          });
+                        }else{
+                          console.log('commit!');
+                        }
+                      
+                    });
+                 callback(null, results);
+               } 
 
-              var log = 'Post ' + result.insertId + ' added';
-              callback(null, results);
-              });
             });
-
-
-
-
-
-
 
         }
       });

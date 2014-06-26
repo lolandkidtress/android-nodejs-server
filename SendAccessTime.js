@@ -111,7 +111,7 @@ function SendAccessRecord(callback){
               })
               .on('end', function(rows) {
                   if(i>0){
-
+                    util.jsonadd(results,'/rowcount',i);
 //[{"errno":"200","errmsg":"getAccess complete","queryresult0":{"objdate":"20140616","OutTime":"2014-06-16T06:43:42.000Z","inTime":"2014-06-16T06:44:38.000Z"},"queryresult1":{"objdate":"20140616","OutTime":"2014-06-16T06:49:57.000Z","inTime":"2014-06-16T06:50:28.000Z"},"rowcount":2,"module":"getAccess"}]
 							util.log('log','send data :' + JSON.stringify(results));
                             http.get("http://localhost:8000/insertAccessRecord?"+JSON.stringify(results), function(res) {
