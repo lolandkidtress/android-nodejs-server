@@ -878,8 +878,8 @@ function insertAccessRecord(questquery,response,callback){
 
               if (err) { callback('beginTransaction err:' + err, null); }
 
-            for (var i=0;i<totalrow;i++)
-              {
+                        for (var i=0;i<totalrow;i++)
+             ( function (i) {
                   util.jsonadd(insertArray,'/employeeno',util.jsonget(questquery,'/queryresult'+i+'/EmployeeID'));
                   util.jsonadd(insertArray,'/objdate',util.jsonget(questquery,'/queryresult'+i+'/objdate'));
                   util.jsonadd(insertArray,'/inTime',util.jsonget(questquery,'/queryresult'+i+'/inTime'));
@@ -893,25 +893,33 @@ function insertAccessRecord(questquery,response,callback){
                     }
                   });
 
-                  console.log('run :' + sqlquery.sql);
+                  console.log('run' + done + ':' + sqlquery.sql);
                   done=i;
-                }
+                })(i);
 
-               if(done==totalrow){
+               if(done+1==totalrow){
                    Connection.commit(function(err) {
                       if (err) { 
                           Connection.rollback(function() {
                             callback('commit err' + err, null);
                           });
                         }else{
-                          console.log('commit!');
+                          console.log('commit! ' + totalrow);
+                           util.jsonadd(results,'/errno','200');
+                           util.jsonadd(results,'/errmsg','insertAccessRecord complete');
+                           util.jsonadd(results,'/rowcount',i);
+                           util.jsonadd(results,'/module','insertAccessRecord');
                         }
-                      
                     });
                  callback(null, results);
-               } 
+               }else{
+                console.log('!=');
+                 Connection.rollback(function() {
+                            callback('commit err' + err, null);
+                          });
+               }
 
-            });
+            }); //beginTransaction
 
         }
       });
@@ -922,7 +930,7 @@ function insertAccessRecord(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','getAccessRecord returns');
+            util.log('log','insertAccessRecord returns');
             util.log('log',JSON.stringify(results));
             callback(results);
           }

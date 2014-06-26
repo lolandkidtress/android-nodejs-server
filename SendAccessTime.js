@@ -76,7 +76,7 @@ function SendAccessRecord(callback){
         Connection = mysql.createConnection(Access_db_config);
 
         //只更新当天的数据
-        selectSQL1 = " select max(em.eventtime) inTime,min(em.eventtime) OutTime,em.employeeno ,DATE_FORMAT(current_date(),'%Y%m%d') objdate"
+        selectSQL1 = " select max(em.eventtime) inTime,min(em.eventtime) OutTime,em.employeeno ,DATE_FORMAT(em.eventtime,'%Y%m%d') objdate"
         selectSQL1 += " from "
         selectSQL1 += " (select DATE_FORMAT(eventtime, '%Y-%m-%d %k:%i:%s') eventtime,employeeno from event  "
         selectSQL1 += " where typeid = 10  "
