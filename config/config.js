@@ -4,10 +4,11 @@ var request = "";  //业务数据 json对象
 var tracelever ="debug"; //全局的日志级别
 
 var db_config = {
-  host: '192.168.175.129',
+  host: '192.168.20.85',
   user: 'whs',
   password: 'whs',
-  database: 'ivggs_whs'
+  database: 'ivggs_whs',
+  insecureAuth: true
 };
 
 var Access_db_config = {
