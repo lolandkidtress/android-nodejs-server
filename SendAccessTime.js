@@ -82,10 +82,9 @@ function SendAccessRecord(callback){
         selectSQL1 += " where typeid = 10  "
         selectSQL1 += " and employeeno is not null  "
         selectSQL1 += " and employeeno!=''  "
-        selectSQL1 += "   "
         //selectSQL1 += " and DATE_FORMAT(eventtime,'%Y%m%d') = DATE_FORMAT(current_date(),'%Y%m%d')  "
         selectSQL1 += " ) em  "
-        selectSQL1 += " group by em.employeeno,DATE_FORMAT(current_date(),'%Y%m%d'); ";
+        selectSQL1 += " group by em.employeeno,DATE_FORMAT(eventtime,'%Y%m%d'); ";
 
 
             var query = Connection.query(selectSQL1);
