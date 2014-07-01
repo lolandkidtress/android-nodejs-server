@@ -23,6 +23,7 @@ function route(pathname,questquery,response, request) {
   handle["/getTotalOVTime"] = requestHandlers.getTotalOVTimeHandle
   handle["/getTotalVCTime"] = requestHandlers.getTotalVCTimeHandle
   handle["/getTotalPJTime"] = requestHandlers.getTotalPJTimeHandle
+  handle["/getAvailPJ"] = requestHandlers.getAvailPJHandle  
 
 
 

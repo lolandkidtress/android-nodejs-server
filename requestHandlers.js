@@ -112,6 +112,25 @@ async.series([
 });
 }
 
+function getAvailPJHandle(questquery,response,request,callback){
+
+async.series([
+    function(cb) {
+      login.getAvailPJ(questquery,response,cb);
+    },
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
 function getWHEmptyDateHandle(questquery,response,request,callback){
 
 async.waterfall([
@@ -425,6 +444,7 @@ exports.getWHEmptyDateHandle = getWHEmptyDateHandle;
 exports.getCalendarHandle = getCalendarHandle;
 exports.getWHDetailListHandle = getWHDetailListHandle;
 exports.getAccessRecordHandle = getAccessRecordHandle;
+exports.getAvailPJHandle = getAvailPJHandle;
 exports.insertAccessRecordHandle = insertAccessRecordHandle;
 exports.getTotalOVTimeHandle = getTotalOVTimeHandle;
 exports.getTotalVCTimeHandle = getTotalVCTimeHandle;

@@ -369,10 +369,8 @@ function getPaidVCTime(questquery,response,callback){
 
 /*
 今年度有薪休假剩余天数：SUM（员工有薪休假表.给予工时-调休消耗工时）                                                                              员工有薪休假表.D假期承认状态：1已承认                            
-                        -SUM（休假申请明细表.休假时间 （休假类型=1：有薪假&表单状态=1:未承认））                                                                                  
-                                                                                                          
-                       初始时间条件：系统时间在有效期范围(员工有薪休假表)内                                                                                    
-
+                        -SUM（休假申请明细表.休假时间 （休假类型=1：有薪假&表单状态=1:未承认））
+                       初始时间条件：系统时间在有效期范围(员工有薪休假表)内
 */
 
         selectSQL1 = ' select dtAppStatus,GetDt,DtPaidVCType,UsefulWH,usefulFromDt, ',

@@ -11,11 +11,11 @@ var db_config = {
   insecureAuth: true
 };
 
-var Access_db_config = {
-  host: '192.168.175.129',
+var ivggs_db_config = {
+  host: '192.168.20.145',
   user: 'whs',
   password: 'whs',
-  database: 'ivggs_whs'
+  database: 'lportal'
 };
 
 var ASECrypt = {
@@ -24,7 +24,9 @@ var ASECrypt = {
 	iv:'vector'
 }
 
-var ServerPort = '8000';
+var logdest = '/ivggs/log/nodejs/server.log';
+
+var ServerPort = '8081';
 var ExpireTime = 3; //用户登录后的天数
 
 function getTraceLevel(){
@@ -34,6 +36,9 @@ function getTraceLevel(){
 function getDBConfig(){
 	return db_config;
 }
+function getivggsDBConfig(){
+  return ivggs_db_config;
+}
 function getASECrypt(){
 	return ASECrypt;
 }
@@ -41,8 +46,14 @@ function getServerPort(){
 	return ServerPort;
 }
 
+function getLogDest(){
+  return logdest;
+}
+
 
 exports.getTraceLevel = getTraceLevel;
 exports.getDBConfig = getDBConfig;
+exports.getivggsDBConfig = getivggsDBConfig;
 exports.getASECrypt = getASECrypt;
 exports.getServerPort  = getServerPort;
+exports.getLogDest  = getLogDest;

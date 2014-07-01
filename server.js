@@ -48,7 +48,7 @@ function dohandle(){
 
 
         if(query!=null){
-            
+
             //questquery = crypt.decrypt(query); //解密,失败返回'' 
             questquery = query; 
             //var questquery = JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));   // 替换双引号和空格,转换成json对象
@@ -56,22 +56,35 @@ function dohandle(){
             util.log('debug',"decrypt result is " + questquery.replace(/%20/g,' ').replace(/%22/g,'"').replace(/%2f/g,'\\'));
             //var questquery = JSON.parse(query.replace(/%20/g,' ').replace(/%22/g,'"'));
             bussiquery=JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"').replace(/%2f/g,'\\'));
-            
+
          if(bussiquery!=''&& bussiquery!=null){
-            
+
             util.log('info','buss query is ' );
             util.log('info',JSON.stringify(bussiquery));
-            
-              login.userValidateCheck(bussiquery,function(cb){
-                console.log(cb);
-              }); 
+            if(pathname!='/login'){
+                  util.log('debug','userValidateCheck enter');
+                  login.userValidateCheck(bussiquery,function(cb){
+                    util.log('info','userValidateCheck return' + cb);
+                    if(cb!=1){   //uuid校验失败
+                              util.log('info','User uuid InValid');
+                              err = {
+                                'errno': '500',
+                                'errmsg': 'User uuid InValid'
+                                };
 
+                             router.route('/errhandle',err, response, request);
+                            }
+                            else{  //uuid通过了
+                              router.route(pathname,bussiquery, response, request); //根据action的值去调用不同的业务
+                            }
+                  });
+                }else{ //是login模块
                   router.route(pathname,bussiquery, response, request);//根据action的值去调用不同的业务
-
+                }
 
             //router.route(pathname,bussiquery, response, request);//根据action的值去调用不同的业务
          }
-         else
+         else  //解密失败
          {
           util.log('info','decrypt error'); 
           err = {
@@ -85,7 +98,7 @@ function dohandle(){
           util.log('info','end of response');
           */
          router.route('/errhandle',err, response, request);
-         
+
          }
         }else {  //业务数据是空
           util.log('info','query is null'); 
@@ -100,13 +113,10 @@ function dohandle(){
           util.log('info','end of response');
           */
          router.route('errhandle',err, response, request);
-         
         }
-       
-         
       }
 
-    })   
+    })
     //server.listen(8000);
       //socketio = require('socket.io').listen(server);
 

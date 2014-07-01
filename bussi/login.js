@@ -1,79 +1,4 @@
 /*1.login 模块 
-   包含 1.用户名密码的校验
-
-认证失败返回的   
-json 格式为：
-{ errno : '400',
-  errmsg: 'User Invalid',
-  module: 'login'
-  user_name:'',
-  credential:''
-}
-
-认证成功返回
-json 格式为：
-{ errno : '200',
-  errmsg: 'setting get',
-  module: 'login',
-  queryresult{
-  userid:'',
-  username:'',
-  credential:''
-  }
-}
-
-
-2.用户校验成功后，取得该用户当月使用的考勤规则
-
-传入参数：
-employeeID
-startdt
-enddt
-
-考勤规则返回json格式：
-
-取得规则后返回
-json 格式为：
-{ errno : '200',
-  errmsg: 'setting get',
-  module: 'getWHSetting',
-  rowcount :'', //该月有多少条规则
-  queryresult0{
-  FromDT:'',  开始有效日
-  ToDT:'',    结束有效期
-  AMFrom:'',
-  AMTo:'',
-  MiddleFrom:'',
-  MiddleTo:'',
-  PMFrom:'',
-  PMTo:'',
-  AlarmWH:'',
-  OvertimeWHUnit :'',  加班申请最小时间单位 
-  OvertimeStartTime :'',  加班起算时间 
-  OvertimeStartWH :'' ,加班起始单位 
-  OvertimeDuration  :'' 加班转调休的有效期（月） 
-  }
-  queryresult1{
-    .....
-  }
-}
-
-3.取得需要出勤的日历
-取得规则后返回
-json 格式为：
-{ errno : '200',
-  errmsg: 'Calendar get',
-  module: 'getCalendar',
-  rowcount :'', //该月有多少条
-  queryresult0{
-  ymd:'',  日期
-  weekdate:'',    周几
-  dtdaytype:''  01： 出勤日；02：休日；03：国定假日；04：IV特别休日
-  }
-   queryresult1{
-  .....
-  }
-}
 */
 
 var mysql = require('mysql');
@@ -85,19 +10,34 @@ var Wind = require('wind');
 var config = require('../config/config.js');
 var moment = require('moment');
 
-var UserValidatedList={
+global.UserValidatedList={
   };
-var userToken = {
+
+global.userToken = {
   userid:'',
   uuid:'',
-  ExpireDate:''
+  LoginDate:''
   };
 
-
-function userValidateCheck(query,callback){
-   console.log("11111");
-  console.log(query);
-  callback();
+//校验成功范围1，失败返回0
+function userValidateCheck(bussiquery,callback){
+   util.log('debug','UserValidatedList is ' + JSON.stringify(UserValidatedList));
+   util.log('debug','userid = ' + util.jsonget(bussiquery,'/userid'));
+   util.log('debug','usertoken = ' + util.jsonget(bussiquery,'/uuid'));
+   if(config.getTraceLevel()=='debug'){  //debug直接返回1
+      util.log('log','debug mode,pass');
+      callback('1');
+   }else{
+      util.log('log',util.jsonget(userToken,util.jsonget(bussiquery,'/userid')+'/uuid'));
+      if(util.jsonget(userToken,util.jsonget(bussiquery,'/userid')+'/uuid') != util.jsonget(bussiquery,'/uuid')){
+        callback('0');
+      }
+      //util.log('log','/'+util.jsonget(UserValidatedList,'/26/uuid'));
+      else{
+        callback('1');
+      }
+   }
+  
 }
 
 
@@ -125,7 +65,8 @@ function login(questquery,response,callback){
 
       //var pool = mysql.createPool(config.getDBConfig());
       
-      var pool = mysqlconn.poolConnection();
+      //var pool = mysqlconn.poolConnection();
+      var pool = mysql.createPool(config.getivggsDBConfig());
 
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
@@ -171,10 +112,9 @@ function login(questquery,response,callback){
 
                       util.jsonadd(userToken,'/userid',util.jsonget(results,'/queryresult/userid'));
                       util.jsonadd(userToken,'/uuid',util.jsonget(results,'/queryresult/uuid'));
-                      util.jsonadd(userToken,'/ExpireDate',moment().format('YYYY-MM-DD'));
-
+                      util.jsonadd(userToken,'/LoginDate',moment().format('YYYY-MM-DD'));
                       util.jsonadd(UserValidatedList,'/'+util.jsonget(results,'/queryresult/userid'),userToken);
-                      util.log('log','UserValidatedList is '+ JSON.stringify(UserValidatedList));
+                      util.log('debug','UserValidatedList refreshed '+ JSON.stringify(UserValidatedList));
 
                     }else
                     {
@@ -198,7 +138,8 @@ function login(questquery,response,callback){
 
             util.log('log','login returns');
             util.log('log',results);
-			      callback(results);
+            util.log('log','userToken is ' + JSON.stringify(userToken));
+            callback(results);
 			    }
 			    else
 			    {
@@ -426,7 +367,7 @@ function getCalendar(questquery,response,callback){
                    else
                    {
                       util.jsonadd(results,'/errno','300');
-                      util.jsonadd(results,'/errmsg','Calendar get Error');
+                      util.jsonadd(results,'/errmsg','Calendar get Empty');
                       util.jsonadd(results,'/module','getCalendar');
                       util.jsonadd(results,'/rowcount',i);
                    }   
@@ -465,7 +406,124 @@ function getCalendar(questquery,response,callback){
 
 }
 
+//取得可以填写的项目信息
+/*
+输入参数，当前日
+*/
+function getAvailPJ(questquery,response,callback){ 
+  var i = 0;
+  var results ={
+    errno:'',
+    errmsg:''
+  };
+  var pool;
+  var Connection;
+  var selectSQL1;
+
+  async.series([
+
+      function(callback){
+      var sqlerr;
+      var row;
+      var err;
+      var res;
+
+      //var pool = mysql.createPool(config.getDBConfig());
+      
+      var pool = mysqlconn.poolConnection();
+
+      pool.getConnection(function(sqlerr, Connection) {
+        // connected! (unless `err` is set)
+        if(sqlerr!=null){
+          util.log('log','get ConnectPool error');
+          util.log('log',sqlerr);
+          err = sqlerr;  
+          //util.jsonadd(err);
+          callback(sqlerr, null);
+
+        }else
+        {
+
+        selectSQL1 = ' select pj.PJInfoID,pj.PJNo,pj.Name from trnpjinfo pj ';
+        selectSQL1 += ' where pj.FlgUnProject=1 ';
+        selectSQL1 += ' union ';
+        selectSQL1 += ' select pj.PJInfoID,pj.PJNo,pj.Name from trnpjperson pjp,trnpjinfo pj ';
+        selectSQL1 += ' where pjp.PJInfoID = pj.pjinfoid ';
+        selectSQL1 += ' and ' + Connection.escape(util.jsonget(questquery,'/currentdt')) + 'between pj.ExpFromDt and pj.ExpToDt' ;  
+        selectSQL1 += ' and pjp.EmployeeID = ' + Connection.escape(util.jsonget(questquery,'/userid'));
+
+        util.log('debug',selectSQL1);
+            var query = Connection.query(selectSQL1);
+            query
+              .on('error', function(sqlerr) {
+                // Handle error, an 'end' event will be emitted after this as well
+                results = sqlerr;
+                util.log('log','Connect error '+ sqlerr);
+                util.jsonadd(results,'/sqlstmt',selectSQL1);
+                callback(sqlerr,null);
+              })
+              .on('result', function(rows) {
+                // Pausing the connnection is useful if your processing involves I/O
+                //connection.pause();
+                util.jsonadd(results,'/queryresult'+i+'/PJInfoID',rows.PJInfoID);
+                util.jsonadd(results,'/queryresult'+i+'/PJNo',rows.PJNo);
+                util.jsonadd(results,'/queryresult'+i+'/Name',rows.Name);
+              
+                i=i+1;
+              })
+              .on('end', function(rows) {
+                  if(i>0){
+
+
+                      util.jsonadd(results,'/errno','200');
+                      util.jsonadd(results,'/errmsg','AvailPJ get Succ');
+                      util.jsonadd(results,'/module','getAvailPJ');
+                      util.jsonadd(results,'/rowcount',i);
+                   }
+                   else
+                   {
+                      util.jsonadd(results,'/errno','300');
+                      util.jsonadd(results,'/errmsg','AvailPJ get Empty');
+                      util.jsonadd(results,'/module','getAvailPJ');
+                      util.jsonadd(results,'/rowcount',i);
+                   }   
+                  Connection.release();
+                  callback(null,results);  
+              });
+        }
+        
+      });
+
+    }
+        ],function(sqlerr,results){
+
+          if(sqlerr == null||sqlerr == '' ){
+
+           if(util.jsonexist(results,'/errno') != true){
+              util.jsonadd(results,'/errno','200');
+            }
+            util.log('log','getAvailPJ returns');
+            util.log('log',results);
+            callback(results);
+          }
+          else
+          {
+            //global.queryDBStatus = 'err';
+            util.log('error',"err  = "+ sqlerr);
+            results = sqlerr;
+            util.log('log','getCalendar returns');
+            util.jsonadd(results,'/errno','400');
+            util.jsonadd(results,'/errmsg','AvailPJ get Error');
+            util.jsonadd(results,'/module','getAvailPJ');
+            util.log('log',results);
+            callback(results);
+          }
+      }); //async.series end
+
+}
+
 exports.login=login;
 exports.getWHSetting=getWHSetting;
 exports.getCalendar = getCalendar;
+exports.getAvailPJ = getAvailPJ;
 exports.userValidateCheck=userValidateCheck
