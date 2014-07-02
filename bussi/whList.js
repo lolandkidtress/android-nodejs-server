@@ -63,7 +63,7 @@ function getWHDetailList(questquery,response,callback){
         {
           //出勤申请 行列转换 方便后续计算是否满出勤
         selectSQL1 = ' select EmployeeID,ObjYMD, ';
-        selectSQL1 += ' max(case whtype when "1" then "1" else 0 end) whtype, ';
+        selectSQL1 += ' max(case whtype when "1" then formid else 0 end) whid, ';
         selectSQL1 += ' max(case whtype when "1" then WH else 0 end) abswh, ';
         selectSQL1 += ' max(case whtype when "1" then DtAppStatus else 0 end) whStatus, ';
         selectSQL1 += ' max(case whtype when "1" then FlgHR else 0 end) whFlgHR, ';
@@ -73,7 +73,7 @@ function getWHDetailList(questquery,response,callback){
         selectSQL1 += ' max(case whtype when "1" then FlgOut else 0 end) whFlgOut, ';
         selectSQL1 += ' max(case whtype when "1" then FlgPJG else 0 end) whFlgPJG, ';
 
-        selectSQL1 += ' max(case whtype when "2" then "1" else 0 end) ovtype, ';
+        selectSQL1 += ' max(case whtype when "2" then formid else 0 end) ovid, ';
         selectSQL1 += ' max(case whtype when "2" then WH else 0 end) ovwh, ';
         selectSQL1 += ' max(case whtype when "2" then DtAppStatus else 0 end) ovStatus, ';
         selectSQL1 += ' max(case whtype when "2" then FlgHR else 0 end) ovFlgHR, ';
@@ -83,7 +83,7 @@ function getWHDetailList(questquery,response,callback){
         selectSQL1 += ' max(case whtype when "2" then FlgOut else 0 end) ovFlgOut, ';
         selectSQL1 += ' max(case whtype when "2" then FlgPJG else 0 end) ovFlgPJG, ';
 
-        selectSQL1 += ' max(case whtype when "3" then "1" else 0 end) vctype, ';
+        selectSQL1 += ' max(case whtype when "3" then formid else 0 end) vcid, ';
         selectSQL1 += ' max(case whtype when "3" then WH else 0 end) vcwh, ';
         selectSQL1 += ' max(case whtype when "3" then DtAppStatus else 0 end) vcStatus, ';
         selectSQL1 += ' max(case whtype when "3" then FlgHR else 0 end) vcFlgHR, ';
@@ -95,20 +95,20 @@ function getWHDetailList(questquery,response,callback){
 
         selectSQL1 += ' from   ';
         selectSQL1 += ' ( ';
-        selectSQL1 += ' select wh.EmployeeID,wh.ObjYMD,whd.WH as WH,wh.DtAppStatus,wh.FlgHR, '; 
-        selectSQL1 += ' whd.FromDt,whd.ToDt,whd.PJInfoID,whd.FlgOut,whd.FlgPJG,"1" as whtype ';
+        selectSQL1 += ' select wh.WHFormID as formid,wh.EmployeeID,wh.ObjYMD,whd.WH as WH,wh.DtAppStatus,wh.FlgHR, '; 
+        selectSQL1 += ' whd.FromDt,whd.ToDt,whd.PJInfoID,whd.FlgOut,whd.FlgPJG,1 as whtype ';
         selectSQL1 += ' from trnwhform wh,trnwhformdetail whd ';
         selectSQL1 += ' where wh.WHFormID = whd.WHFormID ';
         selectSQL1 += ' and wh.DelFlg !=1 and whd.DelFlg!=1 ';
         selectSQL1 += ' union all ';
-        selectSQL1 += ' select ov.EmployeeID,ov.ObjYMD,ov.OVWH as WH, ov.DtAppStatus,ov.FlgHR, ';
-        selectSQL1 += ' ovd.FromDt,ovd.ToDt,ovd.PJInfoID,ovd.FlgOut,ovd.FlgPJG,"2" as whtype ';
+        selectSQL1 += ' select ov.OVFormID as formid,ov.EmployeeID,ov.ObjYMD,ov.OVWH as WH, ov.DtAppStatus,ov.FlgHR, ';
+        selectSQL1 += ' ovd.FromDt,ovd.ToDt,ovd.PJInfoID,ovd.FlgOut,ovd.FlgPJG,2 as whtype ';
         selectSQL1 += ' from trnovform ov,trnovformdetail ovd ';
         selectSQL1 += ' where ov.OVFormID = ovd.OVFormID ';
         selectSQL1 += ' and ov.DelFlg !=1 and ovd.DelFlg!=1 ';
         selectSQL1 += ' union all ';
-        selectSQL1 += ' select vc.EmployeeID,vcd.ObjYMD,vcd.VCTime as WH, vc.DtAppStatus,vcd.FlgHR, ';
-        selectSQL1 += ' vcd.VCFromDt,vcd.VCToDt,"" as PJInfoID,"" as FlgOut,"" as FlgPJG,"3" as whtype ';
+        selectSQL1 += ' select vc.VCFormID as formid,vc.EmployeeID,vcd.ObjYMD,vcd.VCTime as WH, vc.DtAppStatus,vcd.FlgHR, ';
+        selectSQL1 += ' vcd.VCFromDt,vcd.VCToDt,null as PJInfoID,null as FlgOut,null as FlgPJG,3 as whtype ';
         selectSQL1 += ' from trnvcform vc,trnvcformdetail vcd ';
         selectSQL1 += ' where vc.VCFormID = vcd.VCFormID ';
         selectSQL1 += ' and vc.DelFlg !=1 and vcd.DelFlg!=1 ';
@@ -134,6 +134,8 @@ function getWHDetailList(questquery,response,callback){
                 //connection.pause();
                 util.jsonadd(results,'/queryresult'+i+'/EmployeeID',rows.EmployeeID);
                 util.jsonadd(results,'/queryresult'+i+'/ObjYMD',rows.ObjYMD);
+
+                util.jsonadd(results,'/queryresult'+i+'/whid',rows.whid);
                 util.jsonadd(results,'/queryresult'+i+'/whtype',rows.whtype);
                 util.jsonadd(results,'/queryresult'+i+'/abswh',rows.abswh);
                 util.jsonadd(results,'/queryresult'+i+'/whStatus',rows.whStatus);
@@ -144,8 +146,8 @@ function getWHDetailList(questquery,response,callback){
                 util.jsonadd(results,'/queryresult'+i+'/whFlgOut',rows.whFlgOut);
                 util.jsonadd(results,'/queryresult'+i+'/whFlgPJG',rows.whFlgPJG);
                 
-                util.jsonadd(results,'/queryresult'+i+'/ovtype',rows.ovtype);
                 util.jsonadd(results,'/queryresult'+i+'/ovwh',rows.ovwh);
+                util.jsonadd(results,'/queryresult'+i+'/ovid',rows.ovid);
                 util.jsonadd(results,'/queryresult'+i+'/ovStatus',rows.ovStatus);
                 util.jsonadd(results,'/queryresult'+i+'/ovFlgHR',rows.ovFlgHR);
                 util.jsonadd(results,'/queryresult'+i+'/ovFromDt',rows.ovFromDt);
@@ -154,7 +156,7 @@ function getWHDetailList(questquery,response,callback){
                 util.jsonadd(results,'/queryresult'+i+'/ovFlgOut',rows.ovFlgOut);
                 util.jsonadd(results,'/queryresult'+i+'/ovFlgPJG',rows.ovFlgPJG);
 
-                util.jsonadd(results,'/queryresult'+i+'/vctype',rows.vctype);
+                util.jsonadd(results,'/queryresult'+i+'/vcid',rows.vcid);
                 util.jsonadd(results,'/queryresult'+i+'/vcwh',rows.vcwh);
                 util.jsonadd(results,'/queryresult'+i+'/vcStatus',rows.vcStatus);
                 util.jsonadd(results,'/queryresult'+i+'/vcFlgHR',rows.vcFlgHR);

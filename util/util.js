@@ -14,32 +14,31 @@ exports.err = function(errMsg, callback) {
 };
 
 exports.log = function(ilevel,msg, obj) {
+
+
+log4js.configure({
+  "appenders": [
+      {
+          "type": "dateFile",
+          "filename": "server.log",
+          "pattern": "-from-MM-dd",
+          //"maxLogSize": 20480,
+          //"backups": 10,
+          "category": "console",
+          "layout": {
+              "type": "messagePassThrough"
+            }
+      },
 /*
-log4js.configure({
-  "appenders": [
-      {
-          "type": "file",
-          "filename": "server.log",
-          "maxLogSize": 4096,
-          "backups": 5,
-          "category": "console",
-          "mode": "worker"
-      }
-  ]
-});
-*/
-
-
-log4js.configure({
-  "appenders": [
-      {
-          "type": "file",
-          "filename": "server.log",
-          //"maxLogSize": 4096,
-          //"backups": 5,
-          "category": "console",
-          "mode": "worker"
-      }
+    {
+      "type": "file",
+      "absolute": true,
+      "filename": "/ivggs/logs/nodejs/server.log",
+      "maxLogSize": 20480,
+      "backups": 10,
+      "category": "absolute-logger"          
+    }
+ */   
   ]
 });
 
@@ -186,6 +185,7 @@ exports.jsonremove = function(obj, objPointer) {
 exports.jsonadd = function(obj, objPointer, value) {
         return pointer.set(obj, objPointer, value);
 }
+
 
 
 

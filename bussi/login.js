@@ -19,28 +19,6 @@ global.userToken = {
   LoginDate:''
   };
 
-//校验成功范围1，失败返回0
-function userValidateCheck(bussiquery,callback){
-   util.log('debug','UserValidatedList is ' + JSON.stringify(UserValidatedList));
-   util.log('debug','userid = ' + util.jsonget(bussiquery,'/userid'));
-   util.log('debug','usertoken = ' + util.jsonget(bussiquery,'/uuid'));
-   if(config.getTraceLevel()=='debug'){  //debug直接返回1
-      util.log('log','debug mode,pass');
-      callback('1');
-   }else{
-      util.log('log',util.jsonget(userToken,util.jsonget(bussiquery,'/userid')+'/uuid'));
-      if(util.jsonget(userToken,util.jsonget(bussiquery,'/userid')+'/uuid') != util.jsonget(bussiquery,'/uuid')){
-        callback('0');
-      }
-      //util.log('log','/'+util.jsonget(UserValidatedList,'/26/uuid'));
-      else{
-        callback('1');
-      }
-   }
-  
-}
-
-
 //使用连接池方式
 /*
 输入参数 员工的邮箱，密码
@@ -113,7 +91,10 @@ function login(questquery,response,callback){
                       util.jsonadd(userToken,'/userid',util.jsonget(results,'/queryresult/userid'));
                       util.jsonadd(userToken,'/uuid',util.jsonget(results,'/queryresult/uuid'));
                       util.jsonadd(userToken,'/LoginDate',moment().format('YYYY-MM-DD'));
-                      util.jsonadd(UserValidatedList,'/'+util.jsonget(results,'/queryresult/userid'),userToken);
+
+                      util.jsonadd(UserValidatedList,'/UserValidatedList'+'/userid'+util.jsonget(results,'/queryresult/userid'),userToken);
+
+                      process.send(UserValidatedList);
                       util.log('debug','UserValidatedList refreshed '+ JSON.stringify(UserValidatedList));
 
                     }else
@@ -130,7 +111,6 @@ function login(questquery,response,callback){
       });
 
 		},
-    
 
 			  ],function(sqlerr,results){
 
@@ -526,4 +506,3 @@ exports.login=login;
 exports.getWHSetting=getWHSetting;
 exports.getCalendar = getCalendar;
 exports.getAvailPJ = getAvailPJ;
-exports.userValidateCheck=userValidateCheck

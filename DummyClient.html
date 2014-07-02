@@ -66,30 +66,30 @@ function encrypted(formObj){
 
     var formObj = document.getElementById("form");
     //登录
-    //var StringS = '{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"feng-jin.deng@ivision-china.cn"}';
-  	//formObj.action =  'http://127.0.0.1:8000/login?'+ StringS;
+    var StringS = '{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"feng-jin.deng@ivision-china.cn"}';
+  	formObj.action =  'http://127.0.0.1:8001/login?'+ StringS;
 
   	//考勤规则
   	//var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531"}';
-  	//formObj.action =  'http://127.0.0.1:8000/getWHSetting?'+ StringS;
+  	//formObj.action =  'http://127.0.0.1:8001/getWHSetting?'+ StringS;
 
     //取得可填写的项目
-    var StringS = '{"userid":"81","currentdt":"20140703","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
-    formObj.action =  'http://127.0.0.1:8000//getAvailPJ?'+ StringS;
+    //var StringS = '{"userid":"81","currentdt":"20140703","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
+    //formObj.action =  'http://127.0.0.1:8001//getAvailPJ?'+ StringS;
 
 
      //日历设定
   	//var StringS = '{"startdt":"20140501","enddt":"20140531"}';
-  	//formObj.action =  'http://127.0.0.1:8000/getCalendar?'+ StringS;
+  	//formObj.action =  'http://127.0.0.1:8001/getCalendar?'+ StringS;
 
   	//申请记录
   	//var StringS = '{"userid":"24","startdt":"20140501","enddt":"20140531"}';
-  	//formObj.action =  'http://127.0.0.1:8000/getWHDetailList?'+ StringS;
+  	//formObj.action =  'http://127.0.0.1:8001/getWHDetailList?'+ StringS;
 
 
     //门禁取得记录
     //var StringS = '{"errno":"","errmsg":"","queryresult0":{"EmployeeID":"10002","objdate":"20140623","OutTime":"2014-06-23T01:28:00.000Z","inTime":"2014-06-23T01:28:07.000Z"},"queryresult1":{"EmployeeID":"200900704","objdate":"20140623","OutTime":"2014-06-23T01:28:00.000Z","inTime":"2014-06-23T01:28:07.000Z"},"rowcount":"2"}';
-    //formObj.action =  'http://127.0.0.1:8000/insertAccessRecord?'+ StringS;
+    //formObj.action =  'http://127.0.0.1:8001/insertAccessRecord?'+ StringS;
 
 
     formObj.submit();
@@ -97,7 +97,7 @@ function encrypted(formObj){
 }
 </script>
 <body>
-<FORM name= 'form' id='form' action='http://127.0.0.1:8000/'
+<FORM name= 'form' id='form' action='http://127.0.0.1:8001/'
        enctype="multipart/form-data"
        method="post" >
 

@@ -3,10 +3,12 @@ var socketio ;
 var url = require("url");
 var cluster = require('cluster');
 var util = require("./util/util.js");
+var comm = require("./util/comm.js");
 var config = require("./config/config.js");
 var router = require("./route");
 var crypt = require("./crypto/crypto.js");
 var login = require('./bussi/login.js');
+var domain = require('domain');
 
 var action="";   //action数据
 var questquery=""; //业务数据，解密后
@@ -15,10 +17,24 @@ var bussiquery="";
 //global.tracelevel = config.getTraceLevel();
 //global.db_config = config.getDBConfig();
 
-//function dohandle(route, handle){ 
-function dohandle(){ 
+//function dohandle(route, handle){
+function dohandle(){
+
     server = http.createServer(function (request, response) {
 
+      var d = domain.create();   //捕捉所有未捕获的错误
+      d.on('error', function(er) {
+      util.log('log', "Domain Catch uncaughtException: " + er.stack);
+      err = {
+            'errno': '400',
+            'errmsg': 'uncaughtException'
+            };
+      router.route('/errhandle',err, response, request);
+    });
+
+    d.add(request);
+    d.add(response);
+    d.run(function() {
         if(request.url != '/favicon.ico'){
 
         //util.log('debug', 'Worker #'+ cluster.worker.id + "@" + cluster.worker.process.pid + " Serverd for U ");
@@ -26,7 +42,7 @@ function dohandle(){
 
          
         //空格替换
-        var pathname = url.parse(request.url).pathname.replace(/%20/g,' '); 
+        var pathname = url.parse(request.url).pathname.replace(/%20/g,' ');
         
         //正确显示中文，将三字节的字符转换为utf-8编码
         re=/(%[0-9A-Fa-f]{2}){3}/g;
@@ -59,17 +75,17 @@ function dohandle(){
 
          if(bussiquery!=''&& bussiquery!=null){
 
-            util.log('info','buss query is ' );
-            util.log('info',JSON.stringify(bussiquery));
-            if(pathname!='/login'){
+            util.log('debug','buss query is ' );
+            util.log('debug',JSON.stringify(bussiquery));
+            if(pathname!='/login' && pathname!='/insertAccessRecord'){
                   util.log('debug','userValidateCheck enter');
-                  login.userValidateCheck(bussiquery,function(cb){
-                    util.log('info','userValidateCheck return' + cb);
+                  comm.userValidateCheck(bussiquery,function(cb){
+                    util.log('debug','userValidateCheck return' + cb);
                     if(cb!=1){   //uuid校验失败
-                              util.log('info','User uuid InValid');
+                              util.log('info','Session InValid');
                               err = {
                                 'errno': '500',
-                                'errmsg': 'User uuid InValid'
+                                'errmsg': 'Session InValid'
                                 };
 
                              router.route('/errhandle',err, response, request);
@@ -114,32 +130,18 @@ function dohandle(){
           */
          router.route('errhandle',err, response, request);
         }
-      }
+      } //request.url != '/favicon.ico'
+
+
+    });  //d.run
+
 
     })
     //server.listen(8000);
       //socketio = require('socket.io').listen(server);
 
-      server.listen(config.getServerPort()); 
-
-      //socketio.enable('browser client minification');  // send minified client
-      //socketio.enable('browser client etag');          // apply etag caching logic based on version number
-      //socketio.enable('browser client gzip');          // gzip the file
-      //socketio.set('log level', 1);                    // reduce logging
-
-      // enable all transports (optional if you want flashsocket support, please note that some hosting
-      // providers do not allow you to create servers that listen on a port different than 80 or their
-      // default port)
-      /*
-      socketio.set('transports', [
-          'websocket'
-        , 'flashsocket'
-        , 'htmlfile'
-        , 'xhr-polling'
-        , 'jsonp-polling'
-      ]);
-    */
+      server.listen(config.getServerPort());
       util.log('info','Server start on ' + config.getServerPort());
-} 
+}
 
 exports.dohandle = dohandle;

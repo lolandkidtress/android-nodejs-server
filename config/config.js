@@ -26,7 +26,7 @@ var ASECrypt = {
 
 var logdest = '/ivggs/log/nodejs/server.log';
 
-var ServerPort = '8081';
+var ServerPort = '8001';
 var ExpireTime = 3; //用户登录后的天数
 
 function getTraceLevel(){
@@ -50,6 +50,10 @@ function getLogDest(){
   return logdest;
 }
 
+function getExpireTime(){
+  return ExpireTime;
+}
+
 
 exports.getTraceLevel = getTraceLevel;
 exports.getDBConfig = getDBConfig;
@@ -57,3 +61,4 @@ exports.getivggsDBConfig = getivggsDBConfig;
 exports.getASECrypt = getASECrypt;
 exports.getServerPort  = getServerPort;
 exports.getLogDest  = getLogDest;
+exports.getExpireTime  = getExpireTime;
