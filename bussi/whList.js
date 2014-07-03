@@ -1,7 +1,6 @@
-/* 工时一览模块 
-  包含 
+/* 工时一览模块
+  包含
   1.取得员工当月每日填写的工时的详细信息，用于日历方式显示
-	
 json 格式为：
 { errno : '200',
   errmsg: 'getEmptyWorkTime complete',
@@ -29,8 +28,8 @@ var async = require('async');
 var config = require('../config/config.js')
 
 //带有callback  取得员工当月每日填写的工时的详细信息，用于日历方式显示
-  
-function getWHDetailList(questquery,response,callback){ 
+
+function getWHDetailList(questquery,response,callback){
   var i = 0;
   var results ={
     errno:'',
@@ -42,7 +41,7 @@ function getWHDetailList(questquery,response,callback){
 
 	async.series([
       //取得每天详细的考勤记录
-    	function(callback){  
+    	function(callback){
 			var sqlerr;
 			var row;
 			var err;
@@ -95,7 +94,7 @@ function getWHDetailList(questquery,response,callback){
 
         selectSQL1 += ' from   ';
         selectSQL1 += ' ( ';
-        selectSQL1 += ' select wh.WHFormID as formid,wh.EmployeeID,wh.ObjYMD,whd.WH as WH,wh.DtAppStatus,wh.FlgHR, '; 
+        selectSQL1 += ' select wh.WHFormID as formid,wh.EmployeeID,wh.ObjYMD,whd.WH as WH,wh.DtAppStatus,wh.FlgHR, ';
         selectSQL1 += ' whd.FromDt,whd.ToDt,whd.PJInfoID,whd.FlgOut,whd.FlgPJG,1 as whtype ';
         selectSQL1 += ' from trnwhform wh,trnwhformdetail whd ';
         selectSQL1 += ' where wh.WHFormID = whd.WHFormID ';
@@ -127,7 +126,7 @@ function getWHDetailList(questquery,response,callback){
                 util.log('log','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
-                
+
               })
               .on('result', function(rows) {
                 // Pausing the connnection is useful if your processing involves I/O
@@ -145,7 +144,7 @@ function getWHDetailList(questquery,response,callback){
                 util.jsonadd(results,'/queryresult'+i+'/whPJInfoID',rows.whPJInfoID);
                 util.jsonadd(results,'/queryresult'+i+'/whFlgOut',rows.whFlgOut);
                 util.jsonadd(results,'/queryresult'+i+'/whFlgPJG',rows.whFlgPJG);
-                
+
                 util.jsonadd(results,'/queryresult'+i+'/ovwh',rows.ovwh);
                 util.jsonadd(results,'/queryresult'+i+'/ovid',rows.ovid);
                 util.jsonadd(results,'/queryresult'+i+'/ovStatus',rows.ovStatus);
@@ -169,7 +168,7 @@ function getWHDetailList(questquery,response,callback){
                 i=i+1;
               })
               .on('end', function(rows) {
-                
+
                   if(i>0){
                     util.jsonadd(results,'/errno','200');
                     util.jsonadd(results,'/errmsg','getWHDetailList complete');
@@ -183,12 +182,12 @@ function getWHDetailList(questquery,response,callback){
                     util.jsonadd(results,'/rowcount',0);
                     util.jsonadd(results,'/module','getWHDetailList');
                   }
-                  
+
                   Connection.release();
-                  callback(null,results);  
+                  callback(null,results);
               });
         }
-        
+
       });
   }
 
@@ -196,7 +195,7 @@ function getWHDetailList(questquery,response,callback){
 			  ],function(sqlerr,results){
 
 			    if(sqlerr == null||sqlerr == '' ){
-          
+
 
             util.log('log','getWHDetailList returns');
             util.log('log',JSON.stringify(results));
@@ -204,7 +203,7 @@ function getWHDetailList(questquery,response,callback){
 			    }
 			    else
 			    {
-			      //global.queryDBStatus = 'err'; 
+			      //global.queryDBStatus = 'err';
 			      util.log('error',"err  = "+ sqlerr);
 			      results = sqlerr;
             util.jsonadd(results,'/errno','400');
@@ -220,7 +219,7 @@ function getWHDetailList(questquery,response,callback){
 }
 
 //加班时间合计
-function getTotalOVTime(questquery,response,callback){ 
+function getTotalOVTime(questquery,response,callback){
   var i = 0;
   var results ={
     errno:'',
@@ -231,8 +230,8 @@ function getTotalOVTime(questquery,response,callback){
   var selectSQL1;
 
   async.series([
-  
-      function(callback){  
+
+      function(callback){
       var sqlerr;
       var row;
       var err;
@@ -245,7 +244,7 @@ function getTotalOVTime(questquery,response,callback){
         if(sqlerr!=null){
           util.log('log','get ConnectPool error');
           util.log('log',sqlerr);
-          err = sqlerr;  
+          err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
 
@@ -275,7 +274,7 @@ function getTotalOVTime(questquery,response,callback){
                 results = sqlerr;
                 util.log('log','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
-                callback(sqlerr,null); 
+                callback(sqlerr,null);
               })
               .on('result', function(rows) {
                 // Pausing the connnection is useful if your processing involves I/O
@@ -288,14 +287,13 @@ function getTotalOVTime(questquery,response,callback){
               .on('end', function(rows) {
                   if(i>0){
 
-                       
+
                            util.jsonadd(results,'/errno','200');
                            util.jsonadd(results,'/errmsg','getTotalOVTime complete');
                            util.jsonadd(results,'/rowcount',i);
                            util.jsonadd(results,'/module','getTotalOVTime');
 
-                      
-                        
+
                       }
                       else
                       {
@@ -303,13 +301,13 @@ function getTotalOVTime(questquery,response,callback){
                            util.jsonadd(results,'/errmsg','getTotalOVTime Empty');
                            util.jsonadd(results,'/rowcount',0);
                            util.jsonadd(results,'/module','getTotalOVTime');
-                       
+
                       }
                   Connection.release();
-                  callback(null,results);  
+                  callback(null,results);
               });
         }
-        
+
       });
   }
 
@@ -318,7 +316,7 @@ function getTotalOVTime(questquery,response,callback){
            if(sqlerr == null||sqlerr == '' ){
                 util.log('log','getTotalOVTime returns');
                         util.log('log',JSON.stringify(results));
-                        callback(results);   
+                        callback(results);
            }
            else
            {
