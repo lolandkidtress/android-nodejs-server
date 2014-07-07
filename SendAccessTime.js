@@ -76,15 +76,21 @@ function SendAccessRecord(callback){
         Connection = mysql.createConnection(Access_db_config);
 
         //只更新当天的数据
-        selectSQL1 = " select DATE_FORMAT(min(em.eventtime) + INTERVAL ( 900 - time_to_sec(min(em.eventtime)) mod 900) second, '%Y-%m-%d %k:%i:%s') OutTime,";
+        selectSQL1 = " select case when ";
+        selectSQL1 += " TIME_TO_SEC(em.eventtime) <= TIME_TO_SEC('9:05:00') ";
+        selectSQL1 += " then DATE_FORMAT(current_date(),'%Y-%m-%d 9:00:00') ";
+        selectSQL1 += " else ";
+        selectSQL1 += " DATE_FORMAT(min(em.eventtime) + INTERVAL ( 900 - time_to_sec(min(em.eventtime)) mod 900) second, '%Y-%m-%d %k:%i:%s') ";
+        selectSQL1 += " end ";
+        selectSQL1 += " OutTime,  ";
         selectSQL1 += " DATE_FORMAT(max(em.eventtime) - INTERVAL ( time_to_sec(max(em.eventtime)) mod 900) second, '%Y-%m-%d %k:%i:%s') inTime " ;
         selectSQL1 += " ,em.employeeno ,DATE_FORMAT(em.eventtime,'%Y%m%d') objdate";
         selectSQL1 += " from ";
         selectSQL1 += " (select eventtime,employeeno from event  ";
         selectSQL1 += " where typeid = 10  ";
         selectSQL1 += " and employeeno is not null  ";
-        selectSQL1 += " and employeeno!=''  ";
-        selectSQL1 += " and DATE_FORMAT(eventtime,'%Y%m%d') = DATE_FORMAT(current_date(),'%Y%m%d')  ";
+        selectSQL1 += " and employeeno !=''  ";
+        selectSQL1 += " and DATE_FORMAT(eventtime,'%Y%m%d') >= DATE_FORMAT(current_date()-1,'%Y%m%d')  ";
         selectSQL1 += " ) em  ";
         selectSQL1 += " group by em.employeeno,DATE_FORMAT(eventtime,'%Y%m%d'); ";
 
@@ -106,7 +112,13 @@ function SendAccessRecord(callback){
                 util.jsonadd(results,'/queryresult'+i+'/EmployeeID',rows.employeeno);
                 util.jsonadd(results,'/queryresult'+i+'/objdate',rows.objdate);
                 util.jsonadd(results,'/queryresult'+i+'/OutTime',rows.OutTime);
-                util.jsonadd(results,'/queryresult'+i+'/inTime',rows.inTime);
+                if(rows.OutTime >= rows.inTime){
+                  util.jsonadd(results,'/queryresult'+i+'/inTime',rows.OutTime);
+                }else
+                {
+                  util.jsonadd(results,'/queryresult'+i+'/inTime',rows.inTime);
+                }
+
                 //util.jsonadd(results,'/queryresult'+i+'/uuid',rows.uuid_);
                 i=i+1;
                }
