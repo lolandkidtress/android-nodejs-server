@@ -20,7 +20,7 @@ exports.syncUserValidatedList = function(obj,callback) {
 
 };
 
-//校验成功范围1，失败返回0
+//校验成功返回1，失败返回0
 exports.userValidateCheck = function(bussiquery,callback){
    util.log('debug','UserValidatedList is ' + JSON.stringify(UserValidatedList));
    util.log('debug','userid = ' + util.jsonget(bussiquery,'/userid'));
