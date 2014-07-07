@@ -76,24 +76,30 @@ function SendAccessRecord(callback){
         Connection = mysql.createConnection(Access_db_config);
 
         //只更新当天的数据
-        selectSQL1 = " select case when ";
+        selectSQL1 = "select min(em.eventtime),max(em.eventtime), ";
+        selectSQL1 += " case when  ";
         selectSQL1 += " TIME_TO_SEC(em.eventtime) <= TIME_TO_SEC('9:05:00') ";
         selectSQL1 += " then DATE_FORMAT(current_date(),'%Y-%m-%d 9:00:00') ";
         selectSQL1 += " else ";
-        selectSQL1 += " DATE_FORMAT(min(em.eventtime) + INTERVAL ( 900 - time_to_sec(min(em.eventtime)) mod 900) second, '%Y-%m-%d %k:%i:%s') ";
+        selectSQL1 += " DATE_FORMAT(min(em.eventtime) + INTERVAL ( 900 - time_to_sec(min(em.eventtime)) mod 900) second, '%Y-%m-%d %k:%i:%s' ";
+        selectSQL1 += " )  ";
         selectSQL1 += " end ";
-        selectSQL1 += " OutTime,  ";
-        selectSQL1 += " DATE_FORMAT(max(em.eventtime) - INTERVAL ( time_to_sec(max(em.eventtime)) mod 900) second, '%Y-%m-%d %k:%i:%s') inTime " ;
-        selectSQL1 += " ,em.employeeno ,DATE_FORMAT(em.eventtime,'%Y%m%d') objdate";
-        selectSQL1 += " from ";
-        selectSQL1 += " (select eventtime,employeeno from event  ";
-        selectSQL1 += " where typeid = 10  ";
-        selectSQL1 += " and employeeno is not null  ";
-        selectSQL1 += " and employeeno !=''  ";
-        selectSQL1 += " and DATE_FORMAT(eventtime,'%Y%m%d') >= DATE_FORMAT(current_date()-1,'%Y%m%d')  ";
-        selectSQL1 += " ) em  ";
-        selectSQL1 += " group by em.employeeno,DATE_FORMAT(eventtime,'%Y%m%d'); ";
-
+        selectSQL1 += " OutTime , ";
+        selectSQL1 += " case when ";
+        selectSQL1 += " min(em.eventtime) + INTERVAL ( 900 - time_to_sec(min(em.eventtime)) mod 900) second >= max(em.eventtime) - INTERVAL ( time_to_sec(max(em.eventtime)) mod 900) second  ";
+        selectSQL1 += " THEN ";
+        selectSQL1 += " DATE_FORMAT(min(em.eventtime) + INTERVAL ( 900 - time_to_sec(min(em.eventtime)) mod 900) second, '%Y-%m-%d %k:%i:%s') ";
+        selectSQL1 += " ELSE ";
+        selectSQL1 += " DATE_FORMAT(max(em.eventtime) - INTERVAL ( time_to_sec(max(em.eventtime)) mod 900) second, '%Y-%m-%d %k:%i:%s') ";
+        selectSQL1 += " end ";
+        selectSQL1 += " inTime,  ";
+        selectSQL1 += " em.employeeno ,DATE_FORMAT(em.eventtime,'%Y%m%d') objdate ";
+        selectSQL1 += " from  event em ";
+        selectSQL1 += " where em.employeeno != '' and em.typeid = 10  ";
+        selectSQL1 += " and employeeno is not null ";
+        selectSQL1 += " and DATE_FORMAT(eventtime,'%Y%m%d') >= DATE_FORMAT(current_date()-1,'%Y%m%d') ";
+        selectSQL1 += " group by em.employeeno,DATE_FORMAT(eventtime,'%Y%m%d') ";
+        selectSQL1 += " order by employeeno,objdate ";
 
             var query = Connection.query(selectSQL1);
 
@@ -112,12 +118,7 @@ function SendAccessRecord(callback){
                 util.jsonadd(results,'/queryresult'+i+'/EmployeeID',rows.employeeno);
                 util.jsonadd(results,'/queryresult'+i+'/objdate',rows.objdate);
                 util.jsonadd(results,'/queryresult'+i+'/OutTime',rows.OutTime);
-                if(rows.OutTime >= rows.inTime){
-                  util.jsonadd(results,'/queryresult'+i+'/inTime',rows.OutTime);
-                }else
-                {
-                  util.jsonadd(results,'/queryresult'+i+'/inTime',rows.inTime);
-                }
+                util.jsonadd(results,'/queryresult'+i+'/inTime',rows.inTime);
 
                 //util.jsonadd(results,'/queryresult'+i+'/uuid',rows.uuid_);
                 i=i+1;
@@ -129,6 +130,7 @@ function SendAccessRecord(callback){
 //[{"errno":"200","errmsg":"getAccess complete","queryresult0":{"objdate":"20140616","OutTime":"2014-06-16T06:43:42.000Z","inTime":"2014-06-16T06:44:38.000Z"},"queryresult1":{"objdate":"20140616","OutTime":"2014-06-16T06:49:57.000Z","inTime":"2014-06-16T06:50:28.000Z"},"rowcount":2,"module":"getAccess"}]
 							util.log('log','send data :' + JSON.stringify(results));
                             http.get("http://iv.ivggs.com:10445/insertAccessRecord?"+JSON.stringify(results), function(res) {
+                            //http.get("http://localhost:8001/insertAccessRecord?"+JSON.stringify(results), function(res) {
                             util.log('log',"Got response: " + res.statusCode);
 		                            if(res.statusCode=='200'){
 		                           util.jsonadd(results,'/errno','200');

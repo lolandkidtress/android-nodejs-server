@@ -891,7 +891,7 @@ function insertAccessRecord(questquery,response,callback){
                     }
                   });
 
-                  console.log('run' + done + ':' + sqlquery.sql);
+                  util.log('debug','run' + done + ':' + sqlquery.sql);
                   done=i;
                 })(i);
 
@@ -907,6 +907,7 @@ function insertAccessRecord(questquery,response,callback){
                            util.jsonadd(results,'/errmsg','insertAccessRecord complete');
                            util.jsonadd(results,'/rowcount',i);
                            util.jsonadd(results,'/module','insertAccessRecord');
+                           Connection.release();
                         }
                     });
                  callback(null, results);
@@ -915,6 +916,7 @@ function insertAccessRecord(questquery,response,callback){
                  Connection.rollback(function() {
                             callback('commit err' + err, null);
                           });
+                 Connection.release();
                }
 
             }); //beginTransaction
