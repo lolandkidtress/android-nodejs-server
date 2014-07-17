@@ -14,7 +14,7 @@ function route(pathname,questquery,response, request) {
   handle["/connect"] = requestHandlers.connect;
   handle["/errhandle"] = requestHandlers.errhandle;
   handle["/getWHSetting"] = requestHandlers.getWHSettingHandle
-  handle["/getWHEmptyDate"] = requestHandlers.getWHEmptyDate
+  handle["/getWHEmptyDate"] = requestHandlers.getWHEmptyDateHandle
   handle["/getCalendar"] = requestHandlers.getCalendarHandle
   handle["/getWHDetailList"] = requestHandlers.getWHDetailListHandle
   handle["/getAccessRecord"] = requestHandlers.getAccessRecordHandle
@@ -23,7 +23,9 @@ function route(pathname,questquery,response, request) {
   handle["/getTotalOVTime"] = requestHandlers.getTotalOVTimeHandle
   handle["/getTotalVCTime"] = requestHandlers.getTotalVCTimeHandle
   handle["/getTotalPJTime"] = requestHandlers.getTotalPJTimeHandle
-  handle["/getAvailPJ"] = requestHandlers.getAvailPJHandle  
+  handle["/getAvailPJ"] = requestHandlers.getAvailPJHandle
+  handle["/OVSubmit"] = requestHandlers.SubmitOVInfoHandle
+  handle["/getVCSetting"] = requestHandlers.getVCSettingHandle
 
 
 

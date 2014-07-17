@@ -14,6 +14,8 @@ var login = require('./bussi/login.js');
 var notice = require('./bussi/notice.js');
 var whList = require('./bussi/whList.js');
 var pj = require('./bussi/PJInfo.js');
+var OVSubmit = require('./bussi/OVSubmit.js');
+var VCSubmit = require('./bussi/VCSubmit.js');
 
 
 function feedback(questquery,response, request){
@@ -99,6 +101,27 @@ function getWHSettingHandle(questquery,response,request,callback){
 async.series([
     function(cb) {
       login.getWHSetting(questquery,response,cb);
+    },
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
+
+
+function getVCSettingHandle(questquery,response,request,callback){
+
+async.series([
+    function(cb) {
+      VCSubmit.getVCSetting(questquery,response,cb);
     },
 ], function(results) {
 
@@ -438,6 +461,33 @@ async.auto({
 });
 }
 
+function SubmitOVInfoHandle(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      OVSubmit.OVSubmit(questquery,response,cb); 
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
+
+
 exports.dologin = dologin;
 exports.errhandle = errhandle;
 exports.getWHSettingHandle = getWHSettingHandle;
@@ -450,3 +500,5 @@ exports.insertAccessRecordHandle = insertAccessRecordHandle;
 exports.getTotalOVTimeHandle = getTotalOVTimeHandle;
 exports.getTotalVCTimeHandle = getTotalVCTimeHandle;
 exports.getTotalPJTimeHandle = getTotalPJTimeHandle;
+exports.SubmitOVInfoHandle =  SubmitOVInfoHandle;
+exports.getVCSettingHandle = getVCSettingHandle;

@@ -66,11 +66,11 @@ function encrypted(formObj){
 
     var formObj = document.getElementById("form");
     //登录
-    var StringS = '{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"feng-jin.deng@ivision-china.cn"}';
-  	formObj.action =  'http://127.0.0.1:8001/login?'+ StringS;
+    //var StringS = '{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"feng-jin.deng@ivision-china.cn"}';
+  	//formObj.action =  'http://127.0.0.1:8001/login?'+ StringS;
 
   	//考勤规则
-  	//var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531"}';
+  	//var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
   	//formObj.action =  'http://127.0.0.1:8001/getWHSetting?'+ StringS;
 
     //取得可填写的项目
@@ -91,6 +91,37 @@ function encrypted(formObj){
     //var StringS = '{"errno":"","errmsg":"","queryresult0":{"EmployeeID":"10002","objdate":"20140623","OutTime":"2014-06-23T01:28:00.000Z","inTime":"2014-06-23T01:28:07.000Z"},"queryresult1":{"EmployeeID":"200900704","objdate":"20140623","OutTime":"2014-06-23T01:28:00.000Z","inTime":"2014-06-23T01:28:07.000Z"},"rowcount":"2"}';
     //formObj.action =  'http://127.0.0.1:8001/insertAccessRecord?'+ StringS;
 
+    //加班申请
+    /*
+    var StringS = '{'
+      +'"userid":"26","startdt":"20140501","enddt":"20140531","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
+      +'"applydate":"20140525","ovwh":"17",'
+      +'"TrnOVFormDetail0":{'
+      +'"FromDt":"1800",'
+      +'"ToDt":"1900",'
+      +'"PJInfoID":"118",'
+      +'"OVWH":"1",'
+      +'"FlgOut":"1",'
+      +'"FlgPJG":"0"'
+      +'},'
+      +'"TrnOVFormDetail1":{'
+      +'"FromDt":"1900", '
+      +'"ToDt":"2100", '
+      +'"PJInfoID":"258",'
+      +'"OVWH":"2",'
+      +'"FlgOut":"1",'
+      +'"FlgPJG":"2"'
+      +'},'
+      +'"detailrow":"2"'
+      +'}' ;
+    formObj.action =  'http://127.0.0.1:8001/OVSubmit?'+ StringS;
+
+    */
+
+
+   //休假规则
+    var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
+    formObj.action =  'http://127.0.0.1:8001/getVCSetting?'+ StringS;
 
     formObj.submit();
 
