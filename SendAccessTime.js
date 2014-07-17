@@ -78,7 +78,7 @@ function SendAccessRecord(callback){
         //只更新当天的数据
         selectSQL1 = "select min(em.eventtime),max(em.eventtime), ";
         selectSQL1 += " case when  ";
-        selectSQL1 += " TIME_TO_SEC(em.eventtime) <= TIME_TO_SEC('9:05:00') ";
+        selectSQL1 += " TIME_TO_SEC(em.eventtime) between TIME_TO_SEC('9:00:00') and TIME_TO_SEC('9:05:00') ";
         selectSQL1 += " then DATE_FORMAT(current_date(),'%Y-%m-%d 9:00:00') ";
         selectSQL1 += " else ";
         selectSQL1 += " DATE_FORMAT(min(em.eventtime) + INTERVAL ( 900 - time_to_sec(min(em.eventtime)) mod 900) second, '%Y-%m-%d %k:%i:%s' ";
