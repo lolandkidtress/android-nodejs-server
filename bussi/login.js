@@ -254,13 +254,12 @@ function getWHSetting(questquery,response,callback){
             //global.queryDBStatus = 'err';
             util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
-            util.log('log','getWHSetting returns');
             util.jsonadd(results,'/errno','400');
             util.jsonadd(results,'/errmsg','setting get Error');
             util.jsonadd(results,'/module','getWHSetting');
 
 
-            util.log('log','getWHSetting returns');
+            util.log('log','getWHSetting returns Error');
             util.log('log',JSON.stringify(results));
             callback(results);
           }
