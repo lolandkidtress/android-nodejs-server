@@ -8,6 +8,9 @@ var db_config = {
   user: 'whs',
   password: 'whs',
   database: 'ivggs_whs',
+  charset : 'UTF8_GENERAL_CI',
+  port : 3306,
+  multipleStatements :true,
   insecureAuth: true
 };
 
