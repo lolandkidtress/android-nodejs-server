@@ -92,10 +92,10 @@ function encrypted(formObj){
     //formObj.action =  'http://127.0.0.1:8001/insertAccessRecord?'+ StringS;
 
     //加班申请
-    /*
+    
     var StringS = '{'
-      +'"userid":"26","startdt":"20140501","enddt":"20140531","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
-      +'"applydate":"20140525","ovwh":"17",'
+      +'"userid":"149","startdt":"20140701","enddt":"20140731","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
+      +'"applydate":"20140725","ovwh":"17",'
       +'"TrnOVFormDetail0":{'
       +'"FromDt":"1800",'
       +'"ToDt":"1900",'
@@ -116,13 +116,14 @@ function encrypted(formObj){
       +'}' ;
     formObj.action =  'http://127.0.0.1:8001/OVSubmit?'+ StringS;
 
-    */
+    
 
 
    //休假规则
+   /*
     var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
     formObj.action =  'http://127.0.0.1:8001/getVCSetting?'+ StringS;
-
+  */
     formObj.submit();
 
 }
