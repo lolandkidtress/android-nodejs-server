@@ -349,10 +349,12 @@ function insertOV(questquery,callback){
 																										                          util.log('debug','commit! ');
 																										                          util.jsonadd(results,'/errno','200');
 																										                          util.jsonadd(results,'/errmsg','insertOV complete');
+																										                          //返回加班主表的ID
+																										                          util.jsonadd(results,'/OVFormID',last_insert_id);
 																										                          callback(null, results);
 																										                        }
 																										                    	});
-																															  callback(null,results);
+
 																															  break;
 																															case '-1':
 
