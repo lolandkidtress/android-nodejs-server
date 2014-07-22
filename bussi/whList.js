@@ -26,6 +26,8 @@ var sys = require('sys');
 var util = require('../util/util.js');
 var async = require('async');
 var config = require('../config/config.js')
+var moment = require('moment');
+var login = require('./login.js');
 
 //带有callback  取得员工当月每日填写的工时的详细信息，用于日历方式显示
 
@@ -370,7 +372,16 @@ function getPaidVCTime(questquery,response,callback){
 /*
 今年度有薪休假剩余天数：SUM（员工有薪休假表.给予工时-调休消耗工时）                                                                              员工有薪休假表.D假期承认状态：1已承认                            
                         -SUM（休假申请明细表.休假时间 （休假类型=1：有薪假&表单状态=1:未承认））
-                       初始时间条件：系统时间在有效期范围(员工有薪休假表)内
+
+
+                      select SUM(IFNULL(UsefulWH, 0)-IFNULL(RestUsedWH, 0)) AS allUsefulHour from TrnPaidVC T1
+                      where T1.EmployeeID=24 and T1.DtAppStatus=1 and T1.GetDt<='2014' and T1.DelFlg = '0'
+                      and T1.UsefulEndDt >= '20140721' and T1.UsefulFromDt <= '20140721';
+
+                      select IFNULL(SUM(T2.VCTime), 0) AS vcTime from TrnVCForm T1, TrnVCFormDetail T2
+                      where T1.EmployeeID=24 and (T1.DtAppStatus=0 OR T1.DtAppStatus=1 OR T1.DtAppStatus=3 )
+                      and T1.DelFlg = 0 and T1.VCFormID = T2.VCFormID and T2.ObjYMD LIKE "2014%"
+                      and T2.DtVacationType=1 and T2.DelFlg = 0 ;
 */
 
         selectSQL1 = ' select dtAppStatus,GetDt,DtPaidVCType,UsefulWH,usefulFromDt, ',
@@ -470,14 +481,63 @@ function getLieuVCTime(questquery,response,callback){
   var pool;
   var Connection;
   var selectSQL1;
+  var avgHour;
+  var LeftWH;
+  var LeftWHin30;
+  var LeftDay;
+  var LeftDayin30;
 
-  async.series([
+  async.waterfall([
 
-      function(callback){
+      function (callback){  //先取得考勤规则数据
+
+      //通过applydate取得月初和月末
+      var appdate = moment(util.jsonget(questquery,'/currentdt'),'YYYYMMDD').format('YYYY-MM-DD');
+
+      //util.jsonadd(questquery,'/startdt',moment(appdate).startOf('month').format('YYYY-MM-DD'));
+      util.jsonadd(questquery,'/startdt',util.jsonget(questquery,'/currentdt'));
+      //util.jsonadd(questquery,'/enddt',moment(appdate).endOf('month').format('YYYY-MM-DD'));
+      util.jsonadd(questquery,'/enddt',util.jsonget(questquery,'/currentdt'));
+
+            login.getWHSetting(questquery,response,
+              function(cb){
+                //util.log('debug','WHSetting get ' + JSON.stringify(cb));
+                //util.log('debug','WHSetting get ' + util.jsonget(cb[0],'/errno'));
+              if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') == 400){  //异常情况下
+                  cb = {"errno":"400",
+                    "errmsg:":util.jsonget(cb,'/errmsg'),
+                    "module":"getLieuVCTimeHandle"
+                  }
+
+                  callback(cb,null);
+              }else{
+                if( util.jsonexist(cb[0],'/errno') && util.jsonget(cb[0],'/errno') == 200){   //非异常情况下返回
+
+                  util.log('debug','getLieuVCTime.getWHSetting OK ' + JSON.stringify(cb));
+
+                  //计算一天的小时数
+                  avgHour = util.jsonget(cb[0],'/queryresult0/avgHour');
+                  callback(null,avgHour);
+                }else{
+                  cb = {
+                    "errno":"301",
+                    "errmsg:":"getLieuVCTime.getWHSetting Error",
+                    "module":"getLieuVCTimeHandle"
+                  }
+
+                  callback(cb,null);
+                }
+              }
+              });
+    },
+
+      function (avgHour,callback){
       var sqlerr;
       var row;
       var err;
       var res;
+
+
 
       var pool = mysqlconn.poolConnection();
 
@@ -494,19 +554,36 @@ function getLieuVCTime(questquery,response,callback){
         {
 
 /*
-调休剩余天数：SUM（员工加班申请表.认可可调休工时-调休消耗工时）                                                                              员工出勤申请表.D表单状态：2已承认                  
-                        -SUM（休假申请明细表.休假时间 （休假类型=2：调休&表单状态=1:未承认））                                                                       
-                       初始时间条件：系统时间在调休截止时间之前                                                                         
-                      画面填写休假起始日后，刷新显示 时间条件：休假起始日在调休截至时间之前                                                                         
-                                                                           
+调休剩余天数：SUM（员工加班申请表.认可可调休工时-调休消耗工时） 员工出勤申请表.D表单状态：2已承认
+                        -SUM（休假申请明细表.休假时间 （休假类型=2：调休&表单状态=1:未承认））
+                       初始时间条件：系统时间在调休截止时间之前
+                      select SUM(IFNULL(T1.ConfirmUseWH, 0)-IFNULL(T1.RestUsedWH, 0)) AS restHour30
+from TrnOVForm T1, TrnWHForm T2 where T1.EmployeeID=24 and T1.DelFlg = 0
+and T2.EmployeeID=24 and T1.ObjYMD=T2.ObjYMD and T2.DtAppStatus=2
+and T2.DelFlg = 0 and T1.UsedEndTime>='2014-07-21'
+
 */
 
-        selectSQL1 = ' select dtAppStatus,GetDt,DtPaidVCType,UsefulWH,usefulFromDt, ',
-        selectSQL1 += ' UsefulEndDt,RestUsedWH,FlgCarry from TrnPaidVC '
-        selectSQL1 += ' where EmployeeID ='  + Connection.escape(util.jsonget(questquery,'/userid'));
-        selectSQL1 += ' and DelFlg = 0 ';
-        selectSQL1 += ' and UsefulWH > 0 ';
-        selectSQL1 += ' and GetDt >'+ Connection.escape(util.jsonget(questquery,'/currentYYYY'));
+        selectSQL1 = ' select IFNULL(max(restHour),0) as LeftWH,IFNULL(max(restHour30),0) as LeftWHin30 ';
+        selectSQL1 += ' from (  ';
+        selectSQL1 += ' select SUM(IFNULL(T1.ConfirmUseWH, 0)-IFNULL(T1.RestUsedWH, 0)) AS restHour  ';
+        selectSQL1 += ' from TrnOVForm T1, TrnWHForm T2  ';
+        selectSQL1 += ' where T1.EmployeeID=T2.EmployeeID and T1.DelFlg = 0  ';
+        selectSQL1 += ' and T1.ObjYMD=T2.ObjYMD and T2.DtAppStatus=2  ';
+        selectSQL1 += ' and T2.DelFlg = 0  ';
+        selectSQL1 += ' and T1.UsedEndTime >= '+Connection.escape(util.jsonget(questquery,'/currentdt'));
+        selectSQL1 += ' and T2.EmployeeID=' + Connection.escape(util.jsonget(questquery,'/userid'));
+        selectSQL1 += ' ) res, ';
+        selectSQL1 += ' (select SUM(IFNULL(T1.ConfirmUseWH, 0)-IFNULL(T1.RestUsedWH, 0)) AS restHour30  ';
+        selectSQL1 += ' from TrnOVForm T1, TrnWHForm T2  ';
+        selectSQL1 += ' where T1.EmployeeID=T2.EmployeeID and T1.DelFlg = 0  ';
+        selectSQL1 += ' and T1.ObjYMD=T2.ObjYMD and T2.DtAppStatus=2  ';
+        selectSQL1 += ' and T2.DelFlg = 0  ';
+        selectSQL1 += ' and T1.UsedEndTime BETWEEN ' + Connection.escape(util.jsonget(questquery,'/currentdt')) + ' and ' ;
+        selectSQL1 +=  moment(util.jsonget(questquery,'/currentdt'),'YYYYMMDD').add('months', 1).format('YYYYMMDD');
+        selectSQL1 += ' and T2.EmployeeID=' + Connection.escape(util.jsonget(questquery,'/userid'));
+        selectSQL1 += ' ) res3 ';
+
 
         util.log('debug',selectSQL1);
 
@@ -524,40 +601,45 @@ function getLieuVCTime(questquery,response,callback){
                 if(rows != null||rows != '' ){
                 // Pausing the connnection is useful if your processing involves I/O
                 //connection.pause();
-                util.jsonadd(results,'/queryresult'+i+'/EmployeeID',util.jsonget(questquery,'/userid'));
-                util.jsonadd(results,'/queryresult'+i+'/dtAppStatus',rows.dtAppStatus);
-                util.jsonadd(results,'/queryresult'+i+'/GetDt',rows.GetDt);
-                util.jsonadd(results,'/queryresult'+i+'/DtPaidVCType',rows.DtPaidVCType);
-                util.jsonadd(results,'/queryresult'+i+'/UsefulWH',rows.UsefulWH);
-                util.jsonadd(results,'/queryresult'+i+'/usefulFromDt',rows.usefulFromDt);
-                util.jsonadd(results,'/queryresult'+i+'/UsefulEndDt',rows.UsefulEndDt);
-                util.jsonadd(results,'/queryresult'+i+'/RestUsedWH',rows.RestUsedWH);
-                util.jsonadd(results,'/queryresult'+i+'/FlgCarry',rows.FlgCarry);
 
+                LeftWH = rows.LeftWH;
+                LeftWHin30 = rows.LeftWHin30;
                 i=i+1;
                }
+
               })
               .on('end', function(rows) {
                   if(i>0){
+                            //根据考勤规则计算每天的小时
 
                            util.jsonadd(results,'/errno','200');
-                           util.jsonadd(results,'/errmsg','getPaidVCTime complete');
-                           util.jsonadd(results,'/rowcount',i);
-                           util.jsonadd(results,'/module','getPaidVCTime');
+                           util.jsonadd(results,'/errmsg','getLieuVCTime complete');
+                           util.jsonadd(results,'/LeftWH',LeftWH);
+                           util.jsonadd(results,'/LeftDay',LeftWH/avgHour);
+                           util.jsonadd(results,'/LeftWHin30',LeftWHin30);
+                           util.jsonadd(results,'/LeftDayin30',LeftWHin30/avgHour);
+                           util.jsonadd(results,'/module','getLieuVCTimeHandle');
+                           console.log(results);
+                           callback(null,results);
 
                       }
                       else
                       {
-                        util.jsonadd(results,'/errno','300');
-                           util.jsonadd(results,'/errmsg','getPaidVCTime Empty');
-                           util.jsonadd(results,'/rowcount',0);
-                           util.jsonadd(results,'/module','getPaidVCTime');
+                        util.jsonadd(result,'/errno','200');
+                           util.jsonadd(results,'/errmsg','getLieuVCTime complete');
+                           util.jsonadd(results,'/LeftWH',0);
+                           util.jsonadd(results,'/LeftDay',0);
+                           util.jsonadd(results,'/LeftWHin30',0);
+                           util.jsonadd(results,'/LeftDayin30',0);
+                           util.jsonadd(results,'/module','getLieuVCTimeHandle');
+                           callback(null,results);
 
                       }
 
                   Connection.release();
-                  callback(null,results);
+
               });
+
         }
       });
   }
@@ -567,20 +649,14 @@ function getLieuVCTime(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','getPaidVCTime returns');
+            util.log('log','getLieuVCTime returns');
             util.log('log',JSON.stringify(results));
             callback(results);
           }
           else
           {
             //global.queryDBStatus = 'err';
-            util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
-            util.jsonadd(results,'/errno','400');
-            util.jsonadd(results,'/errmsg','getPaidVCTime error');
-              // util.jsonadd(results,'/rowcount',i);
-            util.jsonadd(results,'/module','getPaidVCTime');
-            util.log('log','getPaidVCTime returns');
             util.log('log',JSON.stringify(results));
             callback(results);
           }
@@ -589,7 +665,7 @@ function getLieuVCTime(questquery,response,callback){
 }
 
 // 取得休假合计
-function getTotalVCTime(questquery,response,callback){ 
+function getTotalVCTime(questquery,response,callback){
   var i = 0;
   var results ={
     errno:'',
@@ -703,7 +779,7 @@ function getTotalVCTime(questquery,response,callback){
 }
 
 //取得门禁数据
-function getAccessRecord(questquery,response,callback){ 
+function getAccessRecord(questquery,response,callback){
   var i = 0;
   var results ={
     errno:'',
@@ -815,8 +891,8 @@ function getAccessRecord(questquery,response,callback){
 
 }
 
-//取得门禁数据
-function insertAccessRecord(questquery,response,callback){ 
+//保存门禁数据
+function insertAccessRecord(questquery,response,callback){
   var i = 0;
   var results ={
     errno:'',
@@ -837,7 +913,7 @@ function insertAccessRecord(questquery,response,callback){
 
       var totalrow = util.jsonget(questquery,'/rowcount');
 
-      var insertArray = 
+      var insertArray =
       {
         employeeno:'',
         objdate:'',
@@ -868,7 +944,7 @@ function insertAccessRecord(questquery,response,callback){
          //insertSQL1 += ' (employeeno,objdate,inTime,outtime,duration,dtrecordtype,dtoptstatus,inputtime,fileid) ';
          //insertSQL1 += ' values( ';
          //insertSQL1 += '  20120901,20140605,current_date(),current_date(),null,0,0,NOW(),null) ; ';
-         insertSQL1 += ' set ? '; 
+         insertSQL1 += ' set ? ';
 
         util.log('debug',insertSQL1);
 
@@ -897,7 +973,7 @@ function insertAccessRecord(questquery,response,callback){
 
                if(done+1==totalrow){
                    Connection.commit(function(err) {
-                      if (err) { 
+                      if (err) {
                           Connection.rollback(function() {
                             callback('commit err' + err, null);
                           });
@@ -961,6 +1037,7 @@ exports.getTotalOVTime =getTotalOVTime;
 exports.getPaidVCTime =getPaidVCTime;
 exports.getAccessRecord = getAccessRecord;
 exports.insertAccessRecord = insertAccessRecord;
+exports.getLieuVCTime = getLieuVCTime;
 
 
 
