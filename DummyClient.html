@@ -92,9 +92,9 @@ function encrypted(formObj){
     //formObj.action =  'http://127.0.0.1:8001/insertAccessRecord?'+ StringS;
 
     //加班申请
-    
+    /*
     var StringS = '{'
-      +'"userid":"149","startdt":"20140701","enddt":"20140731","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
+      +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
       +'"applydate":"20140725","ovwh":"17",'
       +'"TrnOVFormDetail0":{'
       +'"FromDt":"1800",'
@@ -114,10 +114,23 @@ function encrypted(formObj){
       +'},'
       +'"detailrow":"2"'
       +'}' ;
+
     formObj.action =  'http://127.0.0.1:8001/OVSubmit?'+ StringS;
-
-    
-
+    */
+    //剩余调休取得
+    /*
+    var StringS = '{'
+    +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
+    +'"currentdt":"20140725"'
+    +'}' ;
+    formObj.action =  'http://127.0.0.1:8001/getLieuVCTime?'+ StringS;
+    */
+    //有薪假剩余天数
+    var StringS = '{'
+    +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
+    +'"currentdt":"20140725"'
+    +'}' ;
+    formObj.action =  'http://127.0.0.1:8001/getPaidVCTime?'+ StringS;
 
    //休假规则
    /*

@@ -339,17 +339,62 @@ function getTotalOVTime(questquery,response,callback){
 // 今年度取得有薪假明细
 function getPaidVCTime(questquery,response,callback){
   var i = 0;
-  var results ={
+  var result ={
     errno:'',
     errmsg:''
   };
   var pool;
   var Connection;
   var selectSQL1;
+  var avgHour;
+  var LeftWH;
+  var VCWH;
 
-  async.series([
+  async.waterfall([
 
-      function(callback){
+       function (callback){  //先取得考勤规则数据
+
+      //通过applydate取得月初和月末
+      var appdate = moment(util.jsonget(questquery,'/currentdt'),'YYYYMMDD').format('YYYY-MM-DD');
+
+      //util.jsonadd(questquery,'/startdt',moment(appdate).startOf('month').format('YYYY-MM-DD'));
+      util.jsonadd(questquery,'/startdt',util.jsonget(questquery,'/currentdt'));
+      //util.jsonadd(questquery,'/enddt',moment(appdate).endOf('month').format('YYYY-MM-DD'));
+      util.jsonadd(questquery,'/enddt',util.jsonget(questquery,'/currentdt'));
+
+            login.getWHSetting(questquery,response,
+              function(cb){
+                //util.log('debug','WHSetting get ' + JSON.stringify(cb));
+                //util.log('debug','WHSetting get ' + util.jsonget(cb[0],'/errno'));
+              if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') == 400){  //异常情况下
+                  cb = {"errno":"400",
+                    "errmsg:":util.jsonget(cb,'/errmsg'),
+                    "module":"getPaidVCTimeHandle"
+                  }
+
+                  callback(cb,null);
+              }else{
+                if( util.jsonexist(cb[0],'/errno') && util.jsonget(cb[0],'/errno') == 200){   //非异常情况下返回
+
+                  util.log('debug','getPaidVCTime.getWHSetting OK ' + JSON.stringify(cb));
+
+                  //计算一天的小时数
+                  avgHour = util.jsonget(cb[0],'/queryresult0/avgHour');
+                  callback(null,avgHour);
+                }else{
+                  cb = {
+                    "errno":"300",
+                    "errmsg:":"getPaidVCTime.getWHSetting Error",
+                    "module":"getPaidVCTimeHandle"
+                  }
+
+                  callback(cb,null);
+                }
+              }
+              });
+    },
+
+      function (avgHour,callback){
       var sqlerr;
       var row;
       var err;
@@ -384,12 +429,25 @@ function getPaidVCTime(questquery,response,callback){
                       and T2.DtVacationType=1 and T2.DelFlg = 0 ;
 */
 
-        selectSQL1 = ' select dtAppStatus,GetDt,DtPaidVCType,UsefulWH,usefulFromDt, ',
-        selectSQL1 += ' UsefulEndDt,RestUsedWH,FlgCarry from TrnPaidVC '
-        selectSQL1 += ' where EmployeeID ='  + Connection.escape(util.jsonget(questquery,'/userid'));
-        selectSQL1 += ' and DelFlg = 0 ';
-        selectSQL1 += ' and UsefulWH > 0 ';
-        selectSQL1 += ' and GetDt >'+ Connection.escape(util.jsonget(questquery,'/currentYYYY'));
+        selectSQL1 = ' select IFNULL(max(LeftWH),0) as LeftWH,IFNULL(max(vcTime),0) as VCWH ';
+        selectSQL1 += ' from ';
+        selectSQL1 += ' ( ';
+        selectSQL1 += ' select SUM(IFNULL(UsefulWH, 0)-IFNULL(RestUsedWH, 0)) AS LeftWH from TrnPaidVC T1 ';
+        selectSQL1 += ' where  T1.DtAppStatus=1 and T1.DelFlg = 0  ';
+        selectSQL1 += ' and T1.GetDt<=' + moment(util.jsonget(questquery,'/currentdt'),'YYYYMMDD').format('YYYY') ;
+        selectSQL1 += ' and T1.EmployeeID= ' + Connection.escape(util.jsonget(questquery,'/userid'));
+        selectSQL1 += ' and ' + moment(util.jsonget(questquery,'/currentdt'),'YYYYMMDD').format('YYYYMMDD') + ' between T1.UsefulFromDt and T1.UsefulEndDt  ';
+        selectSQL1 += ' ) lef  ';
+        selectSQL1 += ' , ';
+        selectSQL1 += ' ( ';
+        selectSQL1 += ' select IFNULL(SUM(T2.VCTime), 0) AS vcTime from TrnVCForm T1, TrnVCFormDetail T2 ';
+        selectSQL1 += ' where (T1.DtAppStatus=0 OR T1.DtAppStatus=1 OR T1.DtAppStatus=3 ) ';
+        selectSQL1 += ' and T1.DelFlg = 0 and T1.VCFormID = T2.VCFormID  ';
+        selectSQL1 += ' and T2.DtVacationType=1 and T2.DelFlg = 0 ';
+        selectSQL1 += ' and T2.ObjYMD LIKE  "'+ moment(util.jsonget(questquery,'/currentdt'),'YYYYMMDD').format('YYYY')  + '%"'; 
+        selectSQL1 += ' and T1.EmployeeID=  '+ Connection.escape(util.jsonget(questquery,'/userid'));
+        selectSQL1 += ' ) vc ';
+
 
         util.log('debug',selectSQL1);
 
@@ -407,63 +465,62 @@ function getPaidVCTime(questquery,response,callback){
                 if(rows != null||rows != '' ){
                 // Pausing the connnection is useful if your processing involves I/O
                 //connection.pause();
-                util.jsonadd(results,'/queryresult'+i+'/EmployeeID',util.jsonget(questquery,'/userid'));
-                util.jsonadd(results,'/queryresult'+i+'/dtAppStatus',rows.dtAppStatus);
-                util.jsonadd(results,'/queryresult'+i+'/GetDt',rows.GetDt);
-                util.jsonadd(results,'/queryresult'+i+'/DtPaidVCType',rows.DtPaidVCType);
-                util.jsonadd(results,'/queryresult'+i+'/UsefulWH',rows.UsefulWH);
-                util.jsonadd(results,'/queryresult'+i+'/usefulFromDt',rows.usefulFromDt);
-                util.jsonadd(results,'/queryresult'+i+'/UsefulEndDt',rows.UsefulEndDt);
-                util.jsonadd(results,'/queryresult'+i+'/RestUsedWH',rows.RestUsedWH);
-                util.jsonadd(results,'/queryresult'+i+'/FlgCarry',rows.FlgCarry);
+
+                LeftWH = rows.LeftWH ;
+                VCWH = rows.VCWH ;
 
                 i=i+1;
                }
               })
               .on('end', function(rows) {
+                console.log(LeftWH,VCWH);
                   if(i>0){
 
-                           util.jsonadd(results,'/errno','200');
-                           util.jsonadd(results,'/errmsg','getPaidVCTime complete');
-                           util.jsonadd(results,'/rowcount',i);
-                           util.jsonadd(results,'/module','getPaidVCTime');
+                           util.jsonadd(result,'/errno','200');
+                           util.jsonadd(result,'/errmsg','getPaidVCTime complete');
+                           util.jsonadd(result,'/LeftWH',LeftWH);
+                           util.jsonadd(result,'/LeftDay',LeftWH/avgHour);
+                           util.jsonadd(result,'/VCWH',VCWH);
+                           util.jsonadd(result,'/VCDay',VCWH/avgHour);
+                           util.jsonadd(result,'/module','getPaidVCTime');
+                           callback(null,result);
 
                       }
                       else
                       {
-                        util.jsonadd(results,'/errno','300');
-                           util.jsonadd(results,'/errmsg','getPaidVCTime Empty');
-                           util.jsonadd(results,'/rowcount',0);
-                           util.jsonadd(results,'/module','getPaidVCTime');
+                        util.jsonadd(result,'/errno','200');
+                           util.jsonadd(result,'/errmsg','getPaidVCTime Empty');
+                           util.jsonadd(result,'/LeftWH',0);
+                           util.jsonadd(result,'/LeftDay',0);
+                           util.jsonadd(result,'/VCWH',0);
+                           util.jsonadd(result,'/VCDay',0);
+                           util.jsonadd(result,'/module','getPaidVCTime');
+                           callback(null,result);
 
                       }
 
                   Connection.release();
-                  callback(null,results);
+
               });
         }
       });
   }
 
 
-        ],function(sqlerr,results){
+        ],function(sqlerr,result){
 
           if(sqlerr == null||sqlerr == '' ){
 
             util.log('log','getPaidVCTime returns');
-            util.log('log',JSON.stringify(results));
-            callback(results);
+            util.log('log',JSON.stringify(result));
+            callback(result);
           }
           else
           {
             //global.queryDBStatus = 'err';
             util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
-            util.jsonadd(results,'/errno','400');
-            util.jsonadd(results,'/errmsg','getPaidVCTime error');
-              // util.jsonadd(results,'/rowcount',i);
-            util.jsonadd(results,'/module','getPaidVCTime');
-            util.log('log','getPaidVCTime returns');
+
             util.log('log',JSON.stringify(results));
             callback(results);
           }
@@ -491,7 +548,6 @@ function getLieuVCTime(questquery,response,callback){
 
       function (callback){  //先取得考勤规则数据
 
-      //通过applydate取得月初和月末
       var appdate = moment(util.jsonget(questquery,'/currentdt'),'YYYYMMDD').format('YYYY-MM-DD');
 
       //util.jsonadd(questquery,'/startdt',moment(appdate).startOf('month').format('YYYY-MM-DD'));
@@ -558,10 +614,9 @@ function getLieuVCTime(questquery,response,callback){
                         -SUM（休假申请明细表.休假时间 （休假类型=2：调休&表单状态=1:未承认））
                        初始时间条件：系统时间在调休截止时间之前
                       select SUM(IFNULL(T1.ConfirmUseWH, 0)-IFNULL(T1.RestUsedWH, 0)) AS restHour30
-from TrnOVForm T1, TrnWHForm T2 where T1.EmployeeID=24 and T1.DelFlg = 0
-and T2.EmployeeID=24 and T1.ObjYMD=T2.ObjYMD and T2.DtAppStatus=2
-and T2.DelFlg = 0 and T1.UsedEndTime>='2014-07-21'
-
+                      from TrnOVForm T1, TrnWHForm T2 where T1.EmployeeID=24 and T1.DelFlg = 0
+                      and T2.EmployeeID=24 and T1.ObjYMD=T2.ObjYMD and T2.DtAppStatus=2
+                      and T2.DelFlg = 0 and T1.UsedEndTime>='2014-07-21'
 */
 
         selectSQL1 = ' select IFNULL(max(restHour),0) as LeftWH,IFNULL(max(restHour30),0) as LeftWHin30 ';
@@ -656,6 +711,7 @@ and T2.DelFlg = 0 and T1.UsedEndTime>='2014-07-21'
           else
           {
             //global.queryDBStatus = 'err';
+            util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
             util.log('log',JSON.stringify(results));
             callback(results);

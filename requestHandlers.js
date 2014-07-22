@@ -465,7 +465,64 @@ function SubmitOVInfoHandle(questquery,response,request,callback){
 
 async.waterfall([
     function(cb) {
-      OVSubmit.OVSubmit(questquery,response,cb); 
+      OVSubmit.OVSubmit(questquery,response,cb);
+//console.log(cb);
+      //callback(cb);
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
+
+function getLieuVCTimeHandle(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      whList.getLieuVCTime(questquery,response,cb);
+//console.log(cb);
+      //callback(cb);
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
+function getPaidVCTimeHandle(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      whList.getPaidVCTime(questquery,response,cb);
+//console.log(cb);
+      //callback(cb);
     },
     
     /*
@@ -502,3 +559,5 @@ exports.getTotalVCTimeHandle = getTotalVCTimeHandle;
 exports.getTotalPJTimeHandle = getTotalPJTimeHandle;
 exports.SubmitOVInfoHandle =  SubmitOVInfoHandle;
 exports.getVCSettingHandle = getVCSettingHandle;
+exports.getLieuVCTimeHandle = getLieuVCTimeHandle;
+exports.getPaidVCTimeHandle = getPaidVCTimeHandle;

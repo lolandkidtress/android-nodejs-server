@@ -26,6 +26,8 @@ function route(pathname,questquery,response, request) {
   handle["/getAvailPJ"] = requestHandlers.getAvailPJHandle
   handle["/OVSubmit"] = requestHandlers.SubmitOVInfoHandle
   handle["/getVCSetting"] = requestHandlers.getVCSettingHandle
+  handle["/getLieuVCTime"] = requestHandlers.getLieuVCTimeHandle
+  handle["/getPaidVCTime"] = requestHandlers.getPaidVCTimeHandle
 
 
 
