@@ -176,7 +176,9 @@ function getWHSetting(questquery,response,callback){
         selectSQL1 = ' SELECT a.WHSettingID,a.DtSettlementType, ';
         selectSQL1 += ' a.AMFrom,a.AMTo,a.MiddleFrom,a.MiddleTo,a.PMFrom,a.PMTo, a.AlarmWH,';
         selectSQL1 += ' a.FromDt,a.ToDt,a.OvertimeDuration,a.OvertimeStartTime,a.OvertimeWHUnit,a.OvertimeStartWH, ';
-        selectSQL1 += ' b.EmployeeID,b.DtFrom,b.DtTo FROM mstwhsetting a,rtnemwh b ';
+        selectSQL1 += ' b.EmployeeID,b.DtFrom,b.DtTo , ';
+        selectSQL1 += ' (((a.AMTo - a.AMFrom)  + (a.PMTo - a.PMFrom)) % 100)/60  + floor(((a.AMTo - a.AMFrom)  + (a.PMTo - a.PMFrom)) / 100) as avgHour';
+        selectSQL1 += ' FROM mstwhsetting a,rtnemwh b ';
         selectSQL1 += ' WHERE a.WHSettingID = b.WHSettingID AND a.FlgEnable = 1 and a.DelFlg = 0 ';
         //selectSQL1 += ' and a.FromDt between b.DtFrom and b.DtTo ';
         //selectSQL1 += ' and a.ToDt between b.DtFrom and b.DtTo ';
@@ -211,11 +213,11 @@ function getWHSetting(questquery,response,callback){
                 util.jsonadd(results,'/queryresult'+i+'/OvertimeStartTime',rows.OvertimeStartTime);
                 util.jsonadd(results,'/queryresult'+i+'/OvertimeStartWH',rows.OvertimeStartWH);
                 util.jsonadd(results,'/queryresult'+i+'/OvertimeDuration',rows.OvertimeDuration);
-
+                util.jsonadd(results,'/queryresult'+i+'/avgHour',rows.avgHour );
                 i=i+1;
               })
               .on('end', function(rows) {
-                
+
                   if(i>0){
 
                       util.jsonadd(results,'/rowcount',i);
@@ -232,19 +234,18 @@ function getWHSetting(questquery,response,callback){
                       util.jsonadd(results,'/module','getWHSetting');
 
                    }
-                  
+
                   Connection.release();
                   callback('',results);
               });
         }
-        
       });
 
     }
         ],function(sqlerr,results){
 
           if(sqlerr == null||sqlerr == '' ){
-           
+
             util.log('log','getWHSetting returns');
             util.log('log',JSON.stringify(results));
             callback(results);
