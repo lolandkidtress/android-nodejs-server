@@ -471,6 +471,13 @@ function insertOV(questquery,callback){
 function OVSubmit(questquery,response,callback){
 	async.waterfall([     //有顺序的执行,前一个函数的结果作为下一个函数的参数
  	function (callback){  //先取得考勤规则数据
+
+ 			//通过applydate取得月初和月末
+ 			var appdate = moment(util.jsonget(questquery,'/applydate'),'YYYYMMDD').format('YYYY-MM-DD');
+
+ 			util.jsonadd(questquery,'/startdt',moment(appdate).startOf('month').format('YYYY-MM-DD'));
+ 			util.jsonadd(questquery,'/enddt',moment(appdate).endOf('month').format('YYYY-MM-DD'));
+
             login.getWHSetting(questquery,response,
             	function(cb){
             		//util.log('debug','WHSetting get ' + JSON.stringify(cb));
@@ -517,6 +524,7 @@ function OVSubmit(questquery,response,callback){
             			callback(cb,null);
             	}else{
             		if( util.jsonexist(cb[0],'/errno') && util.jsonget(cb[0],'/errno') == 200){   //非异常情况下返回
+            			util.jsonadd(cb[0],'/module','OVSubmit');
             			util.log('debug','OVSubmit.insertOV OK ' + JSON.stringify(cb));
             			callback(null,cb);
             		}else{
@@ -560,8 +568,9 @@ function OVSubmit(questquery,response,callback){
 					results = err;
 		            util.log('log','OVSubmit returns');
 		            util.log('log',results);
-		            callback(results[0]);
+		            callback(results);
 			    }
+
 });
 
 }
