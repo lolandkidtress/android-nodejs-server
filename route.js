@@ -28,6 +28,7 @@ function route(pathname,questquery,response, request) {
   handle["/getVCSetting"] = requestHandlers.getVCSettingHandle
   handle["/getLieuVCTime"] = requestHandlers.getLieuVCTimeHandle
   handle["/getPaidVCTime"] = requestHandlers.getPaidVCTimeHandle
+  handle["/DeleteOVInfo"] = requestHandlers.DeleteOVInfoHandle
 
 
 

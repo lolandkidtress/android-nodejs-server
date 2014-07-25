@@ -85,7 +85,7 @@ function insertOV(questquery,callback){
     errno:'',
     errmsg:''
   };
-  
+
   var spreturn=0;
   var OrgCD ;
   var PositionID ;
@@ -165,7 +165,7 @@ function insertOV(questquery,callback){
 		              util.jsonadd(insertOVHeadArray,'/ObjYMD',util.jsonget(questquery,'/applydate'));
 		              util.jsonadd(insertOVHeadArray,'/OVWH',util.jsonget(questquery,'/ovwh'));
 		              util.jsonadd(insertOVHeadArray,'/CreateBy',util.jsonget(questquery,'/userid'));
-					  util.jsonadd(insertOVHeadArray,'/CreateTime',moment().format('YYYY-MM-DD hh:mm:ss'));
+					  util.jsonadd(insertOVHeadArray,'/CreateTime',moment().format('YYYY-MM-DD HH:mm:ss'));
 		              //util.log("debug", 'insertOVHeadSQL1 = '+ insertOVHeadSQL1);
 
 		              var sqlquery = Connection.query(insertOVHeadSQL1, insertOVHeadArray, function(err, result) {
@@ -204,7 +204,7 @@ function insertOV(questquery,callback){
 									                  util.jsonadd(insertOVDetailArray,'/FlgOut',util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgOut'));
 									                  util.jsonadd(insertOVDetailArray,'/FlgPJG',util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgPJG'));
 													  util.jsonadd(insertOVDetailArray,'/CreateBy',util.jsonget(questquery,'/userid'));
-													  util.jsonadd(insertOVDetailArray,'/CreateTime',moment().format('YYYY-MM-DD hh:mm:ss'));
+													  util.jsonadd(insertOVDetailArray,'/CreateTime',moment().format('YYYY-MM-DD HH:mm:ss'));
 
 									                  var insertOVDetailSQL1 = "insert into TrnOVFormDetail set ?";
 									                  //util.log("debug", 'insertOVDetailSQL1 = '+ insertOVDetailSQL1);
@@ -575,5 +575,360 @@ function OVSubmit(questquery,response,callback){
 
 }
 
+//检查传入的formid是否可以删除
+
+function DeleteOVCheck(formid,callback){ 
+  var i = 0;
+  var result ={
+    errno:'',
+    errmsg:''
+  };
+  var pool;
+  var Connection;
+  var selectSQL1;
+
+  async.series([
+
+      function(callback){
+      var sqlerr;
+      var row;
+      var err;
+      var res;
+
+      //var pool = mysql.createPool(config.getDBConfig());
+      var pool = mysqlconn.poolConnection();
+
+      pool.getConnection(function(sqlerr, Connection) {
+        // connected! (unless `err` is set)
+        if(sqlerr!=null){
+          util.log('log','get ConnectPool error');
+          util.log('log',sqlerr);
+          err = sqlerr;
+          //util.jsonadd(err);
+          callback(sqlerr, null);
+
+        }else
+        {
+
+        selectSQL1 = ' select count(*)  as cnt from trnovform ';
+		selectSQL1 += ' where (dtAppStatus =1 or dtAppStatus = 2 )';  //未提交以外的状态
+		//selectSQL1 += ' and delflg = 0 ';
+		selectSQL1 += ' and ovformid = ' + formid ;
+
+
+        util.log('debug',selectSQL1);
+            var query = Connection.query(selectSQL1);
+            query
+              .on('error', function(sqlerr) {
+                // Handle error, an 'end' event will be emitted after this as well
+                results = sqlerr;
+                util.log('log','Connect error '+ sqlerr);
+                util.jsonadd(results,'/sqlstmt',selectSQL1);
+                callback(sqlerr,null);
+              })
+              .on('result', function(rows) {
+                // Pausing the connnection is useful if your processing involves I/O
+                //connection.pause();
+                row = rows.cnt;
+
+              })
+              .on('end', function(rows) {
+              	  util.jsonadd(result,'/errno','200');
+              	  util.jsonadd(result,'/row',row);
+                  Connection.release();
+                  callback('',result);
+              });
+        }
+      });
+
+    }
+        ],function(sqlerr,results){
+
+          if(sqlerr == null||sqlerr == '' ){
+
+            util.log('log','DeleteOVCheck returns');
+            util.log('log',results);
+            callback(results);  //返回行数
+          }
+          else
+          {
+            //global.queryDBStatus = 'err';
+            util.log('error',"err  = "+ sqlerr);
+            results = sqlerr;
+            util.jsonadd(results,'/errno','400');
+            util.jsonadd(results,'/errmsg','DeleteOVCheck get Error');
+            util.jsonadd(results,'/module','DeleteOVCheck');
+
+
+            util.log('log','DeleteOVCheck returns Error');
+            util.log('log',JSON.stringify(results));
+            callback(results);
+          }
+
+      }); //async.series end
+
+}
+
+
+
+function deleteOV(questquery,callback){
+  var i = 0;
+  var results ={
+    errno:'',
+    errmsg:''
+  };
+  var pool;
+  var Connection;
+  var selectSQL1;
+
+  async.series([
+
+      function(callback){
+      var sqlerr;
+      var row;
+      var err;
+      var res;
+      var cnt = 0;
+      var cntdetail = 0;
+
+      //var pool = mysql.createPool(config.getDBConfig());
+      var pool = mysqlconn.poolConnection();
+
+      pool.getConnection(function(sqlerr, Connection) {
+        // connected! (unless `err` is set)
+        if(sqlerr!=null){
+          util.log('log','get ConnectPool error');
+          util.log('log',sqlerr);
+          err = sqlerr;
+          //util.jsonadd(err);
+          callback(sqlerr, null);
+
+        }else
+        Connection.beginTransaction(function(err) {
+        	if (err) { callback('beginTransaction err:' + err, null); }else
+	        {
+	        selectSQL1 = ' update trnovform set DelFlg = 1, '
+	        selectSQL1 += ' updatetime = "' + moment().format('YYYY-MM-DD HH:mm:ss') + '",';
+	        selectSQL1 += ' UpdateBy = ' + util.jsonget(questquery,'/userid') ;
+			selectSQL1 += ' where (dtAppStatus !=1 or dtAppStatus !=2) ';
+			selectSQL1 += ' and ovformid = "' + util.jsonget(questquery,'/ovformid') + '";';
+
+			selectSQL1 += ' update trnovformdetail set DelFlg = 1,';
+			selectSQL1 += ' updatetime = "' + moment().format('YYYY-MM-DD HH:mm:ss') + '",';
+	        selectSQL1 += ' UpdateBy = "' + util.jsonget(questquery,'/userid') + '"';
+			selectSQL1 += ' where ';
+			selectSQL1 += ' ovformid = ' + util.jsonget(questquery,'/ovformid');
+
+	        util.log('debug',selectSQL1);
+	            var query = Connection.query(selectSQL1);
+	            query
+	              .on('error', function(sqlerr) {
+	                // Handle error, an 'end' event will be emitted after this as well
+	                results = sqlerr;
+	                util.log('log','Connect error '+ sqlerr);
+	                util.jsonadd(results,'/sqlstmt',selectSQL1);
+	                Connection.rollback(function() {
+							util.log('debug','rollback');
+							Connection.release();
+							});
+	                callback(sqlerr,null);
+	              })
+	              .on('result', function(row,index) {
+	                // Pausing the connnection is useful if your processing involves I/O
+	                //connection.pause();
+	                //index==0 的row结果是第一句update的结果
+	                if(index ==0){
+	                	cnt = row.changedRows ;
+	                	util.log('log', 'head:' + cnt + ' rows changed');
+	                }
+	                //index==1 的row结果是第二句update的结果
+	                if(index ==1){
+	                	cntdetail = row.changedRows ;
+	                	util.log('log','detail:' + cntdetail + ' rows changed');
+	                }
+
+
+
+	              })
+	              .on('end', function() {
+	              	  if(cnt!=1){   //没有正确更新1行
+	                	Connection.rollback(function() {
+							util.log('debug','rollback');
+							Connection.release();
+							});
+	                	callback(cnt + ' rows changed',null);
+	                	}else{
+ 							Connection.commit(function(err) {
+							if (err) {
+								Connection.rollback(function() {
+									Connection.release();
+									util.log('debug','rollback');
+									callback('commit err' + err, null);
+								});
+								}else{
+									util.log('debug','commit! ');
+									util.jsonadd(results,'/errno','200');
+									util.jsonadd(results,'/errmsg','deleteOV complete');
+									callback(null, results);
+								}
+							});
+
+	                	}
+
+	              });
+	        }
+	       }); //beginTransaction
+	      });
+
+	    }
+	        ],function(sqlerr,results){
+
+	          if(sqlerr == null||sqlerr == '' ){
+
+	            util.log('log','deleteOV returns');
+	            util.log('log',results);
+	            callback(results);  //返回行数
+	          }
+	          else
+	          {
+	            //global.queryDBStatus = 'err';
+	            util.log('error',"err  = "+ sqlerr);
+	            //results = sqlerr;
+	            util.jsonadd(results,'/errno','400');
+	            util.jsonadd(results,'/errmsg',sqlerr);
+	            util.jsonadd(results,'/module','deleteOV');
+
+
+	            util.log('log','deleteOV returns Error');
+	            util.log('log',JSON.stringify(results));
+	            callback(results);
+	          }
+
+      }); //async.series end
+
+}
+
+
+
+
+/*
+加班删除的返回值
+
+200 正常删除
+301 已进入考勤审批流程，不能删除
+400 系统异常
+500 用户失效
+*/
+
+
+function OVDelete(questquery,response,callback){
+	async.waterfall([     //有顺序的执行,前一个函数的结果作为下一个函数的参数
+ 	function (callback){  //检查是否不能删除 仅当未提交或已驳回的状态可以删除
+
+ 			var ovformid = util.jsonget(questquery,'/ovformid');
+
+            DeleteOVCheck(ovformid,
+            	function(cb){
+            		//util.log('debug','WHSetting get ' + JSON.stringify(cb));
+            		//util.log('debug','WHSetting get ' + util.jsonget(cb[0],'/errno'));
+            	if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') == 400){  //异常情况下
+            			cb = {"errno":"400",
+            				"errmsg:":util.jsonget(cb,'/errmsg'),
+            				"module":"OVDelete"
+            			}
+            			callback(cb,null);
+            	}else{
+            		if( util.jsonexist(cb[0],'/errno') && util.jsonget(cb[0],'/errno') == 200){   //非异常情况下返回
+            			util.log('debug','OVDelete.DeleteOVCheck OK ' + JSON.stringify(cb));
+            			if(util.jsonget(cb[0],'/row') == 0){  //可以删除
+            				callback(null,questquery);
+            			}
+            			else
+            			{
+            				util.log('debug','OVDelete.DeleteOVCheck return > 0 ' );
+            				cb = {
+            				"errno":"301",
+            				"errmsg:":"OVDelete.DeleteOVCheck Error",
+            				"module":"OVDelete"
+            				}
+            			callback(cb,null);
+            			}
+
+            		}else{
+            			cb = {
+            				"errno":"301",
+            				"errmsg:":"OVDelete.DeleteOVCheck Error",
+            				"module":"OVDelete"
+            				}
+            			callback(cb,null);
+            		}
+            	}
+            	});
+    },
+
+   function (results,callback) {  //通过check后，置删除标志位
+   			deleteOV(questquery,
+            	function(cb){
+            		//util.log('debug','WHSetting get ' + JSON.stringify(cb));
+            		//util.log('debug','WHSetting get ' + util.jsonget(cb[0],'/errno'));
+            	if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') == 400){  //异常情况下
+            			cb = {"errno":"400",
+            				"errmsg:":util.jsonget(cb,'/errmsg'),
+            				"module":"OVDelete"
+            			}
+            			callback(cb,null);
+            	}else{
+            		if( util.jsonexist(cb[0],'/errno') && util.jsonget(cb[0],'/errno') == 200){   //非异常情况下返回
+            			util.jsonadd(cb[0],'/module','OVDelete');
+            			util.log('debug','OVDelete.deleteOV OK ' + JSON.stringify(cb));
+            			callback(null,cb);
+            		}else{
+            			/*
+            			cb = {
+            				"errno":"301",
+            				"errmsg:":"OVSubmit.insertOV Error",
+            				"module":"OVSubmit"
+            			}
+            			*/
+            			callback(cb,null);
+            		}
+            	}
+            	});
+    },
+    /*
+   function (results,callback) {  //提交
+   			SubmitOV(questquery,
+            	function(cb){
+            		//util.log('debug','insertOV retrun ' + JSON.stringify(cb));
+            		callback(null,cb);
+            	});
+    },
+	*/
+], function(err, results) {
+
+	if(err == null||err == '' ){
+
+		if(util.jsonexist(results[0],'/errno') != true){
+			        util.jsonadd(results[0],'/errno','200');
+			    	}
+			    	util.jsonadd(results[0],'/errmsg','OVDelete succ');
+		            util.log('log','OVDelete returns');
+		            util.log('log',results);
+					 callback(results[0]);
+			    }
+			    else
+			    {
+			      //global.queryDBStatus = 'err';
+					util.log('error',"err  = "+ JSON.stringify(err));
+					results = err;
+		            util.log('log','OVDelete returns');
+		            util.log('log',results);
+		            callback(results);
+			    }
+
+});
+
+}
 
 exports.OVSubmit = OVSubmit;
+exports.OVDelete = OVDelete;

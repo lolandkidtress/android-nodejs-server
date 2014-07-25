@@ -117,7 +117,18 @@ function encrypted(formObj){
 
     formObj.action =  'http://127.0.0.1:8001/OVSubmit?'+ StringS;
     */
+
+
+    //加班删除
+    /*
+    var StringS = '{ "userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f","ovformid":"656"} ';
+
+
+    formObj.action =  'http://127.0.0.1:8001/DeleteOVInfo?'+ StringS;
+    */
+
     //剩余调休取得
+
     /*
     var StringS = '{'
     +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
@@ -125,12 +136,15 @@ function encrypted(formObj){
     +'}' ;
     formObj.action =  'http://127.0.0.1:8001/getLieuVCTime?'+ StringS;
     */
+
     //有薪假剩余天数
+
     var StringS = '{'
     +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
     +'"currentdt":"20140725"'
     +'}' ;
     formObj.action =  'http://127.0.0.1:8001/getPaidVCTime?'+ StringS;
+
 
    //休假规则
    /*
