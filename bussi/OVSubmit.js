@@ -710,14 +710,14 @@ function deleteOV(questquery,callback){
 	        selectSQL1 = ' update trnovform set DelFlg = 1, '
 	        selectSQL1 += ' updatetime = "' + moment().format('YYYY-MM-DD HH:mm:ss') + '",';
 	        selectSQL1 += ' UpdateBy = ' + util.jsonget(questquery,'/userid') ;
-			selectSQL1 += ' where (dtAppStatus !=1 or dtAppStatus !=2) ';
+			selectSQL1 += ' where (dtAppStatus !=1 or dtAppStatus !=2) and DelFlg =0';
 			selectSQL1 += ' and ovformid = "' + util.jsonget(questquery,'/ovformid') + '";';
 
 			selectSQL1 += ' update trnovformdetail set DelFlg = 1,';
 			selectSQL1 += ' updatetime = "' + moment().format('YYYY-MM-DD HH:mm:ss') + '",';
 	        selectSQL1 += ' UpdateBy = "' + util.jsonget(questquery,'/userid') + '"';
-			selectSQL1 += ' where ';
-			selectSQL1 += ' ovformid = ' + util.jsonget(questquery,'/ovformid');
+			selectSQL1 += ' where DelFlg =0';
+			selectSQL1 += ' and ovformid = ' + util.jsonget(questquery,'/ovformid');
 
 	        util.log('debug',selectSQL1);
 	            var query = Connection.query(selectSQL1);
