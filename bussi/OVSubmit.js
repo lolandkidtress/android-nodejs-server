@@ -145,8 +145,8 @@ function insertOV(questquery,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -235,7 +235,7 @@ function insertOV(questquery,callback){
 																sqlquery
 																.on('error', function(sqlerr) {
 																		results = sqlerr;
-																		util.log('log','Connect error '+ sqlerr);
+																		util.log('info','Connect error '+ sqlerr);
 																		util.jsonadd(results,'/sqlstmt',selectSQL1);
 																		callback(sqlerr,null);
 																	})
@@ -279,7 +279,7 @@ function insertOV(questquery,callback){
 																							sqlquery
 																							.on('error', function(sqlerr) {
 																							                   		results = sqlerr;
-																									                util.log('log','Connect error '+ sqlerr);
+																									                util.log('info','Connect error '+ sqlerr);
 																									                util.jsonadd(results,'/sqlstmt',selectSQL1);
 																									                callback(sqlerr,null);
 																							                   })
@@ -309,7 +309,7 @@ function insertOV(questquery,callback){
 																							                   sqlquery
 																							                   .on('error', function(sqlerr) {
 																							                   		results = sqlerr;
-																									                util.log('log','Connect error '+ sqlerr);
+																									                util.log('info','Connect error '+ sqlerr);
 																									                util.jsonadd(results,'/sqlstmt',selectSQL1);
 																									                callback(sqlerr,null);
 																							                   })
@@ -336,7 +336,7 @@ function insertOV(questquery,callback){
 																							                   	switch(spreturn)
 																															{
 																															case '1':
-																															  util.log('log','procWFSubmit return 1');
+																															  util.log('info','procWFSubmit return 1');
 																															  //update flg
 																															  Connection.commit(function(err) {
 																										                      	if (err) {
@@ -358,7 +358,7 @@ function insertOV(questquery,callback){
 																															  break;
 																															case '-1':
 
-																															  util.log('log','procWFSubmit return 当前没有流程定义');
+																															  util.log('info','procWFSubmit return 当前没有流程定义');
 																															  util.jsonadd(results,'/errno','313');
 																															  util.jsonadd(results,'/errmsg','当前没有流程定义');
 																															  Connection.rollback(function() {
@@ -369,7 +369,7 @@ function insertOV(questquery,callback){
 																															  break;
 																															case '-2':
 
-																															  util.log('log','procWFSubmit return 当前存在多个流程定义');
+																															  util.log('info','procWFSubmit return 当前存在多个流程定义');
 																															  util.jsonadd(results,'/errno','314');
 																															  util.jsonadd(results,'/errmsg','当前存在多个流程定义');
 																															  Connection.rollback(function() {
@@ -380,7 +380,7 @@ function insertOV(questquery,callback){
 																															  break;
 																															case '-3':
 
-																															  util.log('log','procWFSubmit return 加班申请时，工时已经在申请/提交状态');
+																															  util.log('info','procWFSubmit return 加班申请时，工时已经在申请/提交状态');
 																															  util.jsonadd(results,'/errno','315');
 																															  util.jsonadd(results,'/errmsg','加班申请时，工时已经在申请/提交状态');
 																															  Connection.rollback(function() {
@@ -391,7 +391,7 @@ function insertOV(questquery,callback){
 																															  break;
 																															case '-4':
 
-																															  util.log('log','procWFSubmit return 休假申请时，工时已经在申请/提交状态');
+																															  util.log('info','procWFSubmit return 休假申请时，工时已经在申请/提交状态');
 																															  util.jsonadd(results,'/errno','316');
 																															  util.jsonadd(results,'/errmsg','休假申请时，工时已经在申请/提交状态');
 																															  Connection.rollback(function() {
@@ -402,7 +402,7 @@ function insertOV(questquery,callback){
 																															  break;
 
 																															case '-100':
-																															  util.log('log','procWFSubmit return SQL执行错误');
+																															  util.log('info','procWFSubmit return SQL执行错误');
 																															  util.jsonadd(results,'/errno','400');
 																															  util.jsonadd(results,'/errmsg','SQL执行错误');
 																															  Connection.rollback(function() {
@@ -413,7 +413,7 @@ function insertOV(questquery,callback){
 																															  break;
 
 																															case '0':
-																															  util.log('log','procWFSubmit return SQL执行错误');
+																															  util.log('info','procWFSubmit return SQL执行错误');
 																															  util.jsonadd(results,'/errno','400');
 																															  util.jsonadd(results,'/errmsg','SQL执行错误');
 																															  Connection.rollback(function() {
@@ -458,8 +458,8 @@ function insertOV(questquery,callback){
             util.jsonadd(results,'/errno','400');
             util.jsonadd(results,'/errmsg',sqlerr);
               // util.jsonadd(results,'/rowcount',i);
-            util.log('log','insertOV returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','insertOV returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end
@@ -557,8 +557,8 @@ function OVSubmit(questquery,response,callback){
 			        util.jsonadd(results[0],'/errno','200');
 			    	}
 			    	util.jsonadd(results[0],'/errmsg','OVSubmit succ');
-		            util.log('log','OVSubmit returns');
-		            util.log('log',results);
+		            util.log('info','OVSubmit returns');
+		            util.log('info',results);
 					 callback(results[0]);
 			    }
 			    else
@@ -566,8 +566,8 @@ function OVSubmit(questquery,response,callback){
 			      //global.queryDBStatus = 'err';
 					util.log('error',"err  = "+ JSON.stringify(err));
 					results = err;
-		            util.log('log','OVSubmit returns');
-		            util.log('log',results);
+		            util.log('info','OVSubmit returns');
+		            util.log('info',results);
 		            callback(results);
 			    }
 
@@ -601,8 +601,8 @@ function DeleteOVCheck(formid,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -622,7 +622,7 @@ function DeleteOVCheck(formid,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -646,8 +646,8 @@ function DeleteOVCheck(formid,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','DeleteOVCheck returns');
-            util.log('log',results);
+            util.log('info','DeleteOVCheck returns');
+            util.log('info',results);
             callback(results);  //返回行数
           }
           else
@@ -660,8 +660,8 @@ function DeleteOVCheck(formid,callback){
             util.jsonadd(results,'/module','DeleteOVCheck');
 
 
-            util.log('log','DeleteOVCheck returns Error');
-            util.log('log',JSON.stringify(results));
+            util.log('info','DeleteOVCheck returns Error');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
 
@@ -697,8 +697,8 @@ function deleteOV(questquery,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -725,7 +725,7 @@ function deleteOV(questquery,callback){
 	              .on('error', function(sqlerr) {
 	                // Handle error, an 'end' event will be emitted after this as well
 	                results = sqlerr;
-	                util.log('log','Connect error '+ sqlerr);
+	                util.log('info','Connect error '+ sqlerr);
 	                util.jsonadd(results,'/sqlstmt',selectSQL1);
 	                Connection.rollback(function() {
 							util.log('debug','rollback');
@@ -739,12 +739,12 @@ function deleteOV(questquery,callback){
 	                //index==0 的row结果是第一句update的结果
 	                if(index ==0){
 	                	cnt = row.changedRows ;
-	                	util.log('log', 'head:' + cnt + ' rows changed');
+	                	util.log('info', 'head:' + cnt + ' rows changed');
 	                }
 	                //index==1 的row结果是第二句update的结果
 	                if(index ==1){
 	                	cntdetail = row.changedRows ;
-	                	util.log('log','detail:' + cntdetail + ' rows changed');
+	                	util.log('info','detail:' + cntdetail + ' rows changed');
 	                }
 
 
@@ -785,8 +785,8 @@ function deleteOV(questquery,callback){
 
 	          if(sqlerr == null||sqlerr == '' ){
 
-	            util.log('log','deleteOV returns');
-	            util.log('log',results);
+	            util.log('info','deleteOV returns');
+	            util.log('info',results);
 	            callback(results);  //返回行数
 	          }
 	          else
@@ -799,8 +799,8 @@ function deleteOV(questquery,callback){
 	            util.jsonadd(results,'/module','deleteOV');
 
 
-	            util.log('log','deleteOV returns Error');
-	            util.log('log',JSON.stringify(results));
+	            util.log('info','deleteOV returns Error');
+	            util.log('info',JSON.stringify(results));
 	            callback(results);
 	          }
 
@@ -912,8 +912,8 @@ function OVDeleteHandle(questquery,response,callback){
 			        util.jsonadd(results[0],'/errno','200');
 			    	}
 			    	util.jsonadd(results[0],'/errmsg','OVDelete succ');
-		            util.log('log','OVDelete returns');
-		            util.log('log',results);
+		            util.log('info','OVDelete returns');
+		            util.log('info',results);
 					 callback(results[0]);
 			    }
 			    else
@@ -921,8 +921,8 @@ function OVDeleteHandle(questquery,response,callback){
 			      //global.queryDBStatus = 'err';
 					util.log('error',"err  = "+ JSON.stringify(err));
 					results = err;
-		            util.log('log','OVDelete returns');
-		            util.log('log',results);
+		            util.log('info','OVDelete returns');
+		            util.log('info',results);
 		            callback(results);
 			    }
 

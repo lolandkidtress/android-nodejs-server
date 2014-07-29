@@ -54,8 +54,8 @@ function getWHDetailList(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -125,7 +125,7 @@ function getWHDetailList(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
 
@@ -199,8 +199,8 @@ function getWHDetailList(questquery,response,callback){
 			    if(sqlerr == null||sqlerr == '' ){
 
 
-            util.log('log','getWHDetailList returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getWHDetailList returns');
+            util.log('info',JSON.stringify(results));
 			      callback(results);
 			    }
 			    else
@@ -212,8 +212,8 @@ function getWHDetailList(questquery,response,callback){
             util.jsonadd(results,'/errmsg','getWHDetailList error');
               // util.jsonadd(results,'/rowcount',i);
             util.jsonadd(results,'/module','getWHDetailList');
-            util.log('log','getWHDetailList returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getWHDetailList returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
 			    }
   		}); //async.series end
@@ -244,8 +244,8 @@ function getTotalOVTime(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -274,7 +274,7 @@ function getTotalOVTime(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -316,8 +316,8 @@ function getTotalOVTime(questquery,response,callback){
 
         ],function(sqlerr,results){
            if(sqlerr == null||sqlerr == '' ){
-                util.log('log','getTotalOVTime returns');
-                        util.log('log',JSON.stringify(results));
+                util.log('info','getTotalOVTime returns');
+                        util.log('info',JSON.stringify(results));
                         callback(results);
            }
            else
@@ -327,8 +327,8 @@ function getTotalOVTime(questquery,response,callback){
                         util.jsonadd(results,'/errmsg','getTotalOVTime error');
                           // util.jsonadd(results,'/rowcount',i);
                         util.jsonadd(results,'/module','getTotalOVTime');
-                        util.log('log','getTotalOVTime returns');
-                        util.log('log',JSON.stringify(results));
+                        util.log('info','getTotalOVTime returns');
+                        util.log('info',JSON.stringify(results));
                         callback(results);
 
             }
@@ -405,8 +405,8 @@ function getPaidVCTime(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -456,7 +456,7 @@ function getPaidVCTime(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -511,8 +511,8 @@ function getPaidVCTime(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','getPaidVCTime returns');
-            util.log('log',JSON.stringify(result));
+            util.log('info','getPaidVCTime returns');
+            util.log('info',JSON.stringify(result));
             callback(result);
           }
           else
@@ -521,7 +521,7 @@ function getPaidVCTime(questquery,response,callback){
             util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
 
-            util.log('log',JSON.stringify(results));
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end
@@ -600,8 +600,8 @@ function getLieuVCTime(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -647,7 +647,7 @@ function getLieuVCTime(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -704,8 +704,8 @@ function getLieuVCTime(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','getLieuVCTime returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getLieuVCTime returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
           else
@@ -713,7 +713,7 @@ function getLieuVCTime(questquery,response,callback){
             //global.queryDBStatus = 'err';
             util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
-            util.log('log',JSON.stringify(results));
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end
@@ -744,8 +744,8 @@ function getTotalVCTime(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -769,7 +769,7 @@ function getTotalVCTime(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -813,8 +813,8 @@ function getTotalVCTime(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','getTotalVCTime returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getTotalVCTime returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
           else
@@ -826,8 +826,8 @@ function getTotalVCTime(questquery,response,callback){
             util.jsonadd(results,'/errmsg','getTotalVCTime error');
               // util.jsonadd(results,'/rowcount',i);
             util.jsonadd(results,'/module','getTotalVCTime');
-            util.log('log','getTotalVCTime returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getTotalVCTime returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end
@@ -858,8 +858,8 @@ function getAccessRecord(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -882,7 +882,7 @@ function getAccessRecord(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -926,8 +926,8 @@ function getAccessRecord(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','getAccessRecord returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getAccessRecord returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
           else
@@ -939,8 +939,8 @@ function getAccessRecord(questquery,response,callback){
             util.jsonadd(results,'/errmsg','getAccessRecord error');
               // util.jsonadd(results,'/rowcount',i);
             util.jsonadd(results,'/module','getAccessRecord');
-            util.log('log','getAccessRecord returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getAccessRecord returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end
@@ -987,8 +987,8 @@ function insertAccessRecord(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -1062,8 +1062,8 @@ function insertAccessRecord(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','insertAccessRecord returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','insertAccessRecord returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
           else
@@ -1075,8 +1075,8 @@ function insertAccessRecord(questquery,response,callback){
             util.jsonadd(results,'/errmsg','insertAccessRecord error');
               // util.jsonadd(results,'/rowcount',i);
             util.jsonadd(results,'/module','insertAccessRecord');
-            util.log('log','insertAccessRecord returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','insertAccessRecord returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end

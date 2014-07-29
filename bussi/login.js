@@ -49,8 +49,8 @@ function login(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;  
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -70,7 +70,7 @@ function login(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -116,9 +116,9 @@ function login(questquery,response,callback){
 
 			    if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','login returns');
-            util.log('log',results);
-            util.log('log','userToken is ' + JSON.stringify(userToken));
+            util.log('info','login returns');
+            util.log('info',results);
+            util.log('info','userToken is ' + JSON.stringify(userToken));
             callback(results);
 			    }
 			    else
@@ -126,9 +126,9 @@ function login(questquery,response,callback){
 			      //global.queryDBStatus = 'err';
 			      util.log('error',"err  = "+ sqlerr);
 			      results = sqlerr;
-            util.log('log','login returns');
+            util.log('info','login returns');
             util.jsonadd(results,'/errno','400');
-            util.log('log',results);
+            util.log('info',results);
             callback(results);
 			    }
   		}); //async.series end
@@ -158,15 +158,15 @@ function getWHSetting(questquery,response,callback){
       var res;
 
       //var pool = mysql.createPool(config.getDBConfig());
-      
+
       var pool = mysqlconn.poolConnection();
 
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
-          err = sqlerr;  
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
+          err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
 
@@ -193,7 +193,7 @@ function getWHSetting(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -246,8 +246,8 @@ function getWHSetting(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','getWHSetting returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getWHSetting returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
           else
@@ -260,8 +260,8 @@ function getWHSetting(questquery,response,callback){
             util.jsonadd(results,'/module','getWHSetting');
 
 
-            util.log('log','getWHSetting returns Error');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getWHSetting returns Error');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
 
@@ -303,8 +303,8 @@ function getCalendar(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;  
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -322,7 +322,7 @@ function getCalendar(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -366,8 +366,8 @@ function getCalendar(questquery,response,callback){
            if(util.jsonexist(results,'/errno') != true){
               util.jsonadd(results,'/errno','200');
             }
-            util.log('log','getCalendar returns');
-            util.log('log',results);
+            util.log('info','getCalendar returns');
+            util.log('info',results);
             callback(results);
           }
           else
@@ -375,11 +375,11 @@ function getCalendar(questquery,response,callback){
             //global.queryDBStatus = 'err';
             util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
-            util.log('log','getCalendar returns');
+            util.log('info','getCalendar returns');
             util.jsonadd(results,'/errno','400');
             util.jsonadd(results,'/errmsg','Calendar get Error');
             util.jsonadd(results,'/module','getCalendar');
-            util.log('log',results);
+            util.log('info',results);
             callback(results);
           }
       }); //async.series end
@@ -415,8 +415,8 @@ function getAvailPJ(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;  
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -438,7 +438,7 @@ function getAvailPJ(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -482,8 +482,8 @@ function getAvailPJ(questquery,response,callback){
            if(util.jsonexist(results,'/errno') != true){
               util.jsonadd(results,'/errno','200');
             }
-            util.log('log','getAvailPJ returns');
-            util.log('log',results);
+            util.log('info','getAvailPJ returns');
+            util.log('info',results);
             callback(results);
           }
           else
@@ -491,11 +491,11 @@ function getAvailPJ(questquery,response,callback){
             //global.queryDBStatus = 'err';
             util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
-            util.log('log','getCalendar returns');
+            util.log('info','getCalendar returns');
             util.jsonadd(results,'/errno','400');
             util.jsonadd(results,'/errmsg','AvailPJ get Error');
             util.jsonadd(results,'/module','getAvailPJ');
-            util.log('log',results);
+            util.log('info',results);
             callback(results);
           }
       }); //async.series end

@@ -284,7 +284,7 @@ async.auto({
 
 }, function(err, results) {
 	if(err == null||err == '' ){
-		util.log('log','getWHDetailListHandle returns is ' +JSON.stringify(results) );
+		util.log('info','getWHDetailListHandle returns is ' +JSON.stringify(results) );
 
 					  if(results.WHSetting[0].errno=='200' 
 					  	&& results.WHDetailList[0].errno=='200')
@@ -346,7 +346,7 @@ async.auto({
 
 }, function(err, results) {
 	if(err == null||err == '' ){
-    util.log('log','getTotalPJTimeHandle returns is ' +JSON.stringify(results) );
+    util.log('info','getTotalPJTimeHandle returns is ' +JSON.stringify(results) );
 
             if(results.TotalFctPJTime[0].errno=='200' 
               && results.TotalEstPJTime[0].errno,"/errno"=='200')
@@ -429,7 +429,7 @@ async.auto({
     }]
 }, function(err, results) {
   if(err == null||err == '' ){
-    util.log('log','getTotalVCTimeHandle returns is ' +JSON.stringify(results) );
+    util.log('info','getTotalVCTimeHandle returns is ' +JSON.stringify(results) );
 
             if(results.TotalVCTime[0].errno=='200' 
               && results.PaidVCTime[0].errno,"/errno"=='200'

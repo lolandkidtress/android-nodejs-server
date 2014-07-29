@@ -12,7 +12,7 @@ var result = null;
 
   function messageHandler(msg) {
 
-      util.log("debug","messageHandler get msg: " + JSON.stringify(msg));
+      util.log("info","messageHandler get msg: " + JSON.stringify(msg));
           setTimeout(function () {
         eachWorker(function (worker) {
             worker.send(msg);
@@ -90,11 +90,11 @@ else if(cluster.isWorker){
 
 	process.on('message', function(msg) {
 			//子进程获得master的通知
-	        util.log('debug', cluster.worker.id + ' get msg:' + JSON.stringify(msg));
+	        util.log('info', cluster.worker.id + ' get msg:' + JSON.stringify(msg));
 	        if(util.jsonexist(msg,'/UserValidatedList') == true){
 	        	//util.log('debug', cluster.worker.id + ' UserValidatedList :' + JSON.stringify(UserValidatedList));
 	        	comm.syncUserValidatedList(msg,function(callback){
-	        		util.log('debug',callback);
+	        		util.log('info',callback);
 	        	});
 	        }
 	    });

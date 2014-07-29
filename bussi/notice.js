@@ -51,8 +51,8 @@ function getWHEmptyDate(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;  
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -104,8 +104,8 @@ function getWHEmptyDate(questquery,response,callback){
 			   	 if(util.jsonexist(results,'/errno') != true){
 			        util.jsonadd(results,'/errno','200');
 			    	}
-            util.log('log','getWHEmptyDate returns');
-            util.log('log',results);
+            util.log('info','getWHEmptyDate returns');
+            util.log('info',results);
 			      callback(results);
 			    }
 			    else
@@ -113,8 +113,8 @@ function getWHEmptyDate(questquery,response,callback){
 			      //global.queryDBStatus = 'err';
 			      util.log('error',"err  = "+ sqlerr);
 			      results = sqlerr;
-            util.log('log','getWHEmptyDate returns');
-            util.log('log',results);
+            util.log('info','getWHEmptyDate returns');
+            util.log('info',results);
             callback(results);
 			    }
   		}); //async.series end

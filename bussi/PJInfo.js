@@ -29,8 +29,8 @@ function getTotalFctPJTime(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -87,7 +87,7 @@ function getTotalFctPJTime(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
 
               })
@@ -129,8 +129,8 @@ function getTotalFctPJTime(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','getTotalFctPJTime returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getTotalFctPJTime returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
           else
@@ -142,8 +142,8 @@ function getTotalFctPJTime(questquery,response,callback){
             util.jsonadd(results,'/errmsg','getTotalFctPJTime error');
               // util.jsonadd(results,'/rowcount',i);
             util.jsonadd(results,'/module','getTotalFctPJTime');
-            util.log('log','getTotalFctPJTime returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getTotalFctPJTime returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end
@@ -174,8 +174,8 @@ function getTotalEstPJTime(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -231,7 +231,7 @@ function getTotalEstPJTime(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
 
               })
@@ -275,8 +275,8 @@ function getTotalEstPJTime(questquery,response,callback){
 
         if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','getTotalEstPJTime returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getTotalEstPJTime returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
           else
@@ -288,8 +288,8 @@ function getTotalEstPJTime(questquery,response,callback){
             util.jsonadd(results,'/errmsg','getTotalEstPJTime error');
               // util.jsonadd(results,'/rowcount',i);
             util.jsonadd(results,'/module','getTotalEstPJTime');
-            util.log('log','getTotalEstPJTime returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getTotalEstPJTime returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end
@@ -322,8 +322,8 @@ function getEstPJTimeDetail(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -362,7 +362,7 @@ function getEstPJTimeDetail(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
 
               })
@@ -405,8 +405,8 @@ function getEstPJTimeDetail(questquery,response,callback){
                util.jsonadd(results,'/module','getEstPJTimeDetail');
 
             }
-            util.log('log','getEstPJTimeDetail returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getEstPJTimeDetail returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
           else
@@ -418,8 +418,8 @@ function getEstPJTimeDetail(questquery,response,callback){
             util.jsonadd(results,'/errmsg','getEstPJTimeDetail error');
               // util.jsonadd(results,'/rowcount',i);
             util.jsonadd(results,'/module','getEstPJTimeDetail');
-            util.log('log','getEstPJTimeDetail returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getEstPJTimeDetail returns');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end

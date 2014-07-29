@@ -1,6 +1,7 @@
 
 
 var request = "";  //业务数据 json对象
+//error or debug or info
 var tracelever ="debug"; //全局的日志级别
 
 var db_config = {

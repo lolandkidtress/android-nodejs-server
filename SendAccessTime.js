@@ -107,7 +107,7 @@ function SendAccessRecord(callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -128,10 +128,10 @@ function SendAccessRecord(callback){
                   if(i>0){
                     util.jsonadd(results,'/rowcount',i);
 //[{"errno":"200","errmsg":"getAccess complete","queryresult0":{"objdate":"20140616","OutTime":"2014-06-16T06:43:42.000Z","inTime":"2014-06-16T06:44:38.000Z"},"queryresult1":{"objdate":"20140616","OutTime":"2014-06-16T06:49:57.000Z","inTime":"2014-06-16T06:50:28.000Z"},"rowcount":2,"module":"getAccess"}]
-							util.log('log','send data :' + JSON.stringify(results));
+							util.log('info','send data :' + JSON.stringify(results));
                             http.get("http://iv.ivggs.com:10445/insertAccessRecord?"+JSON.stringify(results), function(res) {
                             //http.get("http://localhost:8001/insertAccessRecord?"+JSON.stringify(results), function(res) {
-                            util.log('log',"Got response: " + res.statusCode);
+                            util.log('info',"Got response: " + res.statusCode);
 		                            if(res.statusCode=='200'){
 		                           util.jsonadd(results,'/errno','200');
 		                           util.jsonadd(results,'/errmsg','SendAccessRecord complete');
@@ -151,7 +151,7 @@ function SendAccessRecord(callback){
                                 console.log('BODY: ' + chunk);
                               })
                             .on('error', function(e) {
-                                  util.log('log',"Got error: " + e.message);
+                                  util.log('info',"Got error: " + e.message);
                                   util.jsonadd(results,'/errno','400');
 		                           util.jsonadd(results,'/errmsg','SendAccessRecord complete');
 		                           util.jsonadd(results,'/rowcount',i);
@@ -160,7 +160,7 @@ function SendAccessRecord(callback){
                                 })
                             .on('uncaughtException', function (err) {
                                   util.log(err.stack);
-                                  util.log('log',"uncaughtException");
+                                  util.log('info',"uncaughtException");
                                   util.jsonadd(results,'/errno','400');
 		                           util.jsonadd(results,'/errmsg','SendAccessRecord complete');
 		                           util.jsonadd(results,'/rowcount',i);
@@ -189,8 +189,8 @@ function SendAccessRecord(callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','SendAccessRecord returns');
-            //util.log('log',JSON.stringify(results));
+            util.log('info','SendAccessRecord returns');
+            //util.log('info',JSON.stringify(results));
             callback(results);
           }
           else
@@ -202,8 +202,8 @@ function SendAccessRecord(callback){
             util.jsonadd(results,'/errmsg','SendAccessRecord error');
               // util.jsonadd(results,'/rowcount',i);
             util.jsonadd(results,'/module','SendAccessRecord');
-            util.log('log','SendAccessRecord returns err');
-            util.log('log',JSON.stringify(results));
+            util.log('info','SendAccessRecord returns err');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
       }); //async.series end
@@ -218,11 +218,11 @@ var i = 0;
   };
   var pool;
 
-  util.log('log','SendAccessRecord Start');
+  util.log('info','SendAccessRecord Start');
 
     SendAccessRecord(
               function(callback){
-                util.log('log',"SendAccessRecord end");
+                util.log('info',"SendAccessRecord end");
                 //console.log(callback);
                   //req.write('option');
                 process.exit(0);

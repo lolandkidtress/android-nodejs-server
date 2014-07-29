@@ -86,8 +86,8 @@ function getVCSetting(questquery,response,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;  
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -111,7 +111,7 @@ function getVCSetting(questquery,response,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -157,8 +157,8 @@ function getVCSetting(questquery,response,callback){
 
           if(sqlerr == null||sqlerr == '' ){
            
-            util.log('log','getVCSetting returns');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getVCSetting returns');
+            util.log('info',JSON.stringify(results));
             callback(results[0]);
           }
           else
@@ -171,8 +171,8 @@ function getVCSetting(questquery,response,callback){
             util.jsonadd(results,'/module','getVCSetting');
 
 
-            util.log('log','getVCSetting returns Error');
-            util.log('log',JSON.stringify(results));
+            util.log('info','getVCSetting returns Error');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
 
@@ -208,8 +208,8 @@ function DeleteVCCheck(formid,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -229,7 +229,7 @@ function DeleteVCCheck(formid,callback){
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
                 results = sqlerr;
-                util.log('log','Connect error '+ sqlerr);
+                util.log('info','Connect error '+ sqlerr);
                 util.jsonadd(results,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
@@ -253,8 +253,8 @@ function DeleteVCCheck(formid,callback){
 
           if(sqlerr == null||sqlerr == '' ){
 
-            util.log('log','DeleteVCCheck returns');
-            util.log('log',results);
+            util.log('info','DeleteVCCheck returns');
+            util.log('info',results);
             callback(results);  //返回行数
           }
           else
@@ -267,8 +267,8 @@ function DeleteVCCheck(formid,callback){
             util.jsonadd(results,'/module','DeleteVCCheck');
 
 
-            util.log('log','DeleteVCCheck returns Error');
-            util.log('log',JSON.stringify(results));
+            util.log('info','DeleteVCCheck returns Error');
+            util.log('info',JSON.stringify(results));
             callback(results);
           }
 
@@ -304,8 +304,8 @@ function deleteVC(questquery,callback){
       pool.getConnection(function(sqlerr, Connection) {
         // connected! (unless `err` is set)
         if(sqlerr!=null){
-          util.log('log','get ConnectPool error');
-          util.log('log',sqlerr);
+          util.log('info','get ConnectPool error');
+          util.log('info',sqlerr);
           err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
@@ -332,7 +332,7 @@ function deleteVC(questquery,callback){
                 .on('error', function(sqlerr) {
                   // Handle error, an 'end' event will be emitted after this as well
                   results = sqlerr;
-                  util.log('log','Connect error '+ sqlerr);
+                  util.log('info','Connect error '+ sqlerr);
                   util.jsonadd(results,'/sqlstmt',selectSQL1);
                   Connection.rollback(function() {
               util.log('debug','rollback');
@@ -346,12 +346,12 @@ function deleteVC(questquery,callback){
                   //index==0 的row结果是第一句update的结果
                   if(index ==0){
                     cnt = row.changedRows ;
-                    util.log('log', 'head:' + cnt + ' rows changed');
+                    util.log('info', 'head:' + cnt + ' rows changed');
                   }
                   //index==1 的row结果是第二句update的结果
                   if(index ==1){
                     cntdetail = row.changedRows ;
-                    util.log('log','detail:' + cntdetail + ' rows changed');
+                    util.log('info','detail:' + cntdetail + ' rows changed');
                   }
 
 
@@ -392,8 +392,8 @@ function deleteVC(questquery,callback){
 
             if(sqlerr == null||sqlerr == '' ){
 
-              util.log('log','deleteVC returns');
-              util.log('log',results);
+              util.log('info','deleteVC returns');
+              util.log('info',results);
               callback(results);  //返回行数
             }
             else
@@ -406,8 +406,8 @@ function deleteVC(questquery,callback){
               util.jsonadd(results,'/module','deleteVC');
 
 
-              util.log('log','deleteVC returns Error');
-              util.log('log',JSON.stringify(results));
+              util.log('info','deleteVC returns Error');
+              util.log('info',JSON.stringify(results));
               callback(results);
             }
 
@@ -518,8 +518,8 @@ function VCDeleteHandle(questquery,response,callback){
               util.jsonadd(results[0],'/errno','200');
             }
             util.jsonadd(results[0],'/errmsg','VCDelete succ');
-                util.log('log','VCDeleteHandle returns');
-                util.log('log',results);
+                util.log('info','VCDeleteHandle returns');
+                util.log('info',results);
            callback(results[0]);
           }
           else
@@ -527,8 +527,8 @@ function VCDeleteHandle(questquery,response,callback){
             //global.queryDBStatus = 'err';
           util.log('error',"err  = "+ JSON.stringify(err));
           results = err;
-                util.log('log','VCDeleteHandle returns');
-                util.log('log',results);
+                util.log('info','VCDeleteHandle returns');
+                util.log('info',results);
                 callback(results);
           }
 
