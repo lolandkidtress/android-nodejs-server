@@ -821,7 +821,7 @@ function deleteOV(questquery,callback){
 */
 
 
-function OVDelete(questquery,response,callback){
+function OVDeleteHandle(questquery,response,callback){
 	async.waterfall([     //有顺序的执行,前一个函数的结果作为下一个函数的参数
  	function (callback){  //检查是否不能删除 仅当未提交或已驳回的状态可以删除
 
@@ -931,4 +931,4 @@ function OVDelete(questquery,response,callback){
 }
 
 exports.OVSubmit = OVSubmit;
-exports.OVDelete = OVDelete;
+exports.OVDelete = OVDeleteHandle;

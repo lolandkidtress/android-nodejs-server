@@ -138,19 +138,28 @@ function encrypted(formObj){
     */
 
     //有薪假剩余天数
-
+    /*
     var StringS = '{'
     +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
     +'"currentdt":"20140725"'
     +'}' ;
     formObj.action =  'http://127.0.0.1:8001/getPaidVCTime?'+ StringS;
-
+    */
 
    //休假规则
    /*
     var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
     formObj.action =  'http://127.0.0.1:8001/getVCSetting?'+ StringS;
   */
+
+
+    //休假删除
+
+    var StringS = '{ "userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f","vcformid":"92"} ';
+
+
+    formObj.action =  'http://127.0.0.1:8001/DeleteVCInfo?'+ StringS;
+
     formObj.submit();
 
 }
