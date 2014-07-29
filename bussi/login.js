@@ -25,9 +25,14 @@ global.userToken = {
 */
 function login(questquery,response,callback){
   var i = 0;
-  var results ={
+  var result ={
     errno:'',
-    errmsg:''
+    errmsg:'',
+    queryresult:{
+        username:'',
+        uuid:'',
+        userid:''
+    }
   };
   var pool;
   var Connection;
@@ -44,6 +49,7 @@ function login(questquery,response,callback){
       //var pool = mysql.createPool(config.getDBConfig());
       
       //var pool = mysqlconn.poolConnection();
+      //先检验IVGGS的用户名密码的正确性
       var pool = mysql.createPool(config.getivggsDBConfig());
 
       pool.getConnection(function(sqlerr, Connection) {
@@ -57,33 +63,111 @@ function login(questquery,response,callback){
 
         }else
         {
-        selectSQL1 = 'select uuid() as uuid,lp.emailAddress,em.LoginName,em.EmployeeID ' ;
-        selectSQL1 = selectSQL1 +' from lportal.user_ lp,ivggs_whs.trnemployee em '
+        selectSQL1 = 'select uuid() as uuid,lp.emailAddress ' ;
+        selectSQL1 = selectSQL1 +' from lportal.user_ lp '
         selectSQL1 = selectSQL1 + ' where emailAddress = ';
         selectSQL1 = selectSQL1 + Connection.escape(util.jsonget(questquery,'/username'));
         selectSQL1 = selectSQL1 + ' and password_ = ' + Connection.escape(util.jsonget(questquery,'/credential')) ;
-        selectSQL1 = selectSQL1 + 'and emailAddress = LoginName';
+        selectSQL1 = selectSQL1 + ' and active_ = 1';
+
 
         util.log('debug',selectSQL1);
             var query = Connection.query(selectSQL1);
             query
               .on('error', function(sqlerr) {
                 // Handle error, an 'end' event will be emitted after this as well
-                results = sqlerr;
+                result = sqlerr;
                 util.log('info','Connect error '+ sqlerr);
-                util.jsonadd(results,'/sqlstmt',selectSQL1);
+                util.jsonadd(result,'/sqlstmt',selectSQL1);
                 callback(sqlerr,null);
               })
               .on('result', function(rows) {
                 // Pausing the connnection is useful if your processing involves I/O
                 //connection.pause();
-                util.jsonadd(results,'/queryresult/username',rows.LoginName);
-                util.jsonadd(results,'/queryresult/userid',rows.EmployeeID);
-                util.jsonadd(results,'/queryresult/uuid',rows.uuid);
+                util.jsonadd(result,'/queryresult/username',rows.emailAddress);
+                //util.jsonadd(results,'/queryresult/userid',rows.EmployeeID);
+                util.jsonadd(result,'/queryresult/uuid',rows.uuid);
+                util.log('debug','ivggs user check return ' + rows.emailAddress + '  ' + rows.uuid);
                 i=i+1;
               })
               .on('end', function(rows) {
                     if(i==1){
+                              //ivggs用户名密码存在后，检查工数的有效性
+                            util.log('info','ivggs password check passed ');
+                            Connection.release();
+                            var poolwhs = mysql.createPool(config.getDBConfig());
+                            i=0;
+                              poolwhs.getConnection(function(sqlerr, Connectionwhs) {
+                                // connected! (unless `err` is set)
+                                if(sqlerr!=null){
+                                  util.log('info','get ConnectPool error');
+                                  util.log('info',sqlerr);
+                                  err = sqlerr;
+                                  //util.jsonadd(err);
+                                  callback(sqlerr, null);
+
+                                }else
+                                {
+
+                                selectSQL1 = 'select emorg.employeeid from rtnemployeeorg emorg,trnemployee em ';
+                                selectSQL1 +=' where emorg.delflg =0 and em.DelFlg =0 ';
+                                selectSQL1 +=' and em.EmployeeID = emorg.EmployeeID ';
+                                selectSQL1 +=' and em.LoginName = '+ Connection.escape(util.jsonget(questquery,'/username'));
+                                selectSQL1 +=' and "' + moment().format('YYYYMMDD') + '" between emorg.usefulfromdt and emorg.usefultodt ';
+                                selectSQL1 +=' group by 1 ';
+
+
+                                util.log('debug',selectSQL1);
+                                    var query = Connectionwhs.query(selectSQL1);
+                                    query
+                                      .on('error', function(sqlerr) {
+                                        // Handle error, an 'end' event will be emitted after this as well
+                                        result = sqlerr;
+                                        util.log('info','Connect error '+ sqlerr);
+                                        util.jsonadd(result,'/sqlstmt',selectSQL1);
+                                        callback(sqlerr,null);
+                                      })
+                                      .on('result', function(rows) {
+                                        // Pausing the connnection is useful if your processing involves I/O
+                                        //connection.pause();
+                                        //util.jsonadd(results,'/queryresult/username',rows.LoginName);
+                                        util.jsonadd(result,'/queryresult/userid',rows.employeeid);
+                                        //util.jsonadd(results,'/queryresult/uuid',rows.uuid);
+                                        util.log('debug','whs user check return ' + rows.employeeid );
+                                        i=i+1;
+                                      })
+                                      .on('end', function(rows) {
+                                            if(i==1){
+                                              util.jsonadd(result,'/errno','200');
+                                              util.jsonadd(result,'/errmsg','User Valid');
+                                              util.jsonadd(result,'/module','login');
+
+                                              util.jsonadd(userToken,'/userid',util.jsonget(result,'/queryresult/userid'));
+                                              util.jsonadd(userToken,'/uuid',util.jsonget(result,'/queryresult/uuid'));
+                                              util.jsonadd(userToken,'/LoginDate',moment().format('YYYY-MM-DD'));
+
+                                              util.jsonadd(UserValidatedList,'/UserValidatedList'+'/userid'+util.jsonget(result,'/queryresult/userid'),userToken);
+
+                                              process.send(UserValidatedList);
+                                              util.log('debug','UserValidatedList refreshed '+ JSON.stringify(UserValidatedList));
+
+                                            }else
+                                            {
+                                              util.log('info','whs user check return error');
+                                              util.jsonadd(result,'/errno','300');
+                                              util.jsonadd(result,'/errmsg','User InValid');
+                                              util.jsonadd(result,'/module','login');
+                                              util.jsonadd(result,'/queryresult',null);
+                                            }
+                                          Connectionwhs.release();
+                                          callback(null,result);
+                                      });
+
+                                }
+
+                              });
+
+/*
                       util.jsonadd(results,'/errno','200');
                       util.jsonadd(results,'/errmsg','User Valid');
                       util.jsonadd(results,'/module','login');
@@ -96,15 +180,18 @@ function login(questquery,response,callback){
 
                       process.send(UserValidatedList);
                       util.log('debug','UserValidatedList refreshed '+ JSON.stringify(UserValidatedList));
-
+*/
                     }else
                     {
-                      util.jsonadd(results,'/errno','300');
-                      util.jsonadd(results,'/errmsg','User InValid');
-                      util.jsonadd(results,'/module','login');
+                     util.log('info','ivggs user check return error');
+                          util.jsonadd(result,'/errno','300');
+                          util.jsonadd(result,'/errmsg','User InValid');
+                          util.jsonadd(result,'/module','login');
+                          util.jsonadd(result,'/queryresult',null);
+                          Connection.release();
+                          callback(null,result);
                     }
-                  Connection.release();
-                  callback(null,results);
+                  //callback(null,results);
               });
         }
 
@@ -118,8 +205,8 @@ function login(questquery,response,callback){
 
             util.log('info','login returns');
             util.log('info',results);
-            util.log('info','userToken is ' + JSON.stringify(userToken));
-            callback(results);
+            //util.log('info','userToken is ' + JSON.stringify(userToken));
+            callback(results[0]);
 			    }
 			    else
 			    {
@@ -248,7 +335,7 @@ function getWHSetting(questquery,response,callback){
 
             util.log('info','getWHSetting returns');
             util.log('info',JSON.stringify(results));
-            callback(results);
+            callback(results[0]);
           }
           else
           {
@@ -265,10 +352,6 @@ function getWHSetting(questquery,response,callback){
             callback(results);
           }
 
-
-            
-
-            
       }); //async.series end
 
 }
@@ -368,7 +451,7 @@ function getCalendar(questquery,response,callback){
             }
             util.log('info','getCalendar returns');
             util.log('info',results);
-            callback(results);
+            callback(results[0]);
           }
           else
           {
