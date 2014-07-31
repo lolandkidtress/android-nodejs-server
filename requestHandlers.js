@@ -599,6 +599,35 @@ async.waterfall([
 }
 
 
+function SubmitVCInfoHandle(questquery,response,request,callback){
+
+async.waterfall([
+    function(cb) {
+      VCSubmit.VCSubmit(questquery,response,cb);
+//console.log(cb);
+      //callback(cb);
+    },
+    
+    /*
+    function(n,cb) {
+      mysql.CallProcedure(n,cb); 
+    },
+    */
+], function(results) {
+
+    if(!results){
+      feedback(results,response,request);
+    }else
+    {
+      feedback(results,response,request);
+    }
+    
+
+});
+}
+
+
+
 
 exports.dologin = dologin;
 exports.errhandle = errhandle;
@@ -620,5 +649,5 @@ exports.getVCSettingHandle = getVCSettingHandle;
 exports.getLieuVCTimeHandle = getLieuVCTimeHandle;
 exports.getPaidVCTimeHandle = getPaidVCTimeHandle;
 
-//exports.SubmitVCInfoHandle = SubmitVCInfoHandle;
 exports.DeleteVCInfoHandle = DeleteVCInfoHandle;
+exports.SubmitVCInfoHandle = SubmitVCInfoHandle;

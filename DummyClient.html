@@ -154,11 +154,47 @@ function encrypted(formObj){
 
 
     //休假删除
-
+    /*
     var StringS = '{ "userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f","vcformid":"92"} ';
 
 
     formObj.action =  'http://127.0.0.1:8001/DeleteVCInfo?'+ StringS;
+    */
+
+    //休假申请
+
+    var StringS = '{'
+      +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
+      +'"VCDay":"3",'
+      +'"Memo":"2天有薪假,1天调休",'
+      +'"TrnVCFormDetail0":{'
+      +'"ObjYMD":"20140701",'
+      +'"FromDt":"0900",'
+      +'"ToDt":"1730",'
+      +'"VCTime":"7.5",'
+      +'"vctype":"1",'
+      +'"SplitNo":"1"'
+      +'},'
+      +'"TrnVCFormDetail1":{'
+      +'"ObjYMD":"20140702",'
+      +'"FromDt":"0900",'
+      +'"ToDt":"1730",'
+      +'"VCTime":"7.5",'
+      +'"vctype":"1",'
+      +'"SplitNo":"1"'
+      +'},'
+      +'"TrnVCFormDetail2":{'
+      +'"ObjYMD":"20140703",'
+      +'"FromDt":"0900",'
+      +'"ToDt":"1730",'
+      +'"VCTime":"7.5",'
+      +'"vctype":"2",'
+      +'"SplitNo":"2"'
+      +'},'
+      +'"detailrow":"3"'
+      +'}' ;
+
+    formObj.action =  'http://127.0.0.1:8001/VCSubmit?'+ StringS;
 
     formObj.submit();
 
