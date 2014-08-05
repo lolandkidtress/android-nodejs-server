@@ -489,7 +489,7 @@ function OVSubmit(questquery,response,callback){
             			}
             			callback(cb,null);
             	}else{
-            		if( util.jsonexist(cb[0],'/errno') && util.jsonget(cb[0],'/errno') == 200){   //非异常情况下返回
+            		if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') == 200){   //非异常情况下返回
             			util.log('debug','OVSubmit.getWHSetting OK ' + JSON.stringify(cb));
             			callback(null,cb);
             		}else{
