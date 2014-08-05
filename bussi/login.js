@@ -371,6 +371,7 @@ function getCalendar(questquery,response,callback){
   var Connection;
   var selectSQL1;
 
+  util.log('debug','getCalendar get ' + JSON.stringify(questquery));
   async.series([
 
       function(callback){
@@ -380,7 +381,7 @@ function getCalendar(questquery,response,callback){
       var res;
 
       //var pool = mysql.createPool(config.getDBConfig());
-      
+
       var pool = mysqlconn.poolConnection();
 
       pool.getConnection(function(sqlerr, Connection) {
@@ -388,16 +389,20 @@ function getCalendar(questquery,response,callback){
         if(sqlerr!=null){
           util.log('info','get ConnectPool error');
           util.log('info',sqlerr);
-          err = sqlerr;  
+          err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
 
         }else
         {
 
-        selectSQL1 = ' select ymd,weekdate,dtdaytype from MstCalendar '; 
-        selectSQL1 += ' where ymd between ' + Connection.escape(util.jsonget(questquery,'/startdt'));  
+        selectSQL1 = ' select ymd,weekdate,dtdaytype from MstCalendar ';
+        selectSQL1 += ' where ymd between ' + Connection.escape(util.jsonget(questquery,'/startdt'));
         selectSQL1 += ' and ' + Connection.escape(util.jsonget(questquery,'/enddt'));
+
+        if(util.jsonexist(questquery,'/dtdaytype')){
+          selectSQL1 += ' and dtdaytype = ' + Connection.escape(util.jsonget(questquery,'/dtdaytype'));
+        }
 
         util.log('debug',selectSQL1);
             var query = Connection.query(selectSQL1);
@@ -415,7 +420,7 @@ function getCalendar(questquery,response,callback){
                 util.jsonadd(results,'/queryresult'+i+'/ymd',rows.ymd);
                 util.jsonadd(results,'/queryresult'+i+'/weekdate',rows.weekdate);
                 util.jsonadd(results,'/queryresult'+i+'/dtdaytype',rows.dtdaytype);
-              
+
                 i=i+1;
               })
               .on('end', function(rows) {
@@ -433,12 +438,12 @@ function getCalendar(questquery,response,callback){
                       util.jsonadd(results,'/errmsg','Calendar get Empty');
                       util.jsonadd(results,'/module','getCalendar');
                       util.jsonadd(results,'/rowcount',i);
-                   }   
+                   }
                   Connection.release();
-                  callback(null,results);  
+                  callback(null,results);
               });
         }
-        
+
       });
 
     }
