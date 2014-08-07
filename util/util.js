@@ -5,6 +5,13 @@ var cluster = require('cluster');
 var log4js = require('log4js');
 var pointer = require('json-pointer'); 
 
+var assert = require('assert');
+var crypto = require('crypto');
+
+
+
+
+
 exports.err = function(errMsg, callback) {
   //模拟一个错误的产生，让async各个函数末尾的callback接收到。
     timeout = timeout || 200;
@@ -188,4 +195,50 @@ exports.jsonadd = function(obj, objPointer, value) {
 
 
 
+exports.encrypt = function(param,callback) {
+  var key = new Buffer(param.key);
+  var iv = new Buffer(param.iv ? param.iv : 0)
+  var plaintext = param.plaintext
+  var alg = param.alg
+  var autoPad = param.autoPad
+
+  //encrypt
+  var cipher = crypto.createCipheriv(alg, key, iv);
+  cipher.setAutoPadding(autoPad)  //default true
+  var ciph = cipher.update(plaintext, 'utf8', 'hex');
+  ciph += cipher.final('hex');
+  console.log(alg, ciph)
+
+  callback(ciph);
+}
+
+
+exports.decrypt = function(param,callback) {
+  var key = new Buffer(param.key);
+  var iv = new Buffer(param.iv ? param.iv : 0)
+  var plaintext = param.plaintext
+  var alg = param.alg
+  var autoPad = param.autoPad
+
+  //decrypt
+  var decipher = crypto.createDecipheriv(alg, key, iv);
+  cipher.setAutoPadding(autoPad)
+  var txt = decipher.update(ciph, 'hex', 'utf8');
+  txt += decipher.final('utf8');
+  callback(plaintext);
+  //assert.equal(txt, plaintext, 'encryption and decryption with key and iv');
+}
+
+/*
+test_des(
+{
+  alg: 'des-ecb',
+  autoPad: true,
+  key: '01234567',
+  plaintext: '1234567812345678',
+  iv: null
+}
+)
+
+*/
 
