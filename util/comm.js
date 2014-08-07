@@ -2,6 +2,7 @@ var util = require('./util.js');
 var config = require("../config/config.js");
 var moment = require('moment');
 
+//多个进程间同步校验通过的用户
 exports.syncUserValidatedList = function(obj,callback) {
 
 		util.log('debug','syncUserValidatedList old List is :' + JSON.stringify(UserValidatedList));
