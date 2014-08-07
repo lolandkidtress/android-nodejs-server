@@ -21,6 +21,7 @@ var Wind = require('wind');
 var config = require('../config/config.js');
 var moment = require('moment');
 var login = require('./login.js');
+var whList = require('./whList.js');
 
 
 //取得员工在申请休假时的规则
@@ -210,7 +211,7 @@ function DeleteVCCheck(formid,callback){
                   util.jsonadd(result,'/errno','200');
                   util.jsonadd(result,'/row',row);
                   Connection.release();
-                  
+
                   callback('',result);
               });
         }
@@ -548,11 +549,11 @@ function VCDeleteHandle(questquery,response,callback){
 
 301.没有设定考勤规则
 302.该条休假数据时间和其他工时/加班/休假时间冲突
-303.
+303.休假时间必须是出勤日
 304.休假时间必须是出勤日的正常出勤时间内
 305.休假不可以跨月
 306.休假必须是全天
-307.
+307.没有设定日历
 308.
 309.有薪假天数不可为负数
 310.调休天数不能为负数
@@ -566,6 +567,21 @@ function VCDeleteHandle(questquery,response,callback){
 400 系统异常
 
 500 用户失效
+
+
+*/
+
+/*  检验顺序
+
+         301                                 305                      302               303
+        _____                              _______                  _______             _______
+          |                                   |                        |                   |
+          |                                   |                        |                   |
+304         306   309 310 311   312           |                        |                   |
+____________________________________          |                        |                   |
+                   |                          |                        |                   |
+__________________________________________________________________________________________________________________________________
+                                    313,314,315,316  (提交时有提交共通校验)
 
 
 */
@@ -959,6 +975,7 @@ function insertVC(questquery,callback){
                                                    submitOVQuery  +='"",@res) ; select cast(@res as char(90)) resu ;';
 
                                                    sqlquery = Connection.query(submitOVQuery);
+                                                   util.log('debug',sqlquery.sql);
                                                    sqlquery
                                                                  .on('error', function(sqlerr) {
                                                                     results = sqlerr;
@@ -1123,25 +1140,524 @@ function insertVC(questquery,callback){
 }
 ;
 
-
+//休假申请时检验顺序
 
 function VCInfoValidateCheck(questquery,callback){
+
   util.log('debug','VCInfoValidateCheck get questquery' + JSON.stringify(questquery));
+  var totalrow = util.jsonget(questquery,'/detailrow');
   var err={
-    errno:"302",
+    errno:"",
     errmsg:"",
     module:"VCSubmit"
   }
 
-async.series([
+  var arr = [{ userid:'',startdt:'',enddt:''
+  }]
+  ;
+
+  var count = 0;
+  var paidtotaltime = 0; //申请表单中的有薪假合计
+  var paidtotalday = 0;
+  var lieutotaltime = 0; //申请表单中的调休合计
+  var lieutotalday = 0;
+  var totaltime = 0;
+  var totalday = 0;
+  var leftPaidVCTime = 0; //剩余有薪假 分钟
+  var leftLieuVCTime = 0; //剩余调休 分钟
+
+  var currentyear = 0 ;
+  var lastyear = 0;
+
+//并行执行多个函数，每个函数都是立即执行，不需要等待其它函数先执行
+//如果某个函数出错，则立刻将err和已经执行完的函数的结果值传给parallel最终的callback。
+async.parallel([
+
+
+     //302 该条休假数据时间和其他工时/加班/休假时间冲突 305 休假不可以跨月
+     function(callback){
+        util.log('debug','302,305 enter');
+        var arr302 = [] ;
+        for (var i=0;i<totalrow;i++)
+                ( function (i) {   //循环取得每一条明细申请的时间
+                      arr302[i] ={
+                        no:i,
+                        userid:util.jsonget(questquery,'/userid'),
+                        startdt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                        enddt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                        vctype:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/vctype'),
+                        FromDt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/FromDt'),
+                        ToDt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ToDt'),
+                        currentdt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD')
+                      };
+                    currentyear = moment(util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),'YYYYMMDD');
+                     if(currentyear != 0 && lastyear != 0){
+                      if(currentyear.year() != lastyear.year() || currentyear.month() != lastyear.month()) {
+                              cb = {
+                                    "errno":"305",
+                                    "errmsg:":"休假不可以跨月",
+                                    "No":i,
+                                    "module":"VCSubmit"
+                                  }
+                                  callback(cb,null);
+                      }
+                     }else
+                     {
+                      lastyear = currentyear;
+                     }
+                })(i);
+                //检查申请的时间是否有重叠
+                for (var i=0;i<totalrow;i++)
+                 ( function (i) {
+                     for (var j=0;j<totalrow;j++)
+                         ( function (j) {
+                          util.log('debug','时间重叠check:'+ i+':' + j + ' ' + arr302[i].startdt+ ' ' + arr302[j].startdt+ ' ' + arr302[i].FromDt+ '<=' +   arr302[j].ToDt + ' ' +   arr302[i].ToDt +  '>' + arr302[j].FromDt)
+
+                              if( (arr302[i].no < arr302[j].no) && (arr302[i].startdt==arr302[j].startdt ) && ( arr302[i].FromDt <= arr302[j].ToDt && arr302[i].ToDt > arr302[j].FromDt ) ){
+                                cb = {
+                                    "errno":"302",
+                                    "errmsg:":"该条休假数据时间和其他工时/加班/休假时间冲突",
+                                    "No":i,
+                                    "module":"VCSubmit"
+                                  }
+                                  callback(cb,null);
+                              }
+
+                         })(j);
+                 })(i);
+
+                async.forEachSeries(arr302, function(item302, callback) {
+                      whList.getExistWHList(item302,null,
+                          function(cb){
+                           if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') != 300  ){  //返回结果中有数据
+                                  cb = {
+                                            "errno":"302",
+                                            "errmsg:":"该条休假数据时间和其他工时/加班/休假时间冲突",
+                                            "No":item302.no,
+                                            "module":"VCSubmit"
+                                          }
+                                  callback(cb,null);
+
+                                }else{
+                                  callback(null,cb);
+                                }
+
+                          });
 
 
 
-    ],function(sqlerr,results){
+                }, function(err) {
 
-      callback(err);
-      }); //async.series end
+                    if(err!= null && err !=''){
+                      util.log('info','302,305 err: ' + JSON.stringify(err));
+                      callback(err);
+                    }
 
+                      else{
+                          callback(null,'302,305 check pass');
+                    }
+
+                });  // async.forEach(
+
+        //callback(null,'1212');//callback('','302 OK');
+    },
+
+
+      //303
+     function(callback){
+        util.log('debug','303 enter'); //303.休假时间必须是出勤日
+        var arr303 = [] ;
+        for (var i=0;i<totalrow;i++)
+                ( function (i) {   //循环取得每一条明细申请的时间
+                      arr303[i] ={
+                        no:i,
+                        userid:util.jsonget(questquery,'/userid'),
+                        startdt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                        enddt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                        dtdaytype:1  //出勤日
+                      };
+                })(i);
+
+                async.forEachSeries(arr303, function(item303, callback) {
+                      login.getCalendar(item303,null,
+                          function(cb){
+                           if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') != 200  ){  //没有正确取得日历
+                                  cb = {
+                                            "errno":"303",
+                                            "errmsg:":"休假时间必须是出勤日",
+                                            "No":item303.no,
+                                            "module":"VCSubmit"
+                                          }
+                                  callback(cb,null);
+
+                                }else{
+                                  callback(null,cb);
+                                }
+
+                          });
+                }, function(err) {
+
+                    if(err!= null && err !=''){
+                      util.log('info','303 err: ' + JSON.stringify(err));
+                      callback(err);
+                    }
+
+                      else{
+                          callback(null,'303 check pass');
+                    }
+
+                });  // async.forEach(
+
+        //callback(null,'1212');//callback('','302 OK');
+    },
+
+    //301,306,311,312,304,309,310
+    function(callback){
+          util.log('debug','301,306,311,312,304,309,310 enter');
+          var arr301 =[];
+                for (var i=0;i<totalrow;i++)
+                ( function (i) {   //循环取得每一条明细申请的时间
+                      arr301[i] ={
+                        no:i,
+                        userid:util.jsonget(questquery,'/userid'),
+                        startdt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                        enddt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                        vctype:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/vctype'),
+                        FromDt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/FromDt'),
+                        ToDt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ToDt'),
+                        currentdt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD')
+                      };
+                })(i);
+                //util.log('debug',arr);
+                //console.log('arr is ' + arr);
+
+                // 所有操作并发执行，且全部未出错，最终得到的err为undefined。注意最终callback只有一个参数err。
+                //根据明细取得考勤规则
+                async.forEachSeries(arr301, function(item301, callback) {
+                      //util.log('debug','1.1 enter: ' + item.userid +  item.startdt  +  item.enddt );
+                            async.auto({  //先执行WHSetting和VCSetting 再合并在一起
+                                        WHSetting: function (callback) {
+                                                /*
+                                                var settingquery = {
+                                                  userid:util.jsonget(questquery,'/userid'),
+                                                  startdt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                                                  enddt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD')
+                                                }
+                                                */
+                                              login.getWHSetting(item301,null,
+                                                function(cb){
+                                                    //util.log('debug','No:' + item.no + ' VCSubmit.getWHSetting return ' + JSON.stringify(cb));
+                                                      if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') != 200){  //没有正确取得考勤规则
+                                                        cb = {
+                                                                  "errno":"301",
+                                                                  "errmsg:":"VCSubmit.getWHSetting Error",
+                                                                  "No":item301.no,
+                                                                  "module":"VCSubmit"
+                                                                }
+                                                        callback(cb,null);
+
+                                                      }else{
+                                                        callback(null,cb);
+                                                      }
+
+                                                });
+                                            },  //WHSetting: function (callback)
+                                        VCSetting: function (callback) {
+                                                /*
+                                                var vcsettingquery = {
+                                                  userid:util.jsonget(questquery,'/userid'),
+                                                  startdt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                                                  enddt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                                                  vctype:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/vctype')
+                                                 }
+                                                */
+                                              getVCSetting(item301,null,
+                                                function(cb){
+                                                  //util.log('debug','No:' + item.no + ' VCSubmit.VCSetting return ' + JSON.stringify(cb));
+                                                  if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') != 200){  //没有正确取得休假规则
+                                                        cb = {
+                                                                  "errno":"301",
+                                                                  "errmsg:":"VCSubmit.getVCSetting Error",
+                                                                  "No":item301.no,
+                                                                  "module":"VCSubmit"
+                                                                }
+                                                        callback(cb,null);
+
+                                                      }else{
+                                                        callback(null,cb);
+                                                      }
+
+                                                });
+                                            },  //VCSetting: function (callback)
+
+                                          PaidVCTime: function (callback) {
+
+                                            if(item301.vctype==1){
+                                              whList.getPaidVCTime(item301,null,
+                                                function(cb){
+                                                  //console.log(cb);
+                                                 if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') != 200  ){  //有薪假天数不可为负数
+                                                        cb = {
+                                                                  "errno":"309",
+                                                                  "errmsg:":"有薪假天数不可为负数",
+                                                                  "No":item301.no,
+                                                                  "module":"VCSubmit"
+                                                                }
+                                                        callback(cb,null);
+                                                        //util.log('debug','有薪假天数不可为负数' + cb);
+                                                      }else{
+                                                          //申请的天数+已用的天数小于有薪假天数检查的check放在301，306部分
+                                                          leftPaidVCTime = ( Number(util.jsonget(cb,'/LeftWH')) - Number(util.jsonget(cb,'/VCWH')) );
+                                                          util.log('info','No' + item301.no + '剩余有薪假小时:' +  leftPaidVCTime);
+                                                          callback(null,cb);
+
+                                                      }
+
+                                                  });
+                                                }else{
+                                                    leftPaidVCTime = 0;
+                                                    callback(null,'cb');
+                                                }
+                                          },
+                                        LieuVCTime: function (callback) {
+                                            if(item301.vctype==2){
+                                                whList.getLieuVCTime(item301,null,
+                                                function(cb){
+
+                                                      if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') != 200  ){  //调休天数不能为负数
+                                                        cb = {
+                                                                  "errno":"310",
+                                                                  "errmsg:":"调休天数不能为负数",
+                                                                  "No":item301.no,
+                                                                  "module":"VCSubmit"
+                                                                }
+                                                        callback(cb,null);
+                                                        //util.log('debug','有薪假天数不可为负数' + cb);
+                                                      }else{
+                                                          //申请的天数+已用的天数小于有薪假天数检查的check放在301，306部分
+                                                          leftLieuVCTime =  Number(util.jsonget(cb,'/LeftWH')) ;
+                                                          util.log('info','No' + item301.no + '剩余调休小时数:' +  leftLieuVCTime);
+                                                          callback(null,cb);
+
+                                                      }
+                                                });
+                                            }else{
+                                              leftLieuVCTime = 0;
+                                              callback(null,'cb');
+                                            }
+                                          },
+                                      resultsDetailList: ['WHSetting', 'VCSetting','PaidVCTime','LieuVCTime', function(callback,results) {
+
+                                            util.log('debug','No:' + item301.no + ' resultsDetailList: ' + JSON.stringify(results));
+
+                                              //取得考勤规则后，校验306,311，312，309
+                                              var duration = (parseInt(item301.ToDt/100)*60 + item301.ToDt%100)  - (parseInt(item301.FromDt/100)*60 + item301.FromDt%100);
+                                              console.log('请求的时间段 ' + duration);
+
+                                              //申请的时间减去中午午休的时间
+                                              //开始时间小于午休开始时间，结束时间大于午休结束时间
+                                              if( item301.FromDt < util.jsonget(results,'/WHSetting/queryresult0/MiddleFrom') && item301.ToDt > util.jsonget(results,'/WHSetting/queryresult0/MiddleTo') ){
+                                                duration = duration - ( (parseInt(util.jsonget(results,'/WHSetting/queryresult0/MiddleTo')/100)*60 + util.jsonget(results,'/WHSetting/queryresult0/MiddleTo')%100)  - (parseInt(util.jsonget(results,'/WHSetting/queryresult0/MiddleFrom')/100)*60 + util.jsonget(results,'/WHSetting/queryresult0/MiddleFrom')%100) );
+                                                console.log('开始时间小于午休开始时间，结束时间大于午休结束时间 ' + duration);
+                                              }
+
+                                              //开始时间小于午休开始时间，结束时间在午休期间内
+                                              if( item301.FromDt < util.jsonget(results,'/WHSetting/queryresult0/MiddleFrom') && item301.ToDt < util.jsonget(results,'/WHSetting/queryresult0/MiddleTo') && item301.ToDt > util.jsonget(results,'/WHSetting/queryresult0/MiddleFrom') ){
+                                                duration = duration - ( (parseInt(item301.ToDt/100)*60 + item301.ToDt%100) - (parseInt(util.jsonget(results,'/WHSetting/queryresult0/MiddleFrom')/100)*60 + util.jsonget(results,'/WHSetting/queryresult0/MiddleFrom')%100) );
+                                                console.log('开始时间小于午休开始时间，结束时间在午休期间内 ' + duration);
+                                              }
+
+                                              //开始时间在午休期间内，结束时间大于午休结束时间
+                                              if( item301.FromDt > util.jsonget(results,'/WHSetting/queryresult0/MiddleFrom') && item301.FromDt < util.jsonget(results,'/WHSetting/queryresult0/MiddleTo') && item301.ToDt > util.jsonget(results,'/WHSetting/queryresult0/MiddleTo')  ){
+                                                duration = duration - ( (parseInt(util.jsonget(results,'/WHSetting/queryresult0/MiddleTo')/100)*60 + util.jsonget(results,'/WHSetting/queryresult0/MiddleTo')%100)  - (parseInt(item301.FromDt/100)*60 + item301.FromDt%100) );
+                                                console.log('开始时间在午休期间内，结束时间大于午休结束时间 ' + duration);
+                                              }
+
+                                              //开始时间大于午休开始时间，结束时间小于午休结束时间 304错误
+                                              if( item301.FromDt >= util.jsonget(results,'/WHSetting/queryresult0/MiddleFrom') && item301.ToDt <= util.jsonget(results,'/WHSetting/queryresult0/MiddleTo') ){
+                                                cb = {
+                                                                    "errno":"304",
+                                                                    "errmsg:":"休假时间必须是出勤日的正常出勤时间内",
+                                                                    "No":item301.no,
+                                                                    "module":"VCSubmit"
+                                                                  }
+                                                                  callback(cb,null);
+                                              }
+                                              //var minduration = item.FromDt - time.ToDt;
+                                              util.log('debug','No' + item301.no + '休假持续时间:' + duration + '分钟');
+                                              util.log('debug', '换算成天：' + ( Number(duration)/60/Number((util.jsonget(results,'/WHSetting/queryresult0/avgHour'))) ) );
+                                              //将计算出的持续时间更新回questquery的vctime
+                                              //VCDay 最后更新
+
+                                              util.jsonadd(questquery,'/TrnVCFormDetail'+item301.no+'/VCTime',( Number(duration)/60));
+                                              //util.jsonadd( questquery,'/TrnVCFormDetail0/VCTime', ( parseInt(Number(duration)/Number((util.jsonget(results,'/WHSetting/queryresult0/avgHour')))) ) );
+                                              //util.jsonadd( questquery,'/TrnVCFormDetail1/VCTime',1);
+                                              //根据每天的规则合计
+                                              if(item301.vctype == 1){
+
+                                              paidtotaltime +=  duration;  //分钟
+                                              paidtotalday = Number(paidtotalday) + ( Number(duration)/60/Number((util.jsonget(results,'/WHSetting/queryresult0/avgHour')))  );  //根据每天的考勤规则转换成天
+                                              totalday += paidtotalday;
+                                              }
+
+                                              if(item301.vctype == 2){
+
+                                              lieutotaltime +=  duration;  //分钟
+                                              lieutotalday = Number(lieutotalday) + ( Number(duration)/60/Number((util.jsonget(results,'/WHSetting/queryresult0/avgHour')))  );  //根据每天的考勤规则转换成天
+                                              totalday += lieutotalday;
+                                              }
+
+
+                                              if(item301.vctype == 1) {
+                                                    if(parseInt(paidtotaltime/60) > leftPaidVCTime) {
+                                                    //剩余的有薪假 < 本次申请的合计
+                                                    util.log('debug',parseInt(totaltime/60) +'>' +  leftPaidVCTime);
+                                                    cb = {
+                                                            "errno":"309",
+                                                            "errmsg:":"有薪假天数不可为负数",
+                                                            "No":item301.no,
+                                                            "module":"VCSubmit"
+                                                          }
+                                                          callback(cb,null);
+                                                      }
+                                              }
+
+                                              if(item301.vctype == 2) {
+                                                    if(parseInt(lieutotaltime/60) > leftLieuVCTime) {
+                                                    //剩余的调休 < 本次申请的合计
+                                                      util.log('debug',parseInt(totaltime/60) +'>' +  leftLieuVCTime);
+                                                      cb = {
+                                                              "errno":"310",
+                                                              "errmsg:":"调休天数不能为负数",
+                                                              "No":item301.no,
+                                                              "module":"VCSubmit"
+                                                            }
+                                                            callback(cb,null);
+                                                    }
+                                              }
+
+
+
+                                              if(duration < (util.jsonget(results,'/VCSetting/queryresult0/ApplyStartWH')*60) ){
+                                                //休假持续时间小于起始单位
+                                                    util.log('debug',duration + '<' + (util.jsonget(results,'/VCSetting/queryresult0/ApplyStartWH')*60));
+                                                    cb = {
+                                                        "errno":"311",
+                                                        "errmsg:":"休假不符合起始单位",
+                                                        "No":item301.no,
+                                                        "module":"VCSubmit"
+                                                      }
+                                                      callback(cb,null);
+
+                                              }else{
+                                                  //console.log((duration - util.jsonget(results,'/VCSetting/queryresult0/ApplyStartWH')*60)%(util.jsonget(results,'/VCSetting/queryresult0/MinUsedUnit')*60));
+                                                  if( parseInt((duration - util.jsonget(results,'/VCSetting/queryresult0/ApplyStartWH')*60)/(util.jsonget(results,'/VCSetting/queryresult0/MinUsedUnit')*60) <= 0)
+                                                      ||
+                                                    (duration - util.jsonget(results,'/VCSetting/queryresult0/ApplyStartWH')*60)%(util.jsonget(results,'/VCSetting/queryresult0/MinUsedUnit')*60) != 0 ){
+                                                     //(休假持续时间 - 起始单位 ) 除以最下单位后，有余数
+                                                              cb = {
+                                                                    "errno":"312",
+                                                                    "errmsg:":"休假不符合最小单位",
+                                                                    "No":item301.no,
+                                                                    "module":"VCSubmit"
+                                                                  }
+                                                                  callback(cb,null);
+                                                    }
+                                                  else{
+                                                    if(item301.ToDt > util.jsonget(results,'/WHSetting/queryresult0/PMTo') ||item301.FromDt < util.jsonget(results,'/WHSetting/queryresult0/AMFrom')){
+                                                       //申请的时间在规定的出勤时间外
+                                                       //util.log('debug',item301.ToDt,util.jsonget(results,'/WHSetting/queryresult0/PMTo'),item301.FromDt,util.jsonget(results,'/WHSetting/queryresult0/AMFrom'));
+                                                                cb = {
+                                                                    "errno":"304",
+                                                                    "errmsg:":"休假时间必须是出勤日的正常出勤时间内",
+                                                                    "No":item301.no,
+                                                                    "module":"VCSubmit"
+                                                                  }
+                                                                  callback(cb,null);
+                                                      }else{
+
+
+                                                        if(util.jsonget(results,'/VCSetting/queryresult0/FlgWhole') == '0'){
+                                                            callback(null,results);
+
+                                                        }else{
+                                                            if(item301.ToDt != util.jsonget(results,'/WHSetting/queryresult0/PMTo') ||item301.FromDt != util.jsonget(results,'/WHSetting/queryresult0/AMTo')){
+                                                               //休假类型必须是全天，那么申请的时间应该是考勤规则中的开始和结束时间
+                                                                  cb = {
+                                                                      "errno":"306",
+                                                                      "errmsg:":"休假必须是全天",
+                                                                      "No":item301.no,
+                                                                      "module":"VCSubmit"
+                                                                    }
+                                                                    callback(cb,null);
+                                                            }
+                                                            else{
+
+
+                                                                callback(null,results);
+                                                            }
+                                                        } // else if(util.jsonget(results,'/VCSetting/queryresult0/FlgWhole') == '0'){
+                                                      } //else if(item.ToDt >= util.jsonget(results,'/WHSetting/queryresult0/PMTo') ||　item.FromDt >= util.jsonget(results,'/WHSetting/queryresult0/AMTo')){
+                                                  } //else
+
+                                            } //else
+                                        }]
+                                      }, function(err, results) {
+
+                                          if(err!= null && err !=''){
+                                            util.log('debug','301 err:' + 'No' + item301.no + ' '+ JSON.stringify(err));
+                                            callback(err,null);
+
+                                          }else{
+
+                                          util.log('debug','No' + item301.no + ' 306,311,312 check Ok ');
+                                          //callback(null,results);
+                                          //callback(null,item.no);
+                                          count+=1;
+
+                                          callback('','results');
+
+                                          }
+                                        }
+                                    );  // async.auto({
+
+                }, function(err) {
+
+                    if(err!= null && err !=''){
+                      util.log('info','301 err: ' + JSON.stringify(err));
+                      callback(err);
+                    }
+
+                      else{
+
+                        if(count==totalrow){
+                          callback(null,'301,306,311,312 check pass');
+                        }
+                    }
+
+                });  // async.forEach(
+    }
+],
+// optional callback
+function(err, results){
+    //console.log('parallel!' + err);
+    if(err!= null && err !=''){
+                    callback(err);
+                  }else
+                  {
+                     cb = {
+                        "errno":"200",
+                        "errmsg:":"Check pass",
+                        "No":null,
+                        "module":"VCSubmit"
+                      }
+                      //合计时间更新回head表
+                      //util.log('debug','totalday is ' + totalday);
+                      //util.jsonadd(questquery,'/VCDay', totalday);
+                      util.jsonadd(questquery,'/VCDay', lieutotalday + paidtotalday);
+                      callback(cb);
+                  }
+});
 
 
 
