@@ -126,7 +126,7 @@ function dohandle(){
           response.end();
           util.log('info','end of response');
           */
-         router.route('errhandle',err, response, request);
+         router.route('/errhandle',err, response, request);
         }
       } //request.url != '/favicon.ico'
 

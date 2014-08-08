@@ -83,7 +83,7 @@ async.waterfall([
       mysql.CallProcedure(n,cb);
     },
     */
-	], function(results) {
+  ], function(results) {
 
     if(!results){
       feedback(results,response,request);
@@ -93,7 +93,7 @@ async.waterfall([
     }
 
 
-	});
+  });
 }
 
 
@@ -267,15 +267,15 @@ function getWHDetailListHandle(questquery,response,request,callback){
 async.auto({
     WHSetting: function (callback) {
             login.getWHSetting(questquery,response,
-            	function(cb){
-            		callback(null,cb);
-            	});
+              function(cb){
+                callback(null,cb);
+              });
     },
     WHDetailList: function (callback) {
             whList.getWHDetailList(questquery,response,
-            	function(cb){
-            		callback(null,cb);
-            	});
+              function(cb){
+                callback(null,cb);
+              });
     },
 
     reultsDetailList: ['WHSetting', 'WHDetailList', function(callback) {
@@ -284,34 +284,34 @@ async.auto({
     }]
 
 }, function(err, results) {
-	if(err == null||err == '' ){
-		util.log('info','getWHDetailListHandle returns is ' +JSON.stringify(results) );
+  if(err == null||err == '' ){
+    util.log('info','getWHDetailListHandle returns is ' +JSON.stringify(results) );
 
-					  if(results.WHSetting[0].errno=='200'
-					  	&& results.WHDetailList[0].errno=='200')
-					  {
-					  		util.jsonadd(results,'/errno','200');
+            if(results.WHSetting[0].errno=='200'
+              && results.WHDetailList[0].errno=='200')
+            {
+                util.jsonadd(results,'/errno','200');
 
-                      		util.jsonadd(results,'/errmsg','getWHDetailListHandle complete');
+                          util.jsonadd(results,'/errmsg','getWHDetailListHandle complete');
                       //util.jsonadd(results,'/rowcount',i);
-                      		util.jsonadd(results,'/module','getWHDetailListHandle');
-					  }
-					  else
-					  	{
-					  		util.jsonadd(results,'/errno','300');
-                      		util.jsonadd(results,'/errmsg','getWHDetailListHandle error');
-                      		//util.jsonadd(results,'/rowcount',i);
-                      		util.jsonadd(results,'/module','getWHDetailListHandle');
-					  	}
+                          util.jsonadd(results,'/module','getWHDetailListHandle');
+            }
+            else
+              {
+                util.jsonadd(results,'/errno','300');
+                          util.jsonadd(results,'/errmsg','getWHDetailListHandle error');
+                          //util.jsonadd(results,'/rowcount',i);
+                          util.jsonadd(results,'/module','getWHDetailListHandle');
+              }
 
-	}
-	else
-	{
-				      util.jsonadd(results,'/errno','400');
+  }
+  else
+  {
+              util.jsonadd(results,'/errno','400');
                       util.jsonadd(results,'/errmsg','getWHDetailListHandle Exception error');
                       //util.jsonadd(results,'/rowcount',i);
                       util.jsonadd(results,'/module','getWHDetailListHandle');
-	}
+  }
 
     feedback(results,response,request);
 });
@@ -325,17 +325,17 @@ function getTotalPJTimeHandle(questquery,response,request,callback){
 //取得项目时间实绩合计，项目时间预计合计
 
 async.auto({
-	 TotalFctPJTime: function (callback) {
+   TotalFctPJTime: function (callback) {
             pj.getTotalFctPJTime(questquery,response,
-            	function(cb){
-            		callback(null,cb);
-            	});
+              function(cb){
+                callback(null,cb);
+              });
     },
     TotalEstPJTime: function (callback) {
             pj.getTotalEstPJTime(questquery,response,
-            	function(cb){
-            		callback(null,cb);
-            	});
+              function(cb){
+                callback(null,cb);
+              });
     },
 
     reultsDetailList: ['TotalFctPJTime', 'TotalEstPJTime',  function(callback) {
@@ -346,7 +346,7 @@ async.auto({
 
 
 }, function(err, results) {
-	if(err == null||err == '' ){
+  if(err == null||err == '' ){
     util.log('info','getTotalPJTimeHandle returns is ' +JSON.stringify(results) );
 
             if(results.TotalFctPJTime[0].errno=='200'
