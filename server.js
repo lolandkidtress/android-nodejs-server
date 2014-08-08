@@ -24,7 +24,7 @@ function dohandle(){
 
       var d = domain.create();   //捕捉所有未捕获的错误
       d.on('error', function(er) {
-      util.log('info', "Domain Catch uncaughtException: " + er.stack);
+      util.log('error', "Domain Catch uncaughtException: " + er.stack);
       err = {
             "errno": "400",
             "errmsg": "uncaughtException"
@@ -115,7 +115,7 @@ function dohandle(){
 
          }
         }else {  //业务数据是空
-          util.log('info','query is null');
+          util.log('info','query/action is null');
           err = {
             'errno': '404',
             'errmsg': 'Page not found'
