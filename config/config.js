@@ -22,10 +22,15 @@ var ivggs_db_config = {
   database: 'lportal'
 };
 
-var ASECrypt = {
-	SecretPassphrase:'password',
-	Salt:'salt',
-	iv:'vector'
+
+//  alg: 'des-ede3',  //3des-ecb
+//  alg: 'des-ede3-cbc',  //3des-ecb
+
+var CryptParam = {
+  key:'0123456789abcd0123456789',  //8的倍数
+  alg:'des-ede3-cbc',
+  iv:'12345678',
+  autoPad:false,
 }
 
 var logdest = '/ivggs/log/nodejs/server.log';
@@ -34,20 +39,20 @@ var ServerPort = '8001';
 var ExpireTime = 3; //用户登录后的天数
 
 function getTraceLevel(){
-	return tracelever;
+  return tracelever;
 }
 
 function getDBConfig(){
-	return db_config;
+  return db_config;
 }
 function getivggsDBConfig(){
   return ivggs_db_config;
 }
-function getASECrypt(){
-	return ASECrypt;
+function getCryptParam(){
+  return CryptParam;
 }
 function getServerPort(){
-	return ServerPort;
+  return ServerPort;
 }
 
 function getLogDest(){
@@ -62,7 +67,7 @@ function getExpireTime(){
 exports.getTraceLevel = getTraceLevel;
 exports.getDBConfig = getDBConfig;
 exports.getivggsDBConfig = getivggsDBConfig;
-exports.getASECrypt = getASECrypt;
+exports.getCryptParam = getCryptParam;
 exports.getServerPort  = getServerPort;
 exports.getLogDest  = getLogDest;
 exports.getExpireTime  = getExpireTime;
