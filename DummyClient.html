@@ -53,16 +53,7 @@ var JsonFormatter = {
 
 
 function encrypted(formObj){
-	
-  //var key = CryptoJS.enc.Hex.parse('password');
-   // var iv  = CryptoJS.enc.Hex.parse('vector');
-    //var salt  = CryptoJS.enc.Hex.parse('salt');
-	//alert('encrypted');
-  //var encrypted = CryptoJS.AES.encrypt(StringS, 'password','salt','vector');
-  //var encrypted = CryptoJS.TripleDES.encrypt(StringS, key,{ iv: iv });
-   //alert(encrypted.key);        // 74eb593087a982e2a6f5dded54ecd96d1fd0f3d44a58728cdcd40c55227522223
-   //alert(encrypted.iv);         // 7781157e2629b094f0e3dd48c4d786115
-   //alert(encrypted.salt);       // 7a25f9132ec6a8b34
+
 
     var formObj = document.getElementById("form");
     //登录
@@ -162,30 +153,30 @@ function encrypted(formObj){
     */
 
     //休假申请
-
+    /*
     var StringS = '{'
       +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
       +'"VCDay":"3",'
       +'"Memo":"2天有薪假,1天调休",'
       +'"TrnVCFormDetail0":{'
-      +'"ObjYMD":"20140701",'
+      +'"ObjYMD":"20140901",'
       +'"FromDt":"0900",'
       +'"ToDt":"1730",'
-      +'"VCTime":"7.5",'
+      +'"VCTime":"8.5",'
       +'"vctype":"1",'
       +'"SplitNo":"1"'
       +'},'
       +'"TrnVCFormDetail1":{'
-      +'"ObjYMD":"20140702",'
+      +'"ObjYMD":"20140902",'
       +'"FromDt":"0900",'
-      +'"ToDt":"1730",'
+      +'"ToDt":"1230",'
       +'"VCTime":"7.5",'
       +'"vctype":"1",'
       +'"SplitNo":"1"'
       +'},'
       +'"TrnVCFormDetail2":{'
-      +'"ObjYMD":"20140703",'
-      +'"FromDt":"0900",'
+      +'"ObjYMD":"20140903",'
+      +'"FromDt":"1230",'
       +'"ToDt":"1730",'
       +'"VCTime":"7.5",'
       +'"vctype":"2",'
@@ -195,6 +186,14 @@ function encrypted(formObj){
       +'}' ;
 
     formObj.action =  'http://127.0.0.1:8001/VCSubmit?'+ StringS;
+  */
+
+    //加密测试
+    //原文  /login?{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"feng-jin.deng@ivision-china.cn","chin":"中文翻译sfd"}
+    //key = 0123456789abcd0123456789;
+    //iv = 12345678
+    //DESede/CBC/PKCS5Padding 模式
+    formObj.action = 'http://127.0.0.1:8001/'+ 'dcf278e39a9787a2748aaf227d5bf6010cfaabc0470212f0d479f65348142e00275821a7937590c9ea622827cbfc9c6415ca63e0135f62d571d3b6990cd82839a257415289b4fb54344b063f7261869bdaaa67d42e940ac20158f023b311bf92f42fd47e6ffcf601243e435cc6e01d2b39c81d81cadd62ff40de949f544b3aa6de1f98477667fa1d5ca9cb39e7a7fa736c2585c09d2788ebdfdcb06262bfbb88833ff66dce470e40';
 
     formObj.submit();
 
