@@ -1,4 +1,4 @@
-/*1.login 模块 
+/*1.login 模块
 */
 
 var mysql = require('mysql');
@@ -47,7 +47,7 @@ function login(questquery,response,callback){
 			var res;
 
       //var pool = mysql.createPool(config.getDBConfig());
-      
+
       //var pool = mysqlconn.poolConnection();
       //先检验IVGGS的用户名密码的正确性
       var pool = mysql.createPool(config.getivggsDBConfig());
@@ -57,7 +57,7 @@ function login(questquery,response,callback){
         if(sqlerr!=null){
           util.log('info','get ConnectPool error');
           util.log('info',sqlerr);
-          err = sqlerr;  
+          err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
 
@@ -204,7 +204,7 @@ function login(questquery,response,callback){
 			    if(sqlerr == null||sqlerr == '' ){
 
             util.log('info','login returns');
-            util.log('info',results);
+            util.log('info',JSON.stringify(results));
             //util.log('info','userToken is ' + JSON.stringify(userToken));
             callback(results[0]);
 			    }
@@ -215,7 +215,7 @@ function login(questquery,response,callback){
 			      results = sqlerr;
             util.log('info','login returns');
             util.jsonadd(results,'/errno','400');
-            util.log('info',results);
+            util.log('info',JSON.stringify(results));
             callback(results);
 			    }
   		}); //async.series end

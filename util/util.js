@@ -5,11 +5,6 @@ var cluster = require('cluster');
 var log4js = require('log4js');
 var pointer = require('json-pointer'); 
 
-var assert = require('assert');
-var crypto = require('crypto');
-
-
-
 
 
 exports.err = function(errMsg, callback) {
@@ -120,33 +115,6 @@ logger = log4js.getLogger("console");
 
 };
 
-exports.AESencrypt = function(key, String) {
-  ////输入key和需要解密的字符串
-    process.stdout.write(moment().format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');
-    //process.stdout.write(moment().tz("asia/Shanghai").format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');  //需要timezone包
-
-    if(String!==undefined) {
-        var encrypted = AES.encrypt("Message", "Secret Passphrase");
-
-console.log(encrypted.toString());
-    } else {
-        console.log(msg);
-    }
-};
-
-exports.AESdecrypt = function(key, String) {
-  //输入key和需要解密的字符串
-    process.stdout.write(moment().format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');
-    //process.stdout.write(moment().tz("asia/Shanghai").format('YYYY-MM-DD hh:mm:ss.SSS')+'> ');  //需要timezone包
-
-    if(obj!==undefined) {
-        process.stdout.write(msg);
-        console.log(obj);
-    } else {
-        console.log(msg);
-    }
-};
-
 exports.wait = function(mils) {
   //刻意等待mils的时间，mils的单位是毫秒。
     var now = new Date;
@@ -194,51 +162,4 @@ exports.jsonadd = function(obj, objPointer, value) {
 }
 
 
-
-exports.encrypt = function(param,callback) {
-  var key = new Buffer(param.key);
-  var iv = new Buffer(param.iv ? param.iv : 0)
-  var plaintext = param.plaintext
-  var alg = param.alg
-  var autoPad = param.autoPad
-
-  //encrypt
-  var cipher = crypto.createCipheriv(alg, key, iv);
-  cipher.setAutoPadding(autoPad)  //default true
-  var ciph = cipher.update(plaintext, 'utf8', 'hex');
-  ciph += cipher.final('hex');
-  console.log(alg, ciph)
-
-  callback(ciph);
-}
-
-
-exports.decrypt = function(param,callback) {
-  var key = new Buffer(param.key);
-  var iv = new Buffer(param.iv ? param.iv : 0)
-  var plaintext = param.plaintext
-  var alg = param.alg
-  var autoPad = param.autoPad
-
-  //decrypt
-  var decipher = crypto.createDecipheriv(alg, key, iv);
-  cipher.setAutoPadding(autoPad)
-  var txt = decipher.update(ciph, 'hex', 'utf8');
-  txt += decipher.final('utf8');
-  callback(plaintext);
-  //assert.equal(txt, plaintext, 'encryption and decryption with key and iv');
-}
-
-/*
-test_des(
-{
-  alg: 'des-ecb',
-  autoPad: true,
-  key: '01234567',
-  plaintext: '1234567812345678',
-  iv: null
-}
-)
-
-*/
 

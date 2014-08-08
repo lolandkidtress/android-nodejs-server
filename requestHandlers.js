@@ -1,6 +1,5 @@
 var querystring = require("querystring"),
     fs = require("fs"),
-    formidable = require("formidable"),
     mysql = require('./dbutil/mysqlconn.js');
     fshandle = require('./filesystem/fshandle.js');
 
@@ -16,16 +15,21 @@ var whList = require('./bussi/whList.js');
 var pj = require('./bussi/PJInfo.js');
 var OVSubmit = require('./bussi/OVSubmit.js');
 var VCSubmit = require('./bussi/VCSubmit.js');
+var crypt = require("./crypto/crypto.js");
 
 
 function feedback(questquery,response, request){
           util.log('debug','feedback get');
           util.log('debug',JSON.stringify(questquery));
+          //var respon= questquery ;
+          //返回结果加密
+          var respon = crypt.encrypt(JSON.stringify(questquery));
 
           //response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
           response.writeHead(200, {"Content-Type": "text/html; charset=utf-8"});
-          response.write(JSON.stringify(questquery));
+          response.write(respon);
           response.end();
+          util.log('info','feedback send:' + respon);
           util.log('info','end of response');
 }
 
@@ -40,19 +44,18 @@ function errhandle(questquery,response, request){
 
 //返回DB服务器是否正常
 function other(questquery,response, request){
-  
+
 async.waterfall([
     function(cb) {
-      mysql.AsyncCheckDBstatus(response,cb); 
+      mysql.AsyncCheckDBstatus(response,cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(err, results) {
-  
     feedback(results,response,request);
 
 });
@@ -67,19 +70,17 @@ function download(response, callback){
     var realpath = "./assets/1.txt";
     //fshandle.downloadfile(response,realpath,callback);
     fshandle.downloadStream(response,realpath,callback);
-  
 }
 
 function dologin(questquery,response,request,callback){
 
 async.waterfall([
     function(cb) {
-        login.login(questquery,response,cb); 
+        login.login(questquery,response,cb);
     },
-    
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 	], function(results) {
@@ -90,7 +91,7 @@ async.waterfall([
     {
       feedback(results,response,request);
     }
-    
+
 
 	});
 }
@@ -110,7 +111,7 @@ async.series([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -131,7 +132,7 @@ async.series([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -150,7 +151,7 @@ async.series([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -159,12 +160,12 @@ function getWHEmptyDateHandle(questquery,response,request,callback){
 
 async.waterfall([
     function(cb) {
-      notice.getWHEmptyDate(questquery,response,cb); 
+      notice.getWHEmptyDate(questquery,response,cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {
@@ -175,7 +176,7 @@ async.waterfall([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -184,12 +185,12 @@ function getCalendarHandle(questquery,response,request,callback){
 
 async.waterfall([
     function(cb) {
-      login.getCalendar(questquery,response,cb); 
+      login.getCalendar(questquery,response,cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {
@@ -200,7 +201,7 @@ async.waterfall([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -209,12 +210,12 @@ function getAccessRecordHandle(questquery,response,request,callback){
 
 async.waterfall([
     function(cb) {
-      whList.getAccessRecord(questquery,response,cb); 
+      whList.getAccessRecord(questquery,response,cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {
@@ -225,7 +226,7 @@ async.waterfall([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -234,12 +235,12 @@ function insertAccessRecordHandle(questquery,response,request,callback){
 
 async.waterfall([
     function(cb) {
-      whList.insertAccessRecord(questquery,response,cb); 
+      whList.insertAccessRecord(questquery,response,cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {
@@ -250,7 +251,7 @@ async.waterfall([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -286,7 +287,7 @@ async.auto({
 	if(err == null||err == '' ){
 		util.log('info','getWHDetailListHandle returns is ' +JSON.stringify(results) );
 
-					  if(results.WHSetting[0].errno=='200' 
+					  if(results.WHSetting[0].errno=='200'
 					  	&& results.WHDetailList[0].errno=='200')
 					  {
 					  		util.jsonadd(results,'/errno','200');
@@ -348,7 +349,7 @@ async.auto({
 	if(err == null||err == '' ){
     util.log('info','getTotalPJTimeHandle returns is ' +JSON.stringify(results) );
 
-            if(results.TotalFctPJTime[0].errno=='200' 
+            if(results.TotalFctPJTime[0].errno=='200'
               && results.TotalEstPJTime[0].errno,"/errno"=='200')
             {
                 util.jsonadd(results,'/errno','200');
@@ -397,7 +398,7 @@ async.waterfall([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -431,7 +432,7 @@ async.auto({
   if(err == null||err == '' ){
     util.log('info','getTotalVCTimeHandle returns is ' +JSON.stringify(results) );
 
-            if(results.TotalVCTime[0].errno=='200' 
+            if(results.TotalVCTime[0].errno=='200'
               && results.PaidVCTime[0].errno,"/errno"=='200'
               && results.VCTimeDtail[0].errno,"/errno"=='200')
             {
@@ -469,10 +470,10 @@ async.waterfall([
 //console.log(cb);
       //callback(cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {
@@ -483,7 +484,7 @@ async.waterfall([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -497,10 +498,10 @@ async.waterfall([
 //console.log(cb);
       //callback(cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {
@@ -551,10 +552,10 @@ async.waterfall([
 //console.log(cb);
       //callback(cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {
@@ -565,7 +566,7 @@ async.waterfall([
     {
       feedback(results,response,request);
     }
-    
+
 
 });
 }
@@ -579,10 +580,10 @@ async.waterfall([
 //console.log(cb);
       //callback(cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {
@@ -607,10 +608,10 @@ async.waterfall([
 //console.log(cb);
       //callback(cb);
     },
-    
+
     /*
     function(n,cb) {
-      mysql.CallProcedure(n,cb); 
+      mysql.CallProcedure(n,cb);
     },
     */
 ], function(results) {
@@ -621,7 +622,6 @@ async.waterfall([
     {
       feedback(results,response,request);
     }
-    
 
 });
 }

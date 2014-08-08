@@ -26,8 +26,8 @@ function dohandle(){
       d.on('error', function(er) {
       util.log('info', "Domain Catch uncaughtException: " + er.stack);
       err = {
-            'errno': '400',
-            'errmsg': 'uncaughtException'
+            "errno": "400",
+            "errmsg": "uncaughtException"
             };
       router.route('/errhandle',err, response, request);
     });
@@ -37,13 +37,14 @@ function dohandle(){
     d.run(function() {
         if(request.url != '/favicon.ico'){
 
-        //util.log('debug', 'Worker #'+ cluster.worker.id + "@" + cluster.worker.process.pid + " Serverd for U ");
         util.log('debug', "Request.url: " + JSON.stringify(url.parse(request.url)) + " received.");
 
-         
-        //空格替换
-        var pathname = url.parse(request.url).pathname.replace(/%20/g,' ');
-        
+        //解密,失败直接返400错误''
+        //替换 / 为 ''
+        var pathname = crypt.decrypt(url.parse(request.url).path.replace('/','')); 
+        //var pathname = url.parse(request.url).path;
+
+        /*
         //正确显示中文，将三字节的字符转换为utf-8编码
         re=/(%[0-9A-Fa-f]{2}){3}/g;
         pathname=pathname.replace(re,function(word){
@@ -55,29 +56,26 @@ function dohandle(){
         });
         return buffer.toString('utf8');
         });
+        */
 
-        action = pathname ; 
+        //拆分action和实际业务数据
+        action = pathname.substring(0,pathname.indexOf("?",0)) ;
         util.log('debug', "action " + action + " received " );
-
-        var query =url.parse(request.url).query; //业务数据，需解密
+        var query = pathname.substring(pathname.indexOf("?",0)+1,pathname.length) ;
+        //var query = pathname.length;
         util.log('debug', "query " + query + " received " );
+        questquery = query;
 
+        if(questquery!=null&&action!=null&&action!=''){
 
-        if(query!=null){
-
-            //questquery = crypt.decrypt(query); //解密,失败返回'' 
-            questquery = query; 
-            //var questquery = JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"'));   // 替换双引号和空格,转换成json对象
-            //util.log('debug',"decrypt result is " + query.replace(/%20/g,' ').replace(/%22/g,'"'));
-            util.log('info',"decrypt result is " + questquery.replace(/%20/g,' ').replace(/%22/g,'"').replace(/%2f/g,'\\'));
-            //var questquery = JSON.parse(query.replace(/%20/g,' ').replace(/%22/g,'"'));
-            bussiquery=JSON.parse(questquery.replace(/%20/g,' ').replace(/%22/g,'"').replace(/%2f/g,'\\'));
+            //将string类型转为为json对象;
+            bussiquery = JSON.parse(query);
 
          if(bussiquery!=''&& bussiquery!=null){
 
             util.log('debug','buss query is ' );
-            util.log('debug',JSON.stringify(bussiquery));
-            if(pathname!='/login' && pathname!='/insertAccessRecord'){
+            util.log('debug',bussiquery); //字符串
+            if(action!='/login' && action!='/insertAccessRecord'){
                   util.log('debug','userValidateCheck enter');
                   comm.userValidateCheck(bussiquery,function(cb){
                     util.log('debug','userValidateCheck return' + cb);
@@ -91,18 +89,18 @@ function dohandle(){
                              router.route('/errhandle',err, response, request);
                             }
                             else{  //uuid通过了
-                              router.route(pathname,bussiquery, response, request); //根据action的值去调用不同的业务
+                              router.route(action,bussiquery, response, request); //根据action的值去调用不同的业务
                             }
                   });
                 }else{ //是login模块
-                  router.route(pathname,bussiquery, response, request);//根据action的值去调用不同的业务
+                  router.route(action,bussiquery, response, request);//根据action的值去调用不同的业务
                 }
 
             //router.route(pathname,bussiquery, response, request);//根据action的值去调用不同的业务
          }
          else  //解密失败
          {
-          util.log('info','decrypt error'); 
+          util.log('info','decrypt error');
           err = {
             'errno': '401.4',
             'errmsg': 'decrypt error'
@@ -117,7 +115,7 @@ function dohandle(){
 
          }
         }else {  //业务数据是空
-          util.log('info','query is null'); 
+          util.log('info','query is null');
           err = {
             'errno': '404',
             'errmsg': 'Page not found'
