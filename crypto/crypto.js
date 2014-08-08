@@ -3,78 +3,71 @@ var des = require("crypto-js/tripledes");
 var encutf8 = require("crypto-js/enc-utf8");
 var encbase64 = require("crypto-js/enc-base64");
 var encHex = require("crypto-js/enc-hex");
-var config = require('../config/config.js');
-var util =require('../util/util.js');
-var crypto = require('crypto');
+var config = require('../config/config.js')
 
 
+function aesencrypt(encryptedString){
 
-//将接受到的加密字符串解密后base64解码成string
-function decrypt(plaintext) {
-  //var key = new Buffer(param.key);
-  //var iv = new Buffer(param.iv ? param.iv : 0)
-  //var plaintext = param.plaintext
-  //var alg = param.alg
-  //var autoPad = param.autoPad
-  util.log('debug','解密对象:' + plaintext );
-  var key = new Buffer(config.getCryptParam().key);
-  var iv = new Buffer(config.getCryptParam().iv);
-  var plaintext = plaintext;
-  var alg = config.getCryptParam().alg;
-  var autoPad = config.getCryptParam().autoPad;
-
-  //decrypt
-  var decipher = crypto.createDecipheriv(alg, key, iv);
-  decipher.setAutoPadding(autoPad)
-  var txt = decipher.update(plaintext, 'hex', 'utf8');
-  txt += decipher.final('utf8');
-
-  var p_path = new Buffer(txt, 'base64');
-  var txt = p_path.toString();
-  util.log('debug','解密后的：' + txt);
-
-  return txt;
+	var ASECrypt = config.getASECrypt();
+	var encrypted = AES.encrypt(encryptedString, ASECrypt['SecretPassphrase'],ASECrypt['Salt'],ASECrypt['iv']);
+	return encrypted.toString();
 
 }
 
-//接收到的字符串base64编码后加密
-function encrypt (plaintext) {
+function aesdecrypt(encryptedString){
 
-  util.log('debug','加密对象:' + plaintext );
-  var p_txt = new Buffer(plaintext);
+	var ASECrypt = config.getASECrypt();
+	//var key = encHex.parse('000102030405060708090a0b0c0d0e0f');
+    //var iv  = encHex.parse('101112131415161718191a1b1c1d1e1f');
+    var key = '000102030405060708090a0b0c0d0e0f';
+    var iv  = '101112131415161718191a1b1c1d1e1f';
+    console.log(key);
+    console.log(iv);
+	var decrypted = AES.decrypt(encryptedString, ASECrypt['SecretPassphrase'],ASECrypt['Salt'],ASECrypt['iv']);
+    //var decrypted = AES.decrypt(encryptedString, key,'',iv);
+	//return decrypted.toString(encutf8);
+	//console.log(decrypted);
+	return decrypted;
+}
+//tripledes 加密
+function desencrypt(encryptedString){
 
-  var plaintext = p_txt.toString('base64');
-  util.log('debug','base64 编码后:' + plaintext + plaintext.length);
+	var ASECrypt = config.getASECrypt();
+	var encrypted = des.encrypt(encryptedString, "password");
+	return encrypted.toString();
 
-  //带加密的对象长度必须是8的倍数
-  for(var i = 0 ; i< Number(plaintext.length%8);i++ )
-  	( function (i) {
-  		plaintext = plaintext +' ';
-	})(i);
+}
+//tripledes 解密
+function desdecrypt(encryptedString){
 
-  var key = new Buffer(config.getCryptParam().key);
-  var iv = new Buffer(config.getCryptParam().iv);
+	var ASECrypt = config.getASECrypt();
+	
+	var decrypted = des.decrypt(encryptedString, "password");
 
-  var alg = config.getCryptParam().alg;
-  var autoPad = config.getCryptParam().autoPad;
+	return decrypted.toString(encutf8);
 
-  //encrypt
-  var cipher = crypto.createCipheriv(alg, key, iv);
-  cipher.setAutoPadding(autoPad)  //default true
-  var ciph = cipher.update(plaintext, 'utf8', 'hex');
-  ciph += cipher.final('hex');
-
-  util.log('debug','加密后:' + ciph);
-
-  return ciph;
 }
 
+function decrypt(encryptedString){
+
+	console.log("before is "+encryptedString)
+	var decrypted = ConvertHexToString(encryptedString);
+	
+	return decrypted.toString(encutf8);
+
+}
+function encrypt(encryptedString){
+
+	var encrypted = ConvertStringToHex(encryptedString);
+	return encrypted.toString();
+
+}
 
 //16进制 转换成 ascii string
 
 function ConvertHexToString(HexValue){
 	if (HexValue.length % 2) return '';
-
+	
 	var tmp='';
 	for(i=0;i<HexValue.length;i+=2)
 	{
