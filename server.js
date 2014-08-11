@@ -40,9 +40,11 @@ function dohandle(){
         util.log('debug', "Request.url: " + JSON.stringify(url.parse(request.url)) + " received.");
 
         //解密,失败直接返400错误''
-        //替换 / 为 ''
-        var pathname = crypt.decrypt(url.parse(request.url).path.replace('/','')); 
-        //var pathname = url.parse(request.url).path;
+        //替换 / 为 '',只替换第一个
+        //var pathname = crypt.decrypt(url.parse(request.url).path.replace('/','')); 
+        //测试用，不启用加密
+        // /reg/g全部替换，否则只替换第一个符合的 /reg/g
+        var pathname = url.parse(request.url).path.replace(/%22/g,'"').replace(/%20/g,' ');
 
         /*
         //正确显示中文，将三字节的字符转换为utf-8编码
