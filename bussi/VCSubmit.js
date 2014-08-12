@@ -692,7 +692,7 @@ function VCSubmit(questquery,response,callback){
             }
             util.jsonadd(results[0],'/errmsg','VCSubmit succ');
                 util.log('info','VCSubmit returns');
-                util.log('info',results);
+                util.log('info',JSON.stringify(results));
            callback(results[0]);
           }
           else
@@ -1205,7 +1205,7 @@ async.parallel([
                             if((typeof parseInt(item308.SplitNo))=='number'){
 
                                   if(moment(item308.currentdt,'YYYYMMDD').isValid()){
-                                        if((typeof parseInt(item308.FromDt))=='number' && (typeof parseInt(item308.ToDt))=='number' && parseInt(item308.FromDt)<= parseInt(item308.ToDt){
+                                        if((typeof parseInt(item308.FromDt))=='number' && (typeof parseInt(item308.ToDt))=='number' && parseInt(item308.FromDt)<= parseInt(item308.ToDt)){
                                             cb = {
                                               "errn":200
                                             }

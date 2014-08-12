@@ -478,7 +478,7 @@ function getCalendar(questquery,response,callback){
 /*
 输入参数，当前日
 */
-function getAvailPJ(questquery,response,callback){ 
+function getAvailPJ(questquery,response,callback){
   var i = 0;
   var results ={
     errno:'',
@@ -497,7 +497,7 @@ function getAvailPJ(questquery,response,callback){
       var res;
 
       //var pool = mysql.createPool(config.getDBConfig());
-      
+
       var pool = mysqlconn.poolConnection();
 
       pool.getConnection(function(sqlerr, Connection) {
@@ -505,20 +505,35 @@ function getAvailPJ(questquery,response,callback){
         if(sqlerr!=null){
           util.log('info','get ConnectPool error');
           util.log('info',sqlerr);
-          err = sqlerr;  
+          err = sqlerr;
           //util.jsonadd(err);
           callback(sqlerr, null);
 
         }else
         {
 
-        selectSQL1 = ' select pj.PJInfoID,pj.PJNo,pj.Name from trnpjinfo pj ';
-        selectSQL1 += ' where pj.FlgUnProject=1 ';
-        selectSQL1 += ' union ';
-        selectSQL1 += ' select pj.PJInfoID,pj.PJNo,pj.Name from trnpjperson pjp,trnpjinfo pj ';
+        selectSQL1 = ' select pj.PJInfoID,pj.PJNo,pj.Name from trnpjperson pjp,trnpjinfo pj ';
         selectSQL1 += ' where pjp.PJInfoID = pj.pjinfoid ';
-        selectSQL1 += ' and ' + Connection.escape(util.jsonget(questquery,'/currentdt')) + 'between pj.ExpFromDt and pj.ExpToDt' ;  
+        selectSQL1 += ' and flgfinish = 1 ';
+        selectSQL1 += ' and pjgid =0 ';
         selectSQL1 += ' and pjp.EmployeeID = ' + Connection.escape(util.jsonget(questquery,'/userid'));
+        selectSQL1 += ' and delflg !=1 ';
+        selectSQL1 += ' union ';
+        selectSQL1 += ' select pjg.pjgid,pjg.pjgcode,pjg.name ';
+        selectSQL1 += ' from trnpjg pjg,trnpjinfo pj,trnpjperson pjp ';
+        selectSQL1 += ' where pj.pjgid = pjg.pjgid ';
+        selectSQL1 += ' and pj.delflg !=1 ';
+        selectSQL1 += ' and pjp.PJInfoID = pj.pjinfoid ';
+        selectSQL1 += ' and pjp.EmployeeID = ' + Connection.escape(util.jsonget(questquery,'/userid'));
+        selectSQL1 += ' and pj.pjinfoid in ( ';
+        selectSQL1 += ' select pjinfoid from trnpjdetail ';
+        selectSQL1 += ' where FlgPartner = 1 ';
+        selectSQL1 += ' and expWH !=0 ';
+        selectSQL1 += ' and objym = ' + Connection.escape(moment(util.jsonget(questquery,'/currentdt'),'YYYYMMDD').format('YYYYMM'));
+        selectSQL1 += ' and  employeeid = ' + Connection.escape(util.jsonget(questquery,'/userid'));
+        selectSQL1 += ' ) ';
+        selectSQL1 += ' group by 1,2,3 ';
+
 
         util.log('debug',selectSQL1);
             var query = Connection.query(selectSQL1);
@@ -536,7 +551,7 @@ function getAvailPJ(questquery,response,callback){
                 util.jsonadd(results,'/queryresult'+i+'/PJInfoID',rows.PJInfoID);
                 util.jsonadd(results,'/queryresult'+i+'/PJNo',rows.PJNo);
                 util.jsonadd(results,'/queryresult'+i+'/Name',rows.Name);
-              
+
                 i=i+1;
               })
               .on('end', function(rows) {
@@ -554,12 +569,12 @@ function getAvailPJ(questquery,response,callback){
                       util.jsonadd(results,'/errmsg','AvailPJ get Empty');
                       util.jsonadd(results,'/module','getAvailPJ');
                       util.jsonadd(results,'/rowcount',i);
-                   }   
+                   }
                   Connection.release();
-                  callback(null,results);  
+                  callback(null,results);
               });
         }
-        
+
       });
 
     }
@@ -571,8 +586,8 @@ function getAvailPJ(questquery,response,callback){
               util.jsonadd(results,'/errno','200');
             }
             util.log('info','getAvailPJ returns');
-            util.log('info',results);
-            callback(results);
+            util.log('info',JSON.stringify(results));
+            callback(results[0]);
           }
           else
           {
