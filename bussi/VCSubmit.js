@@ -554,7 +554,7 @@ function VCDeleteHandle(questquery,response,callback){
 305.休假不可以跨月
 306.休假必须是全天
 307.没有设定日历
-308.
+308.数据格式校验错误
 309.有薪假天数不可为负数
 310.调休天数不能为负数
 311.休假不符合起始单位
@@ -563,6 +563,7 @@ function VCDeleteHandle(questquery,response,callback){
 314.考勤审批工作流重复
 315.加班申请时，工时已经在申请/提交状态
 316.休假申请时，工时已经在申请/提交状态
+317.只可以申请有薪假和调休
 
 400 系统异常
 
@@ -581,7 +582,7 @@ function VCDeleteHandle(questquery,response,callback){
 ____________________________________          |                        |                   |
                    |                          |                        |                   |
 __________________________________________________________________________________________________________________________________
-                                    313,314,315,316  (提交时有提交共通校验)
+                                    313,314,315,316  (提交时通过共通校验)
 
 
 */
@@ -1172,7 +1173,100 @@ function VCInfoValidateCheck(questquery,callback){
 //并行执行多个函数，每个函数都是立即执行，不需要等待其它函数先执行
 //如果某个函数出错，则立刻将err和已经执行完的函数的结果值传给parallel最终的callback。
 async.parallel([
+    //数据格式校验  308 数据格式校验错误 ,317 有薪假和调休
+    function(callback){
+     /*
+      ObjYMD":"20140901",'
+      +'"FromDt":"0900",'
+      +'"ToDt":"1730",'
+      +'"VCTime":"8.5",'
+      +'"vctype":"1",'
+      +'"SplitNo":"1"'
+      */
+      util.log('debug','308,317 enter');
+        var arr308 = [] ;
+            for (var i=0;i<totalrow;i++)
+                ( function (i) {   //循环取得每一条明细申请的时间
 
+                      arr308[i] ={
+                        vctype:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/vctype'),
+                        FromDt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/FromDt'),
+                        ToDt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ToDt'),
+                        currentdt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                        SplitNo:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/SplitNo'),
+                        no:i
+                      }
+                })(i);
+
+                async.forEachSeries(arr308, function(item308 , callback) {
+                   util.log('debug' , item308.vctype+ moment(item308.currentdt,"YYYY-MM-DD").toString() +  item308.FromDt + item308.ToDt );
+                   if((item308.vctype==1 || item308.vctype==2)){
+
+                            if((typeof parseInt(item308.SplitNo))=='number'){
+
+                                util.log('debug',moment(item308.currentdt,"YYYY-MM-DD").toString()+' '+ moment(item308.currentdt,'YYYY-MM-DD').isValid());
+                                  if(moment(item308.currentdt,'YYYYMMDD').isValid()){
+                                        if((typeof parseInt(item308.FromDt))=='number' && (typeof parseInt(item308.ToDt))=='number'){
+                                            cb = {
+                                              "errn":200
+                                            }
+                                            callback(null,cb);
+                                        }else{
+                                          cb = {
+                                            "errno":"308",
+                                            "errmsg:":"数据格式校验错误FromDt/ToDt",
+                                            "No":item308.no,
+                                            "module":"VCSubmit"
+                                            }
+                                            callback(cb,null);
+                                        }
+                                      }else{
+                                              cb = {
+                                              "errno":"308",
+                                              "errmsg:":"数据格式校验错误ObjYMD",
+                                              "No":item308.no,
+                                              "module":"VCSubmit"
+                                              }
+                                              callback(cb,null);
+                                            }
+                                  }else{   //if((typeof item308.SplitNo)=='number'){
+                                                  cb = {
+                                                        "errno":"308",
+                                                        "errmsg:":"数据格式校验错误SplitNo",
+                                                        "No":item308.no,
+                                                        "module":"VCSubmit"
+                                                      }
+                                                      callback(cb,null);
+                                        }//else
+
+                          }else{
+
+                               cb = {
+                                    "errno":"317",
+                                    "errmsg:":"只可以申请有薪假和调休",
+                                    "No":i,
+                                    "module":"VCSubmit"
+                                  }
+                                  callback(cb,null);
+ 
+                            }//else
+
+                            //foreach
+
+               }, function(err) {
+
+                    if(err!= null && err !=''){
+                      util.log('info','308,317 err: ' + JSON.stringify(err));
+                      callback(err);
+                    }
+
+                      else{
+                      callback(null,'308,317 check pass');
+                    }
+
+                }
+               );
+    },
 
      //302 该条休假数据时间和其他工时/加班/休假时间冲突 305 休假不可以跨月
      function(callback){
@@ -1212,7 +1306,7 @@ async.parallel([
                      for (var j=0;j<totalrow;j++)
                          ( function (j) {
                           util.log('debug','时间重叠check:'+ i+':' + j + ' ' + arr302[i].startdt+ ' ' + arr302[j].startdt+ ' ' + arr302[i].FromDt+ '<=' +   arr302[j].ToDt + ' ' +   arr302[i].ToDt +  '>' + arr302[j].FromDt)
-
+                                //(arr302[i].no < arr302[j].no) 避免重复check
                               if( (arr302[i].no < arr302[j].no) && (arr302[i].startdt==arr302[j].startdt ) && ( arr302[i].FromDt <= arr302[j].ToDt && arr302[i].ToDt > arr302[j].FromDt ) ){
                                 cb = {
                                     "errno":"302",
@@ -1254,7 +1348,7 @@ async.parallel([
                     }
 
                       else{
-                          callback(null,'302,305 check pass');
+                      callback(null,'302,305 check pass');
                     }
 
                 });  // async.forEach(
