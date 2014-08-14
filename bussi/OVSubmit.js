@@ -1211,8 +1211,11 @@ function DeleteOVCheck(formid,callback){
         {
 
         selectSQL1 = ' select count(*)  as cnt from trnovform ';
-		selectSQL1 += ' where (dtAppStatus =1 or dtAppStatus = 2 )';  //未提交以外的状态
-		//selectSQL1 += ' and delflg = 0 ';
+		selectSQL1 += ' wwhere ((dtAppStatus =1 or dtAppStatus = 2 ) '; //已进入审批流程
+		selectSQL1 += ' or ';
+		selectSQL1 += ' RestUsedWH != 0   '; //申请的加班时间已被调休
+		selectSQL1 += ' ) ';
+      	selectSQL1 += ' and delflg = 0 ';
 		selectSQL1 += ' and ovformid = ' + formid ;
 
 
