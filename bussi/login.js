@@ -475,6 +475,8 @@ function getCalendar(questquery,response,callback){
 }
 
 //取得可以填写的项目信息
+
+//PJG中包含的pj项目必须至少有1个非0的预订工数
 /*
 输入参数，当前日
 */
@@ -518,6 +520,10 @@ function getAvailPJ(questquery,response,callback){
         selectSQL1 += ' and pjgid =0 ';
         selectSQL1 += ' and pjp.EmployeeID = ' + Connection.escape(util.jsonget(questquery,'/userid'));
         selectSQL1 += ' and delflg !=1 ';
+        if(util.jsonexist(questquery,'/pjinfoid'))
+        {
+          selectSQL1 += ' and pj.PJInfoID =  ' +  Connection.escape(util.jsonget(questquery,'/pjinfoid'));
+        }
         selectSQL1 += ' union ';
         selectSQL1 += ' select pjg.pjgid,pjg.pjgcode,pjg.name ';
         selectSQL1 += ' from trnpjg pjg,trnpjinfo pj,trnpjperson pjp ';
@@ -525,6 +531,10 @@ function getAvailPJ(questquery,response,callback){
         selectSQL1 += ' and pj.delflg !=1 ';
         selectSQL1 += ' and pjp.PJInfoID = pj.pjinfoid ';
         selectSQL1 += ' and pjp.EmployeeID = ' + Connection.escape(util.jsonget(questquery,'/userid'));
+        if(util.jsonexist(questquery,'/pjinfoid'))
+        {
+          selectSQL1 += ' and pjg.pjgid =  ' +  Connection.escape(util.jsonget(questquery,'/pjinfoid'));
+        }
         selectSQL1 += ' and pj.pjinfoid in ( ';
         selectSQL1 += ' select pjinfoid from trnpjdetail ';
         selectSQL1 += ' where FlgPartner = 1 ';
@@ -594,9 +604,9 @@ function getAvailPJ(questquery,response,callback){
             //global.queryDBStatus = 'err';
             util.log('error',"err  = "+ sqlerr);
             results = sqlerr;
-            util.log('info','getCalendar returns');
+            util.log('info','getAvailPJ returns');
             util.jsonadd(results,'/errno','400');
-            util.jsonadd(results,'/errmsg','AvailPJ get Error');
+            util.jsonadd(results,'/errmsg','getAvailPJ get Error');
             util.jsonadd(results,'/module','getAvailPJ');
             util.log('info',results);
             callback(results);
