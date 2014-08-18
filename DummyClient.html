@@ -57,12 +57,12 @@ function encrypted(formObj){
 
     var formObj = document.getElementById("form");
     //登录
-    //var StringS = '{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"feng-jin.deng@ivision-china.cn"}';
+    //var StringS = '{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"jian.a.chen@ivision-china.cn"}';
   	//formObj.action =  'http://127.0.0.1:8001/login?'+ StringS;
 
   	//考勤规则
-  	//var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
-  	//formObj.action =  'http://127.0.0.1:8001/getWHSetting?'+ StringS;
+  	var StringS = '{"userid":"149","startdt":"20140501","enddt":"20140531","uuid":"bb70d54c-245c-11e4-92c2-000c294968a3"}';
+  	formObj.action =  'http://127.0.0.1:8001/getWHSetting?'+ StringS;
 
     //取得可填写的项目
     //var StringS = '{"userid":"81","currentdt":"20140703","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
@@ -193,7 +193,7 @@ function encrypted(formObj){
     //key = 0123456789abcd0123456789;
     //iv = 12345678
     //DESede/CBC/PKCS5Padding 模式
-    formObj.action = 'http://127.0.0.1:8001/'+ 'dcf278e39a9787a2748aaf227d5bf6010cfaabc0470212f0d479f65348142e00275821a7937590c9ea622827cbfc9c6415ca63e0135f62d571d3b6990cd82839a257415289b4fb54344b063f7261869bdaaa67d42e940ac20158f023b311bf92f42fd47e6ffcf601243e435cc6e01d2b39c81d81cadd62ff40de949f544b3aa6de1f98477667fa1d5ca9cb39e7a7fa736c2585c09d2788ebdfdcb06262bfbb88833ff66dce470e40';
+    //formObj.action = 'http://127.0.0.1:8001/'+ 'dcf278e39a9787a2748aaf227d5bf6010cfaabc0470212f0d479f65348142e00275821a7937590c9ea622827cbfc9c6415ca63e0135f62d571d3b6990cd82839a257415289b4fb54344b063f7261869bdaaa67d42e940ac20158f023b311bf92f42fd47e6ffcf601243e435cc6e01d2b39c81d81cadd62ff40de949f544b3aa6de1f98477667fa1d5ca9cb39e7a7fa736c2585c09d2788ebdfdcb06262bfbb88833ff66dce470e40';
 
     formObj.submit();
 
