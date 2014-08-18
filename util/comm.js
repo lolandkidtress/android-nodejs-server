@@ -61,6 +61,79 @@ exports.userValidateCheck = function(bussiquery,callback){
 				      		callback('1');
 				      	}else{
 				      		util.log('log','User uuid Expire');
+				      		
+				      		
+				      		var Connection;
+				      		var selectSQL1;
+				      		var result ={};
+  
+				      		async.series([
+				      			function(callback){
+				      				var sqlerr;
+				      				var rows;
+				      				var err;
+
+				      				//先检验IVGGS的用户名密码的正确性
+				      				var pool = mysql.createPool(config.getivggsDBConfig());
+
+				      				pool.getConnection(function(sqlerr, Connection) {
+				      					// connected! (unless `err` is set)
+				      					if(sqlerr!=null){
+				      						util.log('info','get ConnectPool error');
+				      						util.log('info',sqlerr);
+				      						err = sqlerr;
+				      						callback(sqlerr, null);
+				      					}else{
+				      						selectSQL1 = 'select uuid() as uuid ' ;
+				      						util.log('debug',selectSQL1);
+				      						var query = Connectionwhs.query(selectSQL1);
+				      						query
+				      						.on('error', function(sqlerr) {
+				      							result = sqlerr;
+				      							util.log('info','Connect error '+ sqlerr);
+				      							util.jsonadd(result,'/sqlstmt',selectSQL1);
+				      							callback(sqlerr,null);
+				      						}
+				      						.on('result', function(rows) {
+				      							util.jsonadd(result,'/queryresult/uuid',rows.uuid);
+				      						}
+				      						.on('end', function(rows) {
+        										util.jsonadd(result,'/errno','200');
+        										util.jsonadd(result,'/errmsg','User Valid');
+        										util.jsonadd(result,'/module','login');
+
+        										util.jsonadd(userToken,'/userid',util.jsonget(result,'/queryresult/userid'));
+        										util.jsonadd(userToken,'/uuid',util.jsonget(result,'/queryresult/uuid'));
+        										util.jsonadd(userToken,'/LoginDate',moment().format('YYYY-MM-DD'));
+
+        										util.jsonadd(UserValidatedList,'/UserValidatedList'+'/userid'+util.jsonget(result,'/queryresult/userid'),userToken);
+
+        										process.send(UserValidatedList);
+        										util.log('debug','UserValidatedList refreshed '+ JSON.stringify(UserValidatedList));
+
+        										Connectionwhs.release();
+        										callback(null,result);
+        									}
+        								}
+        							});
+        						}
+							],
+							function(sqlerr,results){
+								if(sqlerr == null||sqlerr == '' ){
+									util.log('info','login returns');
+									util.log('info',JSON.stringify(results));
+									callback(results[0]);
+								}else{
+									//global.queryDBStatus = 'err';
+									util.log('error',"err  = "+ sqlerr);
+									results = sqlerr;
+									util.log('info','login returns');
+									util.jsonadd(results,'/errno','400');
+									util.log('info',JSON.stringify(results));
+									callback(results);
+								}
+							}); 
+				      		
 				      		callback('0');
 				      	}
 				      }
