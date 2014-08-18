@@ -6,6 +6,7 @@ var querystring = require("querystring"),
 var url = require("url");
 var async = require('async');
 var util = require('./util/util.js');
+var comm = require('./util/comm.js');
 var Wind =require('wind');
 var events = require('events');
 var async = require('async');
@@ -19,18 +20,33 @@ var crypt = require("./crypto/crypto.js");
 
 
 function feedback(questquery,response, request){
-          util.log('debug','feedback get');
-          util.log('debug',JSON.stringify(questquery));
-          //var respon= questquery ;
-          //返回结果加密
-          var respon = crypt.encrypt(JSON.stringify(questquery));
+	util.log('debug','feedback get');
+	util.log('debug',JSON.stringify(questquery));
+	if (util.jsonexist(questquery,'/userid') == true){
+		comm.uuidget(questquery,function(cb){
+			util.log('debug','uuidget return: ' +cb);
+			if(cb != 0){
+				//util.jsonget('newuuid is ','questquery/uuid');
+				util.jsonadd(questquery,'/uuid',cb);
+			}else{   //uuid获取失败
+				util.log('info','UUid Get Failed');
+				err = {
+					'errno': '5000',
+					'errmsg': 'UUid Get Failed'
+				}
+			}
+		})
+	}
+	//返回结果加密
+	var respon = crypt.encrypt(JSON.stringify(questquery));
+	
+	//response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
+	response.writeHead(200, {"Content-Type": "text/html; charset=utf-8"});
+	response.write(respon);
+	response.end();
+	util.log('info','feedback send:' + respon);
+	util.log('info','end of response');			
 
-          //response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
-          response.writeHead(200, {"Content-Type": "text/html; charset=utf-8"});
-          response.write(respon);
-          response.end();
-          util.log('info','feedback send:' + respon);
-          util.log('info','end of response');
 }
 
 
