@@ -560,6 +560,7 @@ function OVSubmit(questquery,response,callback){
 			    	util.jsonadd(results[0],'/errmsg','OVSubmit succ');
 		            util.log('info','OVSubmit returns');
 		            util.log('info',results);
+		            util.jsonadd(results[0],'/userid',util.jsonget(questquery,'/userid'));
 					 callback(results[0]);
 			    }
 			    else
