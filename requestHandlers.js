@@ -21,7 +21,6 @@ var crypt = require("./crypto/crypto.js");
 
 function feedback(questquery,response, request){
 	util.log('debug','feedback get');
-	util.log('debug',JSON.stringify(questquery));
 	if (util.jsonexist(questquery,'/userid') == true){
 		comm.uuidget(questquery,function(cb){
 			util.log('debug','uuidget return: ' +cb);
@@ -38,6 +37,7 @@ function feedback(questquery,response, request){
 		})
 	}
 	//返回结果加密
+	util.log('debug',JSON.stringify(questquery));
 	var respon = crypt.encrypt(JSON.stringify(questquery));
 	
 	//response.writeHead(util.jsonget(questquery,'/errno'), {"Content-Type": "text/html"});
@@ -294,8 +294,7 @@ async.auto({
               });
     },
 
-    reultsDetailList: ['WHSetting', 'WHDetailList', function(callback) {
-
+    reultsDetailList: ['WHSetting', 'WHDetailList',function(callback) {
             callback();
     }]
 
@@ -303,8 +302,9 @@ async.auto({
   if(err == null||err == '' ){
     util.log('info','getWHDetailListHandle returns is ' +JSON.stringify(results) );
 
-            if(results.WHSetting[0].errno=='200'
-              && results.WHDetailList[0].errno=='200')
+            util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
+            if(util.jsonget(results,'/WHSetting/errno')=='200'
+              && util.jsonget(results,'/WHDetailList/errno')=='200')
             {
                 util.jsonadd(results,'/errno','200');
 
@@ -667,3 +667,5 @@ exports.getPaidVCTimeHandle = getPaidVCTimeHandle;
 
 exports.DeleteVCInfoHandle = DeleteVCInfoHandle;
 exports.SubmitVCInfoHandle = SubmitVCInfoHandle;
+
+exports.feedback = feedback;
