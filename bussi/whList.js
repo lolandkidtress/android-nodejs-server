@@ -903,6 +903,7 @@ function getAccessRecord(questquery,response,callback){
               })
               .on('end', function(rows) {
 
+                  util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
                   if(i>0){
                            util.jsonadd(results,'/errno','200');
                            util.jsonadd(results,'/errmsg','getAccessRecord complete');
@@ -930,7 +931,7 @@ function getAccessRecord(questquery,response,callback){
 
             util.log('info','getAccessRecord returns');
             util.log('info',JSON.stringify(results));
-            callback(results);
+            callback(results[0]);
           }
           else
           {
@@ -969,6 +970,7 @@ function insertAccessRecord(questquery,response,callback){
       var res;
       var done=0;
 
+      util.log('info','Questquery Is'+JSON.stringify(questquery));
       var totalrow = util.jsonget(questquery,'/rowcount');
 
       var insertArray =

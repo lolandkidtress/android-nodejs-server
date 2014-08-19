@@ -575,7 +575,7 @@ function getAvailPJ(questquery,response,callback){
             }
             util.log('info','getAvailPJ returns');
             util.log('info',results);
-            callback(results);
+            callback(results[0]);
           }
           else
           {
