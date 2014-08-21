@@ -37,24 +37,25 @@ OVSubmit={
 
 加班申请返回值.说明
 
+
 200.成功
 301.没有设定考勤规则
 302.该条加班数据日期和其他工时/加班/休假区间冲突
-303.同一天的申请区间重复
+303.没有设定过日历
 304.加班时间必须是出勤日的正常出勤时间以外或休日/国定假日/IV休日的日期
 305.开始或结束时间不符合门禁时间 （公司外为否的数据，最小开始时间不能小于门禁打卡时间；最大的结束时间不能大于门禁打卡时间）
-306.PJG没有分配工时（选择的加班项目为PJG的场合，如果该员工在PJG下所有PJ中都没有该月的预定工数或者预定工数为0，报错。）
+306.项目没有分配工时（PJ中没有分配该员工或者选择的加班项目为PJG的场合，如果该员工在PJG下所有PJ中都没有该月的预定工数或者预定工数为0，报错。）
 307.项目不可以为非稼动
-308.出勤日上午的加班时间不能晚于上午出勤开始时间，不能早于0点
-309.出勤日下午的加班开始时间不能小于加班开始时间
-310.出勤日下午的加班结束时间不能小于加班开始时间和加班起算时间的和
+308.
+309.
+310.
 311.非出勤日的加班时间不能小于加班起算时间
 312.加班时间不符合最小单位
 313.没有设定考勤审批工作流
 314.考勤审批工作流重复
 315.加班申请时，工时已经在申请/提交状态
 316.休假申请时，工时已经在申请/提交状态
-317.PJ没有分配给该员工
+
 
 400 系统异常
 
@@ -69,12 +70,606 @@ var Wind = require('wind');
 var config = require('../config/config.js');
 var moment = require('moment');
 var login = require('./login.js');
+var whList = require('./whList.js');
 
 
-function OVInfoValidateCheck(questquery,WHSetting,callback){
+function OVInfoValidateCheck(questquery,callback){
 	util.log('debug','OVInfoValidateCheck get questquery' + JSON.stringify(questquery));
-	util.log('debug','OVInfoValidateCheck get setting' + JSON.stringify(WHSetting));
-	callback('1');
+
+  var totalrow = util.jsonget(questquery,'/detailrow');
+  var err={
+    errno:"",
+    errmsg:"",
+    module:"VCSubmit"
+  }
+
+  var arr = [{ userid:'',startdt:'',enddt:''
+  }]
+  ;
+  var currentyear = 0 ;
+  var lastyear = 0;
+  var duration = 0;
+
+  	//并行执行多个函数，每个函数都是立即执行，不需要等待其它函数先执行
+	//如果某个函数出错，则立刻将err和已经执行完的函数的结果值传给parallel最终的callback。
+	async.parallel([
+
+		function(callback){
+		//数据格式check
+		util.log('debug','308 enter');
+        var arr308 = [] ;
+            for (var i=0;i<totalrow;i++)
+                ( function (i) {   //循环取得每一条明细申请的时间
+
+                      arr308[i] ={
+                        FromDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FromDt'),
+                        ToDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/ToDt'),
+                        FlgPJG:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgPJG'),
+                        FlgOut:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgOut'),
+                        no:i
+                      }
+                })(i);
+
+                if(moment(util.jsonget(questquery,'/applydate'),'YYYYMMDD').isValid()){
+	                async.forEachSeries(arr308, function(item308 , callback) {
+	                      if(typeof parseInt(item308.FlgPJG) =='number'){
+	                      		if( item308.FlgOut == 1 || item308.FlgOut == 2  ){
+	                      			if((typeof parseInt(item308.FromDt))=='number' && (typeof parseInt(item308.ToDt))=='number' && parseInt(item308.FromDt)<= parseInt(item308.ToDt)){
+	                      				cb = {
+	                                      "errn":200
+	                                    }
+	                                    callback(null,cb);
+	                      			}else{
+	                      				cb = {
+			                              "errno":"308",
+			                              "errmsg:":"数据格式校验错误FromDt/ToDt",
+			                              "No":item308.no,
+			                              "module":"OVSubmit"
+			                              }
+		                            	callback(cb,null);
+	                      				}
+
+	                      		}else{
+	                      			cb = {
+		                              "errno":"308",
+		                              "errmsg:":"数据格式校验错误FlgOut",
+		                              "No":item308.no,
+		                              "module":"OVSubmit"
+		                              }
+		                            callback(cb,null);
+	                      		}
+	                      }else{
+	                      	cb = {
+	                              "errno":"308",
+	                              "errmsg:":"数据格式校验错误FlgPJG",
+	                              "No":item308.no,
+	                              "module":"OVSubmit"
+	                              }
+	                              callback(cb,null);
+	                      }
+
+		               }, function(err) {
+
+		                    if(err!= null && err !=''){
+		                      util.log('info','308 err: ' + JSON.stringify(err));
+		                      callback(err);
+		                    }
+
+		                      else{
+		                      callback(null,'308 check pass');
+		                    }
+
+		                }
+		               ); //async.forEachSeries
+ 					}else{
+                				cb = {
+	                              "errno":"308",
+	                              "errmsg:":"数据格式校验错误applydate",
+	                              "module":"OVSubmit"
+	                              }
+	                              callback(cb,null);
+                	}
+
+    	},
+
+		//301,304,308,309,310,311,312
+		function(callback){
+			util.log('debug','301,303,304,308,309,310,311,312');
+			var arr301=[];
+					for (var i=0;i<totalrow;i++)
+			                ( function (i) {   //循环取得每一条明细申请的时间
+			                      arr301[i] ={
+			                        no:i,
+			                        userid:util.jsonget(questquery,'/userid'),
+			                        pjinfoid:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/PJInfoID'),
+			                        FromDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FromDt'),
+			                        startdt:util.jsonget(questquery,'/applydate'),
+                        			enddt:util.jsonget(questquery,'/applydate'),
+			                        ToDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/ToDt'),
+			                        FlgOut:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgOut'),
+			                        FlgPJG:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgPJG'),
+			                        currentdt:util.jsonget(questquery,'/applydate')
+			                      };
+			                })(i);
+			          async.forEachSeries(arr301, function(item301, callback) {
+			          			 async.auto({
+			          			 	//取得考勤规则
+			          			 	WHSetting: function (callback) {
+                                                /*
+                                                var settingquery = {
+                                                  userid:util.jsonget(questquery,'/userid'),
+                                                  startdt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD'),
+                                                  enddt:util.jsonget(questquery,'/TrnVCFormDetail'+i+'/ObjYMD')
+                                                }
+                                                */
+                                              login.getWHSetting(item301,null,
+                                                function(cb){
+                                                    //util.log('debug','No:' + item.no + ' VCSubmit.getWHSetting return ' + JSON.stringify(cb));
+                                                      if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') != 200){  //没有正确取得考勤规则
+                                                        cb = {
+                                                                  "errno":"301",
+                                                                  "errmsg:":"没有设定考勤规则",
+                                                                  "No":item301.no,
+                                                                  "module":"OVSubmit"
+                                                                }
+                                                        callback(cb,null);
+
+                                                      }else{
+                                                        callback(null,cb);
+                                                      }
+
+                                                });
+                                            },  //WHSetting: function (callback)
+                                     //根据申请日取得出勤日历
+                                     calendar: function (callback) {
+                                     		login.getCalendar(item301,null,
+                                     			function(cb){
+                                     				if(util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') == 200){  //取得了日历
+                                     					callback(null,cb);
+                                     				}
+                                     				else
+                                     				{	//申请日没有设定过日历
+                                     					cb = {
+                                                                  "errno":"303",
+                                                                  "errmsg:":"没有设定日历",
+                                                                  "No":item301.no,
+                                                                  "module":"OVSubmit"
+                                                                }
+                                                        callback(cb,null);
+                                     				}
+                                     			});
+
+                                     },  //calendar function (callback) {
+                                     resultsDetailList: ['WHSetting', 'calendar', function(callback,results) {
+                                     		util.log('debug','No:' + item301.no + ' resultsDetailList: ' + JSON.stringify(results));
+                                     		if(util.jsonget(results,'/calendar/queryresult0/dtdaytype') == 1 ){   //正常出勤日 check 304，308，309，310,312
+                                     				//上午加班
+                                     				if( item301.ToDt <= util.jsonget(results,'/WHSetting/queryresult0/AMFrom') ){
+                                     						//312 最小单位
+                                     						duration = (parseInt(item301.ToDt/100)*60 + item301.ToDt%100)  - (parseInt(item301.FromDt/100)*60 + item301.FromDt%100);
+															util.log('debug','出勤日上午申请的时间 :' + duration);
+															//早上没有最小起算时间，直接计算最小单位
+															if( duration % (util.jsonget(results,'/WHSetting/queryresult0/OvertimeWHUnit')*60) == 0 ){
+																callback(null,'200');
+																}
+															else{
+																cb = {
+			                                                          "errno":"312",
+			                                                          "errmsg:":"加班时间不符合最小单位",
+			                                                          "No":item301.no,
+			                                                          "module":"OVSubmit"
+			                                                        }
+                                                        		callback(cb,null);
+															}
+                                     				}else{
+                                     					//下午加班
+                                     					if(item301.FromDt >= util.jsonget(results,'/WHSetting/queryresult0/PMTo') && item301.ToDt >= util.jsonget(results,'/WHSetting/queryresult0/PMTo'))
+                                     					{
+                                     						duration = (parseInt(item301.ToDt/100)*60 + item301.ToDt%100)  - (parseInt(item301.FromDt/100)*60 + item301.FromDt%100);
+                                     						//310 起算时间
+                                     						if(duration >= (util.jsonget(results,'/WHSetting/queryresult0/OvertimeStartWH')*60) ){
+                                     								//312 加班时间不符合最小单位
+                                     								if( parseInt(duration - (util.jsonget(results,'/WHSetting/queryresult0/OvertimeStartWH')*60) ) % (util.jsonget(results,'/WHSetting/queryresult0/OvertimeWHUnit')*60) == 0 ){
+                                     									callback(null,'200');
+                                     								}else{
+                                     									cb = {
+					                                                          "errno":"312",
+					                                                          "errmsg:":"加班时间不符合最小单位",
+					                                                          "No":item301.no,
+					                                                          "module":"OVSubmit"
+					                                                        }
+			                                                     callback(cb,null);
+                                     								}
+                                     						}else{
+                                     							cb = {
+			                                                          "errno":"310",
+			                                                          "errmsg:":"加班时间不能小于起算单位",
+			                                                          "No":item301.no,
+			                                                          "module":"OVSubmit"
+			                                                        }
+			                                                     callback(cb,null);
+
+                                     						}
+                                     					}else{
+                                     						//304 加班时间必须是出勤日的正常出勤时间以外
+		                                     					cb = {
+			                                                          "errno":"304",
+			                                                          "errmsg:":"加班时间必须是出勤日的正常出勤时间以外",
+			                                                          "No":item301.no,
+			                                                          "module":"OVSubmit"
+			                                                        }
+                                                        		callback(cb,null);
+                                     					}
+                                     				}
+
+                                     		}else //非出勤日 311 非出勤日的加班时间不能小于加班起算时间 312 最小单位
+                                     		{
+
+												duration = (parseInt(item301.ToDt/100)*60 + item301.ToDt%100)  - (parseInt(item301.FromDt/100)*60 + item301.FromDt%100);
+												util.log('debug','非出勤日申请的时间 :' + duration);
+
+												//311 非出勤日的加班时间不能小于加班起算时间
+												if(duration < util.jsonget(results,'/WHSetting/queryresult0/OvertimeStartWH')){
+													//312.加班时间不符合最小单位
+													if( (duration - util.jsonget(results,'/WHSetting/queryresult0/OvertimeStartWH')*60)%(util.jsonget(results,'/WHSetting/queryresult0/OvertimeWHUnit')*60) == 0 ){
+														callback(null,'200');
+													}
+													else{
+														cb = {
+                                                          "errno":"312",
+                                                          "errmsg:":"加班时间不符合最小单位",
+                                                          "No":item301.no,
+                                                          "module":"OVSubmit"
+                                                        }
+                                                        callback(cb,null);
+													}
+												}else{
+													 cb = {
+                                                          "errno":"311",
+                                                          "errmsg:":"非出勤日的加班时间不能小于加班起算时间",
+                                                          "No":item301.no,
+                                                          "module":"OVSubmit"
+                                                        }
+                                                        callback(cb,null);
+												}
+                                     		}
+                                     		callback(null,results);
+                                     }]
+			          			 }, function(err, results) {
+
+                                          if(err!= null && err !=''){
+                                            util.log('debug','301 err:' + 'No' + item301.no + ' '+ JSON.stringify(err));
+                                            callback(err,null);
+
+                                          }else{
+
+                                          util.log('debug','No' + item301.no + ' 301,303,304,308,309,310,311,312 check Ok ');
+                                          //callback(null,results);
+                                          //callback(null,item.no);
+
+                                          callback('','results');
+
+                                          }
+                                        }
+                                    );  // async.auto({
+
+
+
+
+			          }, function(err) {   //async.forEachSeries(
+
+			                    if(err!= null && err !=''){
+			                      util.log('info','306: ' + JSON.stringify(err));
+			                      callback(err);
+			                    }
+
+			                      else{
+			                          callback(null,'306 pass');
+			                    }
+
+			                }
+			               );
+		},
+
+
+
+
+		//306 项目没有分配工时（PJ中没有分配该员工或者选择的加班项目为PJG的场合，如果该员工在PJG下所有PJ中都没有该月的预定工数或者预定工数为0，报错。）
+		function(callback){
+			util.log('debug','306 enter');
+			var arr306=[];
+					for (var i=0;i<totalrow;i++)
+			                ( function (i) {   //循环取得每一条明细申请的时间
+			                      arr306[i] ={
+			                        no:i,
+			                        userid:util.jsonget(questquery,'/userid'),
+			                        pjinfoid:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/PJInfoID'),
+			                        FromDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FromDt'),
+			                        startdt:util.jsonget(questquery,'/applydate'),
+                        			enddt:util.jsonget(questquery,'/applydate'),
+			                        ToDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/ToDt'),
+			                        FlgOut:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgOut'),
+			                        FlgPJG:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgPJG'),
+			                        currentdt:util.jsonget(questquery,'/applydate')
+			                      };
+			                })(i);
+			          async.forEachSeries(arr306, function(item306, callback) {
+			          		login.getAvailPJ(item306,null,
+			                function(cb){
+			                	if( util.jsonexist(cb,'/errno') &&  util.jsonget(cb,'/errno') == 200){
+			                		cb = {
+			                			errno:"200"
+			                		}
+			                		callback(null,cb);
+			                	}
+			                	else
+			                	{
+			                		cb = {
+                                        "errno":"306",
+                                        "errmsg:":"项目没有分配工时",
+                                        "No":item306.no,
+                                        "module":"OVSubmit"
+                                      }
+			                        callback(cb,null);
+			                	}
+
+
+			                });
+
+
+
+			           }, function(err) {
+
+			                    if(err!= null && err !=''){
+			                      util.log('info','306: ' + JSON.stringify(err));
+			                      callback(err);
+			                    }
+
+			                      else{
+			                          callback(null,'306 pass');
+			                    }
+
+			                }
+			               );
+		},
+
+
+
+		//307 项目不可以为非稼动
+		function (callback){
+			util.log('debug','307 enter');
+			var arr307 = [];
+					 	 for (var i=0;i<totalrow;i++)
+			                ( function (i) {   //循环取得每一条明细申请的时间
+			                      arr307[i] ={
+			                        no:i,
+			                        userid:util.jsonget(questquery,'/userid'),
+			                        pjinfo:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/PJInfoID'),
+			                        FromDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FromDt'),
+			                        startdt:util.jsonget(questquery,'/applydate'),
+                        			enddt:util.jsonget(questquery,'/applydate'),
+			                        ToDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/ToDt'),
+			                        FlgOut:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgOut'),
+			                        FlgPJG:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgPJG'),
+			                        currentdt:util.jsonget(questquery,'/applydate')
+			                      };
+			                })(i);
+			           async.forEachSeries(arr307, function(item307, callback) {
+			           			//非稼动 = 4
+			           			if(item307.pjinfo == 4){
+			           					cb = {
+			                                            "errno":"307",
+			                                            "errmsg:":"项目不可以为非稼动",
+			                                            "No":item307.no,
+			                                            "module":"OVSubmit"
+			                                          }
+			                               callback(cb,null);
+			           			}else{
+			           				cb={
+			           					errno:200
+			           				}
+			           				callback(null,cb);
+			           			}
+
+			                }, function(err) {
+
+			                    if(err!= null && err !=''){
+			                      util.log('info','307: ' + JSON.stringify(err));
+			                      callback(err);
+			                    }
+
+			                      else{
+			                          callback(null,'307 pass');
+			                    }
+
+			                }
+			               );
+		},
+
+		 //305 开始或结束时间不符合门禁时间 （公司外为否的数据，最小开始时间不能小于门禁打卡时间；最大的结束时间不能大于门禁打卡时间）
+		 function (callback){
+
+		 	util.log('debug','305 enter');
+		 	var arr305 = [] ;
+		 	 for (var i=0;i<totalrow;i++)
+			                ( function (i) {   //循环取得每一条明细申请的时间
+			                      arr305[i] ={
+			                        no:i,
+			                        userid:util.jsonget(questquery,'/userid'),
+			                        pjinfo:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/PJInfoID'),
+			                        FromDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FromDt'),
+			                        startdt:util.jsonget(questquery,'/applydate'),
+                        			enddt:util.jsonget(questquery,'/applydate'),
+			                        ToDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/ToDt'),
+			                        FlgOut:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgOut'),
+			                        FlgPJG:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgPJG'),
+			                        currentdt:util.jsonget(questquery,'/applydate')
+			                      };
+			                })(i);
+
+			            async.forEachSeries(arr305, function(item305, callback) {
+			            		if(item305.FlgOut ==2){  //公司外是否
+
+			                      whList.getAccessRecord(item305,null,
+			                          function(cb){
+			         				   	if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') == 300  ){  //返回结果中没有数据
+			                                  cb = {
+			                                            "errno":"305",
+			                                            "errmsg:":"开始或结束时间不符合门禁时间",
+			                                            "No":item305.no,
+			                                            "module":"OVSubmit"
+			                                          }
+			                                  callback(cb,null);
+
+			                                }
+
+			                           if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') == 200  ){  //返回结果中有数据
+			                           	//最小开始时间不能小于门禁打卡时间；最大的结束时间不能大于门禁打卡时间
+			                                if( moment(item305.FromDt,'HH:mm:ss').format('HH:mm:ss') < util.jsonget(cb,'/queryresult0/OutTime') || moment(item305.ToDt,'HH:mm:ss').format('HH:mm:ss') > util.jsonget(cb,'/queryresult0/InTime'))
+			                                {
+			                                	cb = {
+			                                            "errno":"305",
+			                                            "errmsg:":"开始或结束时间不符合门禁时间",
+			                                            "No":item305.no,
+			                                            "module":"OVSubmit"
+			                                          }
+			                                  callback(cb,null);
+			                                }else{
+			                                	cb={
+						           					errno:200
+						           				}
+			                                	callback(null,cb);
+			                                }
+
+
+			                            }else{
+			                                	cb = {
+			                                            "errno":"400",
+			                                            "errmsg:":"系统异常",
+			                                            "No":item305.no,
+			                                            "module":"OVSubmit"
+			                                          }
+			                                  callback(cb,null);
+			                                }
+
+			                          });
+			                  	 }else{
+			                  	 	cb ={
+			                  	 		errno:200
+			                  	 	}
+			                  	 	callback(null,cb);
+			                  	 }
+
+			                }, function(err) {
+
+			                    if(err!= null && err !=''){
+			                      util.log('info','305: ' + JSON.stringify(err));
+			                      callback(err);
+			                    }
+
+			                      else{
+			                          callback(null,'305 check pass');
+			                    }
+
+			                }
+			               );  // async.forEach(
+
+		 },
+		 //302 该条加班数据日期和其他工时/加班/休假区间冲突
+		 function(callback){
+		 	        util.log('debug','302 enter');
+			        var arr302 = [] ;
+			        for (var i=0;i<totalrow;i++)
+			                ( function (i) {   //循环取得每一条明细申请的时间
+			                      arr302[i] ={
+			                        no:i,
+			                        userid:util.jsonget(questquery,'/userid'),
+			                        pjinfo:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/PJInfoID'),
+			                        FromDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FromDt'),
+			                        startdt:util.jsonget(questquery,'/applydate'),
+                        			enddt:util.jsonget(questquery,'/applydate'),
+			                        ToDt:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/ToDt'),
+			                        FlgOut:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgOut'),
+			                        FlgPJG:util.jsonget(questquery,'/TrnOVFormDetail'+i+'/FlgPJG'),
+			                        currentdt:util.jsonget(questquery,'/applydate')
+			                      };
+			                })(i);
+			                //检查申请的时间是否有重叠
+			                for (var i=0;i<totalrow;i++)
+			                 ( function (i) {
+			                     for (var j=0;j<totalrow;j++)
+			                         ( function (j) {
+			                          util.log('debug','时间重叠check:'+ i+':' + j + ' ' + arr302[i].startdt+ ' ' + arr302[j].startdt+ ' ' + arr302[i].FromDt+ '<=' +   arr302[j].ToDt + ' ' +   arr302[i].ToDt +  '>' + arr302[j].FromDt)
+
+			                              if( (arr302[i].no < arr302[j].no) && (arr302[i].startdt==arr302[j].startdt ) && ( arr302[i].FromDt <= arr302[j].ToDt && arr302[i].ToDt > arr302[j].FromDt ) ){
+			                                cb = {
+			                                    "errno":"302",
+			                                    "errmsg:":"该条加班数据时间和其他工时/加班/休假时间冲突",
+			                                    "No":i,
+			                                    "module":"OVSubmit"
+			                                  }
+			                                  callback(cb,null);
+			                              }
+
+			                         })(j);
+			                 })(i);
+
+			                async.forEachSeries(arr302, function(item302, callback) {
+			                      whList.getExistWHList(item302,null,
+			                          function(cb){
+			                           if( util.jsonexist(cb,'/errno') && util.jsonget(cb,'/errno') != 300  ){  //返回结果中有数据
+			                                  cb = {
+			                                            "errno":"302",
+			                                            "errmsg:":"该条加班数据时间和其他工时/加班/休假时间冲突",
+			                                            "No":item302.no,
+			                                            "module":"OVSubmit"
+			                                          }
+			                                  callback(cb,null);
+
+			                                }else{
+			                                	cb={
+						           					errno:200
+						           				}
+			                                  callback(null,cb);
+			                                }
+
+			                          });
+
+
+
+			                }, function(err) {
+
+			                    if(err!= null && err !=''){
+			                      util.log('info','302: ' + JSON.stringify(err));
+			                      callback(err);
+			                    }
+
+			                      else{
+			                          callback(null,'302 check pass');
+			                    }
+
+			                }
+			               );  // async.forEach(
+		 }
+	],
+	// optional callback
+	function(err, results){
+    //console.log('parallel!' + err);
+    if(err!= null && err !=''){
+       callback(err);
+          }else
+          {
+             cb = {
+                "errno":"200",
+                "errmsg:":"Check pass",
+                "No":null,
+                "module":"OVSubmit"
+              }
+
+              callback(cb);
+          }
+	});
+
 }
 ;
 
@@ -128,7 +723,6 @@ function insertOV(questquery,callback){
         CreateBy:"",
         UpdateTime:'',
         UpdateBy:""
-        
       };
 
      var procWFSubmitArray =
@@ -447,7 +1041,7 @@ function insertOV(questquery,callback){
 
             util.log('debug','insertOV returns');
             util.log('debug',JSON.stringify(results));
-            callback(results);
+            callback(results[0]);
           }
           else
           {
@@ -471,6 +1065,7 @@ function insertOV(questquery,callback){
 
 function OVSubmit(questquery,response,callback){
 	async.waterfall([     //有顺序的执行,前一个函数的结果作为下一个函数的参数
+ 	/*
  	function (callback){  //先取得考勤规则数据
 
  			//通过applydate取得月初和月末
@@ -504,13 +1099,17 @@ function OVSubmit(questquery,response,callback){
             	}
             	});
     },
-    function (results,callback) {  //根据考勤规则检查加班数据
+    */
+    function (callback) {  //根据考勤规则检查加班数据
 
-            OVInfoValidateCheck(questquery,results,
-            	function(cb){
-            		util.log('debug','OVInfoValidateCheck retrun ' + JSON.stringify(cb));
-            		callback(null,cb);
-            	});
+            OVInfoValidateCheck(questquery,
+              function(cb){
+                util.log('debug','OVInfoValidateCheck retrun ' + JSON.stringify(cb));
+                if(util.jsonget(cb,'/errno') != 200){  //校验出错
+                  callback(cb,null);
+                }else
+                callback(null,cb);
+              });
     },
    function (results,callback) {  //保存并提交
    			insertOV(questquery,
@@ -613,8 +1212,11 @@ function DeleteOVCheck(formid,callback){
         {
 
         selectSQL1 = ' select count(*)  as cnt from trnovform ';
-		selectSQL1 += ' where (dtAppStatus =1 or dtAppStatus = 2 )';  //未提交以外的状态
-		//selectSQL1 += ' and delflg = 0 ';
+		selectSQL1 += ' wwhere ((dtAppStatus =1 or dtAppStatus = 2 ) '; //已进入审批流程
+		selectSQL1 += ' or ';
+		selectSQL1 += ' RestUsedWH != 0   '; //申请的加班时间已被调休
+		selectSQL1 += ' ) ';
+      	selectSQL1 += ' and delflg = 0 ';
 		selectSQL1 += ' and ovformid = ' + formid ;
 
 

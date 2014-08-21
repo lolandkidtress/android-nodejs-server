@@ -620,7 +620,9 @@ function getLieuVCTime(questquery,response,callback){
                       and T2.DelFlg = 0 and T1.UsedEndTime>='2014-07-21'
 */
 
-        selectSQL1 = ' select IFNULL(max(restHour),0) as LeftWH,IFNULL(max(restHour30),0) as LeftWHin30 ';
+        selectSQL1 = ' select ';
+        selectSQL1 += ' IFNULL(max(restHour),0) - IFNULL(max(used.vctime),0) as LeftWH, ';
+        selectSQL1 += ' IFNULL(max(restHour30),0) - IFNULL(max(used.vctime),0) as LeftWHin30   ';
         selectSQL1 += ' from (  ';
         selectSQL1 += ' select SUM(IFNULL(T1.ConfirmUseWH, 0)-IFNULL(T1.RestUsedWH, 0)) AS restHour  ';
         selectSQL1 += ' from TrnOVForm T1, TrnWHForm T2  ';
@@ -638,7 +640,14 @@ function getLieuVCTime(questquery,response,callback){
         selectSQL1 += ' and T1.UsedEndTime BETWEEN ' + Connection.escape(util.jsonget(questquery,'/currentdt')) + ' and ' ;
         selectSQL1 +=  moment(util.jsonget(questquery,'/currentdt'),'YYYYMMDD').add('months', 1).format('YYYYMMDD');
         selectSQL1 += ' and T2.EmployeeID=' + Connection.escape(util.jsonget(questquery,'/userid'));
-        selectSQL1 += ' ) res3 ';
+        selectSQL1 += ' ) res3 ,';
+        selectSQL1 += ' (select sum(vctime) as vctime  from trnvcformdetail ' ;
+        selectSQL1 += ' where dtVacationType = 2 ' ;
+        selectSQL1 += ' and vcformid in ' ;
+        selectSQL1 += ' (select vcformid from TrnVCForm ' ;
+        selectSQL1 += ' where EmployeeID = '+ Connection.escape(util.jsonget(questquery,'/userid'));
+        selectSQL1 += ' and delflg != 1 ';
+        selectSQL1 += ' and dtappstatus !=2)) used ' ;
 
 
         util.log('debug',selectSQL1);

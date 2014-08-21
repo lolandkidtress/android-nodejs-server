@@ -29,18 +29,18 @@ exports.userValidateCheck = function(bussiquery,callback){
    util.log('debug','userid = ' + util.jsonget(bussiquery,'/userid'));
    util.log('debug','usertoken = ' + util.jsonget(bussiquery,'/uuid'));
    if(config.getTraceLevel()==''){  //debug直接返回1
-      util.log('log','debug mode,pass');
+      util.log('info','debug mode,pass');
       callback('1');
    }else{
    			if(util.jsonexist(UserValidatedList,'/UserValidatedList') != true){
-   				util.log('log','UserValidatedList is empty');
+   				util.log('info','UserValidatedList is empty');
    				callback('0');
    			}else
    			{
    				   				//util.log('debug','UserValidatedList uuid is:' + util.jsonget(UserValidatedList,'/userid'+util.jsonget(bussiquery,'/userid')+'/uuid'));
 		      if(util.jsonexist(UserValidatedList,'/UserValidatedList/userid' + util.jsonget(bussiquery,'/userid')+'/uuid') != true)
 				{
-					   	util.log('log','User uuid not exist');
+					   	util.log('info','User uuid not exist');
    						callback('0');
 				}else{
 					  util.log('debug','UserValidatedList uuid is:' + util.jsonget(UserValidatedList,'/UserValidatedList/userid'+util.jsonget(bussiquery,'/userid')+'/uuid'));
@@ -63,7 +63,7 @@ exports.userValidateCheck = function(bussiquery,callback){
 				      		util.log('debug','UserValidatedList err');
 				      		callback('0');
 				      	}else{
-				      		util.log('log','User uuid Expire');
+				      		util.log('info','User uuid Expire');
 				      	*/
 				      		
 				      		var Connection;

@@ -695,7 +695,7 @@ function VCSubmit(questquery,response,callback){
             }
             util.jsonadd(results[0],'/errmsg','VCSubmit succ');
                 util.log('info','VCSubmit returns');
-                util.log('info',results);
+                util.log('info',JSON.stringify(results));
                 util.jsonadd(results[0],'/userid',util.jsonget(questquery,'/userid'));
            callback(results[0]);
           }
@@ -1208,9 +1208,8 @@ async.parallel([
 
                             if((typeof parseInt(item308.SplitNo))=='number'){
 
-                                util.log('debug',moment(item308.currentdt,"YYYY-MM-DD").toString()+' '+ moment(item308.currentdt,'YYYY-MM-DD').isValid());
                                   if(moment(item308.currentdt,'YYYYMMDD').isValid()){
-                                        if((typeof parseInt(item308.FromDt))=='number' && (typeof parseInt(item308.ToDt))=='number'){
+                                        if((typeof parseInt(item308.FromDt))=='number' && (typeof parseInt(item308.ToDt))=='number' && parseInt(item308.FromDt)<= parseInt(item308.ToDt)){
                                             cb = {
                                               "errn":200
                                             }
@@ -1252,7 +1251,7 @@ async.parallel([
                                     "module":"VCSubmit"
                                   }
                                   callback(cb,null);
- 
+
                             }//else
 
                             //foreach
@@ -1532,7 +1531,7 @@ async.parallel([
                                                         callback(cb,null);
                                                         //util.log('debug','有薪假天数不可为负数' + cb);
                                                       }else{
-                                                          //申请的天数+已用的天数小于有薪假天数检查的check放在301，306部分
+                                                          //申请的天数+小于调休天数检查的check放在301，306后面1619
                                                           leftLieuVCTime =  Number(util.jsonget(cb,'/LeftWH')) ;
                                                           util.log('info','No' + item301.no + '剩余调休小时数:' +  leftLieuVCTime);
                                                           callback(null,cb);
