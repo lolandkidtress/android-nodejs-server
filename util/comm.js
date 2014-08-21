@@ -1,6 +1,8 @@
 var util = require('./util.js');
 var config = require("../config/config.js");
 var moment = require('moment');
+var async = require('async');
+var mysql = require('mysql');
 
 //多个进程间同步校验通过的用户
 exports.syncUserValidatedList = function(obj,callback) {
@@ -26,7 +28,7 @@ exports.userValidateCheck = function(bussiquery,callback){
    util.log('debug','UserValidatedList is ' + JSON.stringify(UserValidatedList));
    util.log('debug','userid = ' + util.jsonget(bussiquery,'/userid'));
    util.log('debug','usertoken = ' + util.jsonget(bussiquery,'/uuid'));
-   if(config.getTraceLevel()=='debug'){  //debug直接返回1
+   if(config.getTraceLevel()==''){  //debug直接返回1
       util.log('log','debug mode,pass');
       callback('1');
    }else{
@@ -50,18 +52,19 @@ exports.userValidateCheck = function(bussiquery,callback){
 				      }
 				      //util.log('log','/'+util.jsonget(UserValidatedList,'/26/uuid'));
 				      else{
+				      	/*
 				      	Epdata=config.getExpireTime();
 				      	var now = moment().format('YYYY/MM/DD');
 				      	var LoginDate = moment(util.jsonget(UserValidatedList,'/UserValidatedList/userid'+util.jsonget(bussiquery,'/userid')+'/LoginDate')).format('YYYY/MM/DD');
 				      	util.log('debug','Now is: ' + now + ',LoginData is : ' + LoginDate + ',ExpireTime :' + Epdata);
 
-				      	if(moment(new Date(LoginDate)).add('days',Epdata).format('YYYY/MM/DD') > now  )
+				      	if(moment(new Date(LoginDate)).format('YYYY/MM/DD') != now  )
 				      	{
-				      		util.log('debug','UserValidatedList pass');
-				      		callback('1');
+				      		util.log('debug','UserValidatedList err');
+				      		callback('0');
 				      	}else{
 				      		util.log('log','User uuid Expire');
-				      		
+				      	*/
 				      		
 				      		var Connection;
 				      		var selectSQL1;
@@ -76,7 +79,7 @@ exports.userValidateCheck = function(bussiquery,callback){
 				      				//先检验IVGGS的用户名密码的正确性
 				      				var pool = mysql.createPool(config.getivggsDBConfig());
 
-				      				pool.getConnection(function(sqlerr, Connection) {
+				      				pool.getConnection(function(sqlerr, Connectionwhs) {
 				      					// connected! (unless `err` is set)
 				      					if(sqlerr!=null){
 				      						util.log('info','get ConnectPool error');
@@ -93,27 +96,27 @@ exports.userValidateCheck = function(bussiquery,callback){
 				      							util.log('info','Connect error '+ sqlerr);
 				      							util.jsonadd(result,'/sqlstmt',selectSQL1);
 				      							callback(sqlerr,null);
-				      						}
+				      						})
 				      						.on('result', function(rows) {
 				      							util.jsonadd(result,'/queryresult/uuid',rows.uuid);
-				      						}
+				      						})
 				      						.on('end', function(rows) {
         										util.jsonadd(result,'/errno','200');
         										util.jsonadd(result,'/errmsg','User Valid');
         										util.jsonadd(result,'/module','login');
-
-        										util.jsonadd(userToken,'/userid',util.jsonget(result,'/queryresult/userid'));
+        										
+        										util.jsonadd(userToken,'/userid',util.jsonget(bussiquery,'/userid'));
         										util.jsonadd(userToken,'/uuid',util.jsonget(result,'/queryresult/uuid'));
         										util.jsonadd(userToken,'/LoginDate',moment().format('YYYY-MM-DD'));
 
-        										util.jsonadd(UserValidatedList,'/UserValidatedList'+'/userid'+util.jsonget(result,'/queryresult/userid'),userToken);
+        										util.jsonadd(UserValidatedList,'/UserValidatedList'+'/userid'+util.jsonget(bussiquery,'/userid'),userToken);
 
         										process.send(UserValidatedList);
         										util.log('debug','UserValidatedList refreshed '+ JSON.stringify(UserValidatedList));
 
         										Connectionwhs.release();
         										callback(null,result);
-        									}
+        									});
         								}
         							});
         						}
@@ -122,7 +125,7 @@ exports.userValidateCheck = function(bussiquery,callback){
 								if(sqlerr == null||sqlerr == '' ){
 									util.log('info','login returns');
 									util.log('info',JSON.stringify(results));
-									callback(results[0]);
+									callback('1');
 								}else{
 									//global.queryDBStatus = 'err';
 									util.log('error',"err  = "+ sqlerr);
@@ -130,17 +133,24 @@ exports.userValidateCheck = function(bussiquery,callback){
 									util.log('info','login returns');
 									util.jsonadd(results,'/errno','400');
 									util.log('info',JSON.stringify(results));
-									callback(results);
+									callback('0');
 								}
 							}); 
-				      		
-				      		callback('0');
-				      	}
+				      	//}
 				      }
 				}
 
 		    }
 		}
+}
 
 
+//取得更新后UUID
+exports.uuidget = function(questquery, callback) {
+	if(util.jsonget(UserValidatedList,'/UserValidatedList/userid'+util.jsonget(questquery,'/userid')+'/userid') != util.jsonget(questquery,'/userid')){
+		callback('0');
+	}else{
+		var newuuid = util.jsonget(UserValidatedList,'/UserValidatedList/userid'+util.jsonget(questquery,'/userid')+'/uuid');
+		callback(newuuid);
+	}
 }

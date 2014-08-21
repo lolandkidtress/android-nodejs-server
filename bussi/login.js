@@ -304,6 +304,7 @@ function getWHSetting(questquery,response,callback){
                 i=i+1;
               })
               .on('end', function(rows) {
+                  util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
 
                   if(i>0){
 
@@ -424,6 +425,7 @@ function getCalendar(questquery,response,callback){
                 i=i+1;
               })
               .on('end', function(rows) {
+              	  util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
                   if(i>0){
 
 
@@ -540,6 +542,7 @@ function getAvailPJ(questquery,response,callback){
                 i=i+1;
               })
               .on('end', function(rows) {
+              	  util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
                   if(i>0){
 
 
@@ -572,7 +575,7 @@ function getAvailPJ(questquery,response,callback){
             }
             util.log('info','getAvailPJ returns');
             util.log('info',results);
-            callback(results);
+            callback(results[0]);
           }
           else
           {

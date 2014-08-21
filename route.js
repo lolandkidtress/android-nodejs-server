@@ -53,9 +53,10 @@ function route(pathname,questquery,response, request) {
     'errmsg': 'Page not found'
     };
     util.log('info',"No request handler found for " + pathname);
-    response.writeHead(404, {"Content-Type": "text/html"});
-    response.write(JSON.stringify(err));
-    response.end();
+    util.jsonadd(questquery,'/errno',util.jsonget(err,'/errno'));
+    util.jsonadd(questquery,'/errmsg',util.jsonget(err,'/errmsg'));
+    util.jsonadd(questquery,'/module',null);
+    requestHandlers.feedback(questquery,response,request);
     util.log('info','end of response');
   }
 }
