@@ -57,36 +57,39 @@ function encrypted(formObj){
 
     var formObj = document.getElementById("form");
     //登录
-    //var StringS = '{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"feng-jin.deng@ivision-china.cn"}';
+    //var StringS = '{"credential":"fEqNCco3Yq9h5ZUglD3CZJT4lBs=","username":"jian.a.chen@ivision-china.cn"}';
+  	//formObj.action =  'http://127.0.0.1:8001/login?'+ StringS;
+  	
+  	//var StringS = '{"credential":"e72VaBKMDbziNl3QjzP72y/pYk8=","username":"jia.zhang@ivision-china.cn"}';
   	//formObj.action =  'http://127.0.0.1:8001/login?'+ StringS;
 
   	//考勤规则
-  	//var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
+  	//var StringS = '{"user":"56","startdt":"20140501","enddt":"20140531","uuid":"febf9542-2847-11e4-92c2-000c294968a3"}';
   	//formObj.action =  'http://127.0.0.1:8001/getWHSetting?'+ StringS;
 
     //取得可填写的项目
-    //var StringS = '{"userid":"81","currentdt":"20140703","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
-    //formObj.action =  'http://127.0.0.1:8001//getAvailPJ?'+ StringS;
+    //var StringS = '{"userid":"149","currentdt":"20140819","uuid":"490a6378-280e-11e4-92c2-000c294968a3"}';
+    //formObj.action =  'http://127.0.0.1:8001/getAvailPJ?'+ StringS;
 
 
-     //日历设定
-  	//var StringS = '{"startdt":"20140501","enddt":"20140531"}';
+    //日历设定
+  	//var StringS = '{"userid":"149","startdt":"20140501","enddt":"20140531","uuid":"6af2b996-274f-11e4-92c2-000c294968a3"}';
   	//formObj.action =  'http://127.0.0.1:8001/getCalendar?'+ StringS;
 
   	//申请记录
-  	//var StringS = '{"userid":"24","startdt":"20140501","enddt":"20140531"}';
+  	//var StringS = '{"userid":"149","startdt":"20140501","enddt":"20140531","uuid":"9435108e-2762-11e4-92c2-000c294968a3"}';
   	//formObj.action =  'http://127.0.0.1:8001/getWHDetailList?'+ StringS;
 
 
     //门禁取得记录
-    //var StringS = '{"errno":"","errmsg":"","queryresult0":{"EmployeeID":"10002","objdate":"20140623","OutTime":"2014-06-23T01:28:00.000Z","inTime":"2014-06-23T01:28:07.000Z"},"queryresult1":{"EmployeeID":"200900704","objdate":"20140623","OutTime":"2014-06-23T01:28:00.000Z","inTime":"2014-06-23T01:28:07.000Z"},"rowcount":"2"}';
-    //formObj.action =  'http://127.0.0.1:8001/insertAccessRecord?'+ StringS;
+    //var StringS = '{"userid":"149","startdt":"20140801","enddt":"20140831","uuid":"7066628e-2767-11e4-92c2-000c294968a3"}';
+    //formObj.action =  'http://127.0.0.1:8001/getAccessRecord?'+ StringS;
 
     //加班申请
     /*
     var StringS = '{'
-      +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
-      +'"applydate":"20140725","ovwh":"17",'
+      +'"userid":"149","uuid":"4ef9c3ca-2776-11e4-92c2-000c294968a3",'
+      +'"applydate":"20140818","ovwh":"17",'
       +'"TrnOVFormDetail0":{'
       +'"FromDt":"1800",'
       +'"ToDt":"1900",'
@@ -96,7 +99,7 @@ function encrypted(formObj){
       +'"FlgPJG":"0"'
       +'},'
       +'"TrnOVFormDetail1":{'
-      +'"FromDt":"1900", '
+      +'"FromDt":"1800", '
       +'"ToDt":"2100", '
       +'"PJInfoID":"258",'
       +'"OVWH":"2",'
@@ -112,8 +115,7 @@ function encrypted(formObj){
 
     //加班删除
     /*
-    var StringS = '{ "userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f","ovformid":"656"} ';
-
+    var StringS = '{ "userid":"149","uuid":"208a98ce-276d-11e4-92c2-000c294968a3","ovformid":"11434"} ';
 
     formObj.action =  'http://127.0.0.1:8001/DeleteOVInfo?'+ StringS;
     */
@@ -122,8 +124,8 @@ function encrypted(formObj){
 
     /*
     var StringS = '{'
-    +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
-    +'"currentdt":"20140725"'
+    +'"userid":"149","uuid":"8811c806-2767-11e4-92c2-000c294968a3",'
+    +'"currentdt":"20140819"'
     +'}' ;
     formObj.action =  'http://127.0.0.1:8001/getLieuVCTime?'+ StringS;
     */
@@ -131,23 +133,22 @@ function encrypted(formObj){
     //有薪假剩余天数
     /*
     var StringS = '{'
-    +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
-    +'"currentdt":"20140725"'
+    +'"userid":"149","uuid":"e51d0e7a-2767-11e4-92c2-000c294968a3",'
+    +'"currentdt":"20140819"'
     +'}' ;
     formObj.action =  'http://127.0.0.1:8001/getPaidVCTime?'+ StringS;
     */
 
    //休假规则
    /*
-    var StringS = '{"userid":"26","startdt":"20140501","enddt":"20140531","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f"}';
+    var StringS = '{"userid":"149","startdt":"20140501","enddt":"20140531","uuid":"48c5b544-2768-11e4-92c2-000c294968a3"}';
     formObj.action =  'http://127.0.0.1:8001/getVCSetting?'+ StringS;
   */
 
 
     //休假删除
     /*
-    var StringS = '{ "userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f","vcformid":"92"} ';
-
+    var StringS = '{ "userid":"149","uuid":"c136b980-276b-11e4-92c2-000c294968a3","vcformid":"395"} ';
 
     formObj.action =  'http://127.0.0.1:8001/DeleteVCInfo?'+ StringS;
     */
@@ -155,8 +156,8 @@ function encrypted(formObj){
     //休假申请
     /*
     var StringS = '{'
-      +'"userid":"149","uuid":"7485d6b3-c8b6-43b9-bea0-8fc8a8f2400f",'
-      +'"VCDay":"3",'
+      +'"userid":"149","uuid":"368b370c-276b-11e4-92c2-000c294968a3",'
+      +'"VCDay":"1",'
       +'"Memo":"2天有薪假,1天调休",'
       +'"TrnVCFormDetail0":{'
       +'"ObjYMD":"20140901",'
@@ -182,7 +183,7 @@ function encrypted(formObj){
       +'"vctype":"2",'
       +'"SplitNo":"2"'
       +'},'
-      +'"detailrow":"3"'
+      +'"detailrow":"1"'
       +'}' ;
 
     formObj.action =  'http://127.0.0.1:8001/VCSubmit?'+ StringS;
@@ -193,7 +194,7 @@ function encrypted(formObj){
     //key = 0123456789abcd0123456789;
     //iv = 12345678
     //DESede/CBC/PKCS5Padding 模式
-    formObj.action = 'http://127.0.0.1:8001/'+ 'dcf278e39a9787a2748aaf227d5bf6010cfaabc0470212f0d479f65348142e00275821a7937590c9ea622827cbfc9c6415ca63e0135f62d571d3b6990cd82839a257415289b4fb54344b063f7261869bdaaa67d42e940ac20158f023b311bf92f42fd47e6ffcf601243e435cc6e01d2b39c81d81cadd62ff40de949f544b3aa6de1f98477667fa1d5ca9cb39e7a7fa736c2585c09d2788ebdfdcb06262bfbb88833ff66dce470e40';
+    //formObj.action = 'http://127.0.0.1:8001/'+ 'dcf278e39a9787a2748aaf227d5bf6010cfaabc0470212f0d479f65348142e00275821a7937590c9ea622827cbfc9c6415ca63e0135f62d571d3b6990cd82839a257415289b4fb54344b063f7261869bdaaa67d42e940ac20158f023b311bf92f42fd47e6ffcf601243e435cc6e01d2b39c81d81cadd62ff40de949f544b3aa6de1f98477667fa1d5ca9cb39e7a7fa736c2585c09d2788ebdfdcb06262bfbb88833ff66dce470e40';
 
     formObj.submit();
 

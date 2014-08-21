@@ -94,7 +94,7 @@ function getVCSetting(questquery,response,callback){
                 i=i+1;
               })
               .on('end', function(rows) {
-
+              	  util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
                   if(i>0){
 
                       util.jsonadd(results,'/rowcount',i);
@@ -429,7 +429,8 @@ function VCDeleteHandle(questquery,response,callback){
                     "errmsg:":"VCDelete.DeleteVCCheck Error",
                     "module":"VCDelete"
                     }
-                  callback(cb,null);
+                    util.jsonadd(cb,'/userid',util.jsonget(questquery,'/userid'));
+                    callback(cb,null);
                   }
 
                 }else{
@@ -438,6 +439,7 @@ function VCDeleteHandle(questquery,response,callback){
                     "errmsg:":"VCDelete.DeleteVCCheck Error",
                     "module":"VCDelete"
                     }
+                  util.jsonadd(cb,'/userid',util.jsonget(questquery,'/userid'));
                   callback(cb,null);
                 }
               }
@@ -458,6 +460,7 @@ function VCDeleteHandle(questquery,response,callback){
               }else{
                 if( util.jsonexist(cb[0],'/errno') && util.jsonget(cb[0],'/errno') == 200){   //非异常情况下返回
                   util.jsonadd(cb[0],'/module','VCDelete');
+                  util.jsonadd(cb[0],'/userid',util.jsonget(questquery,'/userid'));
                   util.log('debug','VCDelete.deleteVC OK ' + JSON.stringify(cb));
                   callback(null,cb);
                 }else{
@@ -693,6 +696,7 @@ function VCSubmit(questquery,response,callback){
             util.jsonadd(results[0],'/errmsg','VCSubmit succ');
                 util.log('info','VCSubmit returns');
                 util.log('info',JSON.stringify(results));
+                util.jsonadd(results[0],'/userid',util.jsonget(questquery,'/userid'));
            callback(results[0]);
           }
           else

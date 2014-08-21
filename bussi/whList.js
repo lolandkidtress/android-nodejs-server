@@ -170,7 +170,7 @@ function getWHDetailList(questquery,response,callback){
                 i=i+1;
               })
               .on('end', function(rows) {
-
+              	  util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
                   if(i>0){
                     util.jsonadd(results,'/errno','200');
                     util.jsonadd(results,'/errmsg','getWHDetailList complete');
@@ -473,7 +473,8 @@ function getPaidVCTime(questquery,response,callback){
                }
               })
               .on('end', function(rows) {
-                util.log('info','合计有薪假：' + LeftWH + '已申请的有薪假合计：' + VCWH);
+              	  util.jsonadd(result,'/userid',util.jsonget(questquery,'/userid'));
+                  util.log('info','合计有薪假：' + LeftWH + '已申请的有薪假合计：' + VCWH);
                   if(i>0){
 
                            util.jsonadd(result,'/errno','200');
@@ -673,6 +674,7 @@ function getLieuVCTime(questquery,response,callback){
 
               })
               .on('end', function(rows) {
+              	  util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
                   if(i>0){
                             //根据考勤规则计算每天的小时
 
@@ -910,6 +912,7 @@ function getAccessRecord(questquery,response,callback){
               })
               .on('end', function(rows) {
 
+                  util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
                   if(i>0){
                            util.jsonadd(results,'/errno','200');
                            util.jsonadd(results,'/errmsg','getAccessRecord complete');
@@ -976,6 +979,7 @@ function insertAccessRecord(questquery,response,callback){
       var res;
       var done=0;
 
+      util.log('info','Questquery Is'+JSON.stringify(questquery));
       var totalrow = util.jsonget(questquery,'/rowcount');
 
       var insertArray =
@@ -1048,6 +1052,7 @@ function insertAccessRecord(questquery,response,callback){
                            util.jsonadd(results,'/errmsg','insertAccessRecord complete');
                            util.jsonadd(results,'/rowcount',i);
                            util.jsonadd(results,'/module','insertAccessRecord');
+                           util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
                            Connection.release();
                         }
                     });

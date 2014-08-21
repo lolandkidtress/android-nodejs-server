@@ -1159,6 +1159,7 @@ function OVSubmit(questquery,response,callback){
 			    	util.jsonadd(results[0],'/errmsg','OVSubmit succ');
 		            util.log('info','OVSubmit returns');
 		            util.log('info',results);
+		            util.jsonadd(results[0],'/userid',util.jsonget(questquery,'/userid'));
 					 callback(results[0]);
 			    }
 			    else
@@ -1372,6 +1373,7 @@ function deleteOV(questquery,callback){
 									util.log('debug','commit! ');
 									util.jsonadd(results,'/errno','200');
 									util.jsonadd(results,'/errmsg','deleteOV complete');
+									util.jsonadd(results,'/userid',util.jsonget(questquery,'/userid'));
 									callback(null, results);
 								}
 							});
@@ -1439,6 +1441,7 @@ function OVDeleteHandle(questquery,response,callback){
             				"errmsg:":util.jsonget(cb,'/errmsg'),
             				"module":"OVDelete"
             			}
+            			util.jsonadd(cb,'/userid',util.jsonget(questquery,'/userid'));
             			callback(cb,null);
             	}else{
             		if( util.jsonexist(cb[0],'/errno') && util.jsonget(cb[0],'/errno') == 200){   //非异常情况下返回
@@ -1454,6 +1457,7 @@ function OVDeleteHandle(questquery,response,callback){
             				"errmsg:":"OVDelete.DeleteOVCheck Error",
             				"module":"OVDelete"
             				}
+            				util.jsonadd(cb,'/userid',util.jsonget(questquery,'/userid'));
             			callback(cb,null);
             			}
 
@@ -1463,6 +1467,7 @@ function OVDeleteHandle(questquery,response,callback){
             				"errmsg:":"OVDelete.DeleteOVCheck Error",
             				"module":"OVDelete"
             				}
+            				util.jsonadd(cb,'/userid',util.jsonget(questquery,'/userid'));
             			callback(cb,null);
             		}
             	}
