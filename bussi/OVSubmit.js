@@ -1212,7 +1212,7 @@ function DeleteOVCheck(formid,callback){
         {
 
         selectSQL1 = ' select count(*)  as cnt from trnovform ';
-		selectSQL1 += ' wwhere ((dtAppStatus =1 or dtAppStatus = 2 ) '; //已进入审批流程
+		selectSQL1 += ' where ((dtAppStatus =1 or dtAppStatus = 2 ) '; //已进入审批流程
 		selectSQL1 += ' or ';
 		selectSQL1 += ' RestUsedWH != 0   '; //申请的加班时间已被调休
 		selectSQL1 += ' ) ';
